@@ -6,9 +6,12 @@ namespace App\Providers;
 
 use App\Contracts\ImageGenProvider;
 use App\Contracts\TtsProvider;
+use App\Contracts\VideoGenProvider;
 use App\Models\User;
 use App\Services\ImageGen\NullImageGenProvider;
 use App\Services\Tts\NullTtsProvider;
+use App\Services\VideoGen\NullVideoGenProvider;
+use App\Services\VideoGen\XaiImagineVideoProvider;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -32,6 +35,13 @@ final class AppServiceProvider extends ServiceProvider
             };
         });
         $this->app->bind(ImageGenProvider::class, NullImageGenProvider::class);
+        $this->app->bind(VideoGenProvider::class, function (): VideoGenProvider {
+            if (filled(config('services.xai.api_key'))) {
+                return new XaiImagineVideoProvider;
+            }
+
+            return new NullVideoGenProvider;
+        });
     }
 
     /**

@@ -13,6 +13,8 @@ use App\Http\Controllers\Studio\ApproveProductionRunController;
 use App\Http\Controllers\Studio\UpdateStageNotesController;
 use App\Http\Controllers\Studio\PreviewVoiceController;
 use App\Http\Controllers\Studio\PreviewVisualController;
+use App\Http\Controllers\Studio\AssemblePreviewMasterController;
+use App\Http\Controllers\Studio\GenerateImagineMasterController;
 use App\Http\Controllers\Studio\ExportProductionRunController;
 use App\Http\Controllers\Studio\BrandBibleController;
 use App\Http\Controllers\SeriesController;
@@ -90,6 +92,8 @@ Route::middleware(['auth', 'verified', 'can:manage-content', EnsureStudioEnabled
     Route::post('/runs/{run}/notes', [UpdateStageNotesController::class, 'store'])->name('runs.notes');
     Route::post('/runs/{run}/preview-voice', [PreviewVoiceController::class, 'store'])->name('runs.preview-voice');
     Route::post('/runs/{run}/preview-visual', [PreviewVisualController::class, 'store'])->name('runs.preview-visual');
+    Route::post('/runs/{run}/assemble-preview', [AssemblePreviewMasterController::class, 'store'])->name('runs.assemble-preview');
+    Route::post('/runs/{run}/imagine-master', [GenerateImagineMasterController::class, 'store'])->name('runs.imagine-master');
     Route::post('/runs/{run}/agents', [UpdateRunAgentsController::class, 'store'])->name('runs.agents.update');
 
     Route::post('/episodes/{episode:slug}/media', [MediaUploadController::class, 'store'])->name('episodes.media');
