@@ -268,8 +268,6 @@ export default function StudioRunShow({
                 'publishChecklist',
                 'usage',
             ],
-            preserveScroll: true,
-            preserveState: true,
         });
     }
 
@@ -869,6 +867,7 @@ export default function StudioRunShow({
                                         stepId={activeStepId}
                                         run={run}
                                         primaryArtifact={primaryArtifact}
+                                        draftJson={draftJson}
                                         onScriptChange={(next) =>
                                             setDraftJson(
                                                 JSON.stringify(next, null, 2),
@@ -1290,37 +1289,58 @@ function GateActions({
     );
 }
 
+function parseDraftPayload(draftJson: string, fallback: unknown): unknown {
+    try {
+        return JSON.parse(draftJson);
+    } catch {
+        return fallback ?? {};
+    }
+}
+
 function StagePreview({
     stepId,
     run,
     primaryArtifact,
+    draftJson,
     onScriptChange,
 }: {
     stepId: string;
     run: Props['run'];
     primaryArtifact?: Artifact;
+    draftJson: string;
     onScriptChange: (next: ScriptPayload) => void;
 }) {
+    // Edits must bind to the local draft, not server artifact — otherwise
+    // controlled inputs reset on every keystroke.
+    const draftPayload = parseDraftPayload(
+        draftJson,
+        primaryArtifact?.payload ?? {},
+    );
+
     if (stepId === 'curriculum') {
-        return <CurriculumPreview payload={primaryArtifact?.payload} />;
+        return <CurriculumPreview payload={draftPayload} />;
     }
     if (stepId === 'script') {
         return (
             <ScriptPreview
-                payload={(primaryArtifact?.payload ?? {}) as ScriptPayload}
+                payload={draftPayload as ScriptPayload}
                 editable
                 onChange={onScriptChange}
             />
         );
     }
     if (stepId === 'storyboard') {
-        return <StoryboardPreview payload={primaryArtifact?.payload} />;
+        return <StoryboardPreview payload={draftPayload} />;
     }
     if (stepId === 'voice') {
+        const vo =
+            primaryArtifact?.kind === 'vo_script'
+                ? draftPayload
+                : run.latestByKind.vo_script?.payload;
         return (
             <div className="space-y-2">
                 <VoicePreview
-                    voPayload={run.latestByKind.vo_script?.payload}
+                    voPayload={vo}
                     ttsPayload={run.latestByKind.tts_manifest?.payload}
                 />
                 {Array.isArray(
