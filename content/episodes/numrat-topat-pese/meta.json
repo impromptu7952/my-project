@@ -1,0 +1,18 @@
+{
+  "slug": "numrat-topat-pese",
+  "title_sq": "Pesë topa me ngjyra",
+  "title_en": "Five colored balls",
+  "summary_sq": "Numërojmë pesë topa dhe i emërtojmë ngjyrat.",
+  "summary_en": "Count five balls and name their colors.",
+  "topic": "numrat",
+  "age_band": "2-3",
+  "duration_seconds": 260,
+  "presenters": [
+    "lumi",
+    "pip"
+  ],
+  "type": "concept_song",
+  "package_level": "brief",
+  "status": "draft",
+  "video_asset": null
+}

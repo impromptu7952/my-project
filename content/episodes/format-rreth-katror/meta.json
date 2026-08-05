@@ -1,0 +1,18 @@
+{
+  "slug": "format-rreth-katror",
+  "title_sq": "Rreth dhe katror",
+  "title_en": "Circle and square",
+  "summary_sq": "Prekim rrethin (rrotullo) dhe katrorin (katër anë).",
+  "summary_en": "Touch circle (roll) and square (four sides).",
+  "topic": "format",
+  "age_band": "2-3",
+  "duration_seconds": 210,
+  "presenters": [
+    "lumi",
+    "pip"
+  ],
+  "type": "concept_song",
+  "package_level": "brief",
+  "status": "draft",
+  "video_asset": null
+}

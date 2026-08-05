@@ -1,0 +1,18 @@
+{
+  "slug": "transporti-makina",
+  "title_sq": "Makina: bip bip!",
+  "title_en": "Car: beep beep!",
+  "summary_sq": "Makina e kuqe shkon bip bip! Vroom i butë.",
+  "summary_en": "Red car goes beep beep! Soft vroom.",
+  "topic": "transporti",
+  "age_band": "1-3",
+  "duration_seconds": 190,
+  "presenters": [
+    "lumi",
+    "pip"
+  ],
+  "type": "concept_song",
+  "package_level": "brief",
+  "status": "draft",
+  "video_asset": null
+}

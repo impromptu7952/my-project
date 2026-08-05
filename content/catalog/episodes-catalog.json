@@ -1,0 +1,1759 @@
+{
+  "version": "1",
+  "language": "sq",
+  "dialect": "standard_literary_albanian",
+  "audience": "ages_1_3_coview",
+  "cast": [
+    "lumi",
+    "pip",
+    "ari",
+    "kiki",
+    "mimoza"
+  ],
+  "topics": [
+    {
+      "slug": "pershendetjet",
+      "name_sq": "Përshëndetjet",
+      "name_en": "Greetings",
+      "description_sq": "Mirëmëngjesi, faleminderit dhe fjalë të ngrohta çdo ditë.",
+      "description_en": "Good morning, thank you, and warm everyday words.",
+      "skills": [
+        "language",
+        "social"
+      ],
+      "sort_order": 1
+    },
+    {
+      "slug": "fjalet-e-para",
+      "name_sq": "Fjalët e para",
+      "name_en": "First words",
+      "description_sq": "Fjalë të shkurtra me përsëritje dhe pauza.",
+      "description_en": "Short first words with repetition and pauses.",
+      "skills": [
+        "language",
+        "attention"
+      ],
+      "sort_order": 2
+    },
+    {
+      "slug": "ngjyrat",
+      "name_sq": "Ngjyrat",
+      "name_en": "Colors",
+      "description_sq": "Mësojmë ngjyrat bazë me këngë dhe lojëra.",
+      "description_en": "Learn basic colors with songs and play.",
+      "skills": [
+        "colors",
+        "language",
+        "attention"
+      ],
+      "sort_order": 3
+    },
+    {
+      "slug": "kafshet",
+      "name_sq": "Kafshët",
+      "name_en": "Animals",
+      "description_sq": "Kafshë të dashura dhe tingujt e tyre.",
+      "description_en": "Friendly animals and their sounds.",
+      "skills": [
+        "language",
+        "animals",
+        "music"
+      ],
+      "sort_order": 4
+    },
+    {
+      "slug": "pjeset-e-trupit",
+      "name_sq": "Pjesët e trupit",
+      "name_en": "Body parts",
+      "description_sq": "Emërtojmë pjesët e trupit me lëvizje.",
+      "description_en": "Name body parts with movement.",
+      "skills": [
+        "body_parts",
+        "motor",
+        "language"
+      ],
+      "sort_order": 5
+    },
+    {
+      "slug": "numrat",
+      "name_sq": "Numrat",
+      "name_en": "Numbers",
+      "description_sq": "Numërojmë deri në pesë me topa dhe këngë.",
+      "description_en": "Count to five with balls and songs.",
+      "skills": [
+        "counting",
+        "language",
+        "attention"
+      ],
+      "sort_order": 6
+    },
+    {
+      "slug": "format",
+      "name_sq": "Format",
+      "name_en": "Shapes",
+      "description_sq": "Rreth, katror, trekëndësh — me prekje dhe këngë.",
+      "description_en": "Circle, square, triangle — touch and sing.",
+      "skills": [
+        "shapes",
+        "language",
+        "attention"
+      ],
+      "sort_order": 7
+    },
+    {
+      "slug": "ndjenjat",
+      "name_sq": "Ndjenjat",
+      "name_en": "Feelings",
+      "description_sq": "Gëzuar, i trishtuar, i qetë — me Ariun e butë.",
+      "description_en": "Happy, sad, calm — with soft bear Ari.",
+      "skills": [
+        "sel",
+        "language",
+        "co_regulation"
+      ],
+      "sort_order": 8
+    },
+    {
+      "slug": "familja",
+      "name_sq": "Familja",
+      "name_en": "Family",
+      "description_sq": "Mama, baba, gjysh, gjyshe dhe përqafime.",
+      "description_en": "Mama, baba, grandparents, and hugs.",
+      "skills": [
+        "social",
+        "language",
+        "family"
+      ],
+      "sort_order": 9
+    },
+    {
+      "slug": "ushqimi",
+      "name_sq": "Ushqimi",
+      "name_en": "Food",
+      "description_sq": "Ujë, bukë, mollë — fjalë për tryezë.",
+      "description_en": "Water, bread, apple — mealtime words.",
+      "skills": [
+        "routine",
+        "language",
+        "food"
+      ],
+      "sort_order": 10
+    },
+    {
+      "slug": "rutina",
+      "name_sq": "Rutina e ditës",
+      "name_en": "Daily routine",
+      "description_sq": "Zgjohemi, lahemi, luajmë, pastrojmë.",
+      "description_en": "Wake, wash, play, clean up.",
+      "skills": [
+        "routine",
+        "sequence",
+        "language"
+      ],
+      "sort_order": 11
+    },
+    {
+      "slug": "levizja",
+      "name_sq": "Lëvizja",
+      "name_en": "Movement",
+      "description_sq": "Kërce, trokit, rrotullohu — me këngë të buta.",
+      "description_en": "Jump, stomp, spin — with gentle songs.",
+      "skills": [
+        "motor",
+        "music",
+        "language"
+      ],
+      "sort_order": 12
+    },
+    {
+      "slug": "natyra",
+      "name_sq": "Natyra",
+      "name_en": "Nature",
+      "description_sq": "Dielli, shiu, lulja — bota jashtë.",
+      "description_en": "Sun, rain, flower — the world outside.",
+      "skills": [
+        "nature",
+        "language",
+        "observation"
+      ],
+      "sort_order": 13
+    },
+    {
+      "slug": "transporti",
+      "name_sq": "Transporti",
+      "name_en": "Vehicles",
+      "description_sq": "Makina, autobusi, treni — bip bip!",
+      "description_en": "Car, bus, train — beep beep!",
+      "skills": [
+        "vehicles",
+        "sounds",
+        "language"
+      ],
+      "sort_order": 14
+    },
+    {
+      "slug": "historite",
+      "name_sq": "Historitë e vogla",
+      "name_en": "Little stories",
+      "description_sq": "Histori të shkurtra me Nënën Mimoza.",
+      "description_en": "Short stories with Nëna Mimoza.",
+      "skills": [
+        "narrative",
+        "calm",
+        "language"
+      ],
+      "sort_order": 15
+    },
+    {
+      "slug": "qetesia",
+      "name_sq": "Qetësia",
+      "name_en": "Calm & bedtime",
+      "description_sq": "Frymë e qetë, yje dhe natën e mirë.",
+      "description_en": "Calm breath, stars, and good night.",
+      "skills": [
+        "co_regulation",
+        "sleep",
+        "calm"
+      ],
+      "sort_order": 16
+    }
+  ],
+  "episodes": [
+    {
+      "slug": "pershendetjet-miremengjesi",
+      "topic": "pershendetjet",
+      "title_sq": "Mirëmëngjesi me Lumin",
+      "title_en": "Good morning with Lumi",
+      "summary_sq": "Kënga e mirëmëngjesit, valëvitje dhe fjalët: mirëmëngjesi, përshëndetje.",
+      "summary_en": "Morning song, waving, and the words good morning and hello.",
+      "age_band": "1-3",
+      "duration_seconds": 180,
+      "presenters": [
+        "lumi",
+        "pip"
+      ],
+      "type": "speech_song",
+      "goals": [
+        "Say or approximate mirëmëngjesi",
+        "Wave hello",
+        "Respond after pause"
+      ],
+      "vocabulary": [
+        {
+          "word": "mirëmëngjesi",
+          "en": "good morning"
+        },
+        {
+          "word": "përshëndetje",
+          "en": "hello"
+        },
+        {
+          "word": "valëvit",
+          "en": "wave"
+        }
+      ],
+      "package": "full",
+      "video_asset": "pilot-greetings.mp4",
+      "status": "published"
+    },
+    {
+      "slug": "pershendetjet-faleminderit",
+      "topic": "pershendetjet",
+      "title_sq": "Faleminderit dhe ju lutem",
+      "title_en": "Thank you and please",
+      "summary_sq": "Lumi dhe Pip praktikojnë faleminderit dhe ju lutem me lojë dhënie-marrje.",
+      "summary_en": "Lumi and Pip practice thank you and please with give-and-take play.",
+      "age_band": "1-3",
+      "duration_seconds": 200,
+      "presenters": [
+        "lumi",
+        "pip"
+      ],
+      "type": "speech_practice",
+      "goals": [
+        "Hear and try faleminderit",
+        "Practice give gesture",
+        "Social turn-taking"
+      ],
+      "vocabulary": [
+        {
+          "word": "faleminderit",
+          "en": "thank you"
+        },
+        {
+          "word": "ju lutem",
+          "en": "please"
+        },
+        {
+          "word": "ja",
+          "en": "here / look"
+        }
+      ],
+      "package": "brief",
+      "status": "draft"
+    },
+    {
+      "slug": "pershendetjet-mirupafshim",
+      "topic": "pershendetjet",
+      "title_sq": "Mirupafshim, miq!",
+      "title_en": "Goodbye, friends!",
+      "summary_sq": "Kënga e lamtumirës dhe valëvitja e dy duarve.",
+      "summary_en": "Goodbye song and two-handed wave.",
+      "age_band": "1-2",
+      "duration_seconds": 150,
+      "presenters": [
+        "lumi"
+      ],
+      "type": "speech_song",
+      "goals": [
+        "Wave goodbye",
+        "Hear mirupafshim repeatedly"
+      ],
+      "vocabulary": [
+        {
+          "word": "mirupafshim",
+          "en": "goodbye"
+        },
+        {
+          "word": "shihemë",
+          "en": "see you"
+        }
+      ],
+      "package": "brief",
+      "status": "draft"
+    },
+    {
+      "slug": "fjalet-mama-baba-po-jo",
+      "topic": "fjalet-e-para",
+      "title_sq": "Mama, baba, po, jo",
+      "title_en": "Mama, baba, yes, no",
+      "summary_sq": "Fjalë të para me përsëritje: mama, baba, po, jo. Ngadalë dhe me buzëqeshje.",
+      "summary_en": "First words with repetition: mama, baba, yes, no.",
+      "age_band": "1-2",
+      "duration_seconds": 240,
+      "presenters": [
+        "lumi"
+      ],
+      "type": "speech_practice",
+      "goals": [
+        "Imitate mama/baba",
+        "Nod for po",
+        "Shake head for jo"
+      ],
+      "vocabulary": [
+        {
+          "word": "mama",
+          "en": "mama"
+        },
+        {
+          "word": "baba",
+          "en": "dada"
+        },
+        {
+          "word": "po",
+          "en": "yes"
+        },
+        {
+          "word": "jo",
+          "en": "no"
+        }
+      ],
+      "package": "full",
+      "status": "published"
+    },
+    {
+      "slug": "fjalet-me-dhe-ja",
+      "topic": "fjalet-e-para",
+      "title_sq": "Më! dhe Ja!",
+      "title_en": "More! and Look!",
+      "summary_sq": "Fjalë fuqi: më (më shumë) dhe ja (shiko). Me gjeste.",
+      "summary_en": "Power words: more and look/here. With gestures.",
+      "age_band": "1-2",
+      "duration_seconds": 180,
+      "presenters": [
+        "lumi",
+        "pip"
+      ],
+      "type": "speech_practice",
+      "goals": [
+        "Use gesture for more",
+        "Point with ja"
+      ],
+      "vocabulary": [
+        {
+          "word": "më",
+          "en": "more"
+        },
+        {
+          "word": "ja",
+          "en": "look/here"
+        },
+        {
+          "word": "mjaft",
+          "en": "all done"
+        }
+      ],
+      "package": "full",
+      "status": "draft"
+    },
+    {
+      "slug": "fjalet-hap-mbyll",
+      "topic": "fjalet-e-para",
+      "title_sq": "Hap dhe mbyll",
+      "title_en": "Open and close",
+      "summary_sq": "Kuti magjike: hap! mbyll! me Pip brenda.",
+      "summary_en": "Magic box: open! close! with Pip inside.",
+      "age_band": "1-3",
+      "duration_seconds": 200,
+      "presenters": [
+        "lumi",
+        "pip"
+      ],
+      "type": "look_and_find",
+      "goals": [
+        "Say or sign open/close",
+        "Anticipate reveal"
+      ],
+      "vocabulary": [
+        {
+          "word": "hap",
+          "en": "open"
+        },
+        {
+          "word": "mbyll",
+          "en": "close"
+        },
+        {
+          "word": "kuti",
+          "en": "box"
+        }
+      ],
+      "package": "brief",
+      "status": "draft"
+    },
+    {
+      "slug": "ngjyrat-kuq-kalter-verdh-gjelber",
+      "topic": "ngjyrat",
+      "title_sq": "Ngjyrat: E kuqe, e kaltër, e verdhë, e gjelbër",
+      "title_en": "Colors: Red, blue, yellow, green",
+      "summary_sq": "Lumi këndon dhe tregon katër ngjyrat. Pastaj pyet: «Ku është topi i kuq?»",
+      "summary_en": "Lumi sings four colors, then asks where the red ball is.",
+      "age_band": "1-3",
+      "duration_seconds": 480,
+      "presenters": [
+        "lumi",
+        "pip"
+      ],
+      "type": "concept_song",
+      "goals": [
+        "Identify four basic colors in Albanian",
+        "Respond to Ku është…?"
+      ],
+      "vocabulary": [
+        {
+          "word": "e kuqe",
+          "en": "red"
+        },
+        {
+          "word": "e kaltër",
+          "en": "blue"
+        },
+        {
+          "word": "e verdhë",
+          "en": "yellow"
+        },
+        {
+          "word": "e gjelbër",
+          "en": "green"
+        },
+        {
+          "word": "topi",
+          "en": "ball"
+        }
+      ],
+      "package": "full",
+      "video_asset": "pilot-colors.mp4",
+      "status": "published"
+    },
+    {
+      "slug": "ngjyrat-e-kuqe",
+      "topic": "ngjyrat",
+      "title_sq": "Vetëm e kuqe!",
+      "title_en": "Only red!",
+      "summary_sq": "Një ngjyrë e thellë: e kuqe — top, mollë, zemër.",
+      "summary_en": "Deep dive: red — ball, apple, heart.",
+      "age_band": "1-2",
+      "duration_seconds": 200,
+      "presenters": [
+        "lumi"
+      ],
+      "type": "concept_song",
+      "goals": [
+        "Recognize red objects",
+        "Say e kuqe"
+      ],
+      "vocabulary": [
+        {
+          "word": "e kuqe",
+          "en": "red"
+        },
+        {
+          "word": "mollë",
+          "en": "apple"
+        },
+        {
+          "word": "zemër",
+          "en": "heart"
+        }
+      ],
+      "package": "full",
+      "status": "draft"
+    },
+    {
+      "slug": "ngjyrat-e-kalter",
+      "topic": "ngjyrat",
+      "title_sq": "E kaltër si qielli",
+      "title_en": "Blue like the sky",
+      "summary_sq": "E kaltër: qielli, topi, balona.",
+      "summary_en": "Blue: sky, ball, balloon.",
+      "age_band": "1-2",
+      "duration_seconds": 200,
+      "presenters": [
+        "lumi",
+        "pip"
+      ],
+      "type": "concept_song",
+      "goals": [
+        "Recognize blue",
+        "Point to blue prop"
+      ],
+      "vocabulary": [
+        {
+          "word": "e kaltër",
+          "en": "blue"
+        },
+        {
+          "word": "qielli",
+          "en": "sky"
+        },
+        {
+          "word": "balona",
+          "en": "balloon"
+        }
+      ],
+      "package": "brief",
+      "status": "draft"
+    },
+    {
+      "slug": "kafshet-qeni-dhe-macja",
+      "topic": "kafshet",
+      "title_sq": "Kafshët: Qeni dhe macja",
+      "title_en": "Animals: Dog and cat",
+      "summary_sq": "Qeni «ham ham» dhe macja «miau» me Kiki.",
+      "summary_en": "Dog woof and cat meow with Kiki.",
+      "age_band": "1-3",
+      "duration_seconds": 240,
+      "presenters": [
+        "lumi",
+        "kiki"
+      ],
+      "type": "animals",
+      "goals": [
+        "Imitate ham and miau",
+        "Name qeni and macja"
+      ],
+      "vocabulary": [
+        {
+          "word": "qeni",
+          "en": "dog"
+        },
+        {
+          "word": "macja",
+          "en": "cat"
+        },
+        {
+          "word": "ham",
+          "en": "woof"
+        },
+        {
+          "word": "miau",
+          "en": "meow"
+        }
+      ],
+      "package": "full",
+      "video_asset": "pilot-animals.mp4",
+      "status": "published"
+    },
+    {
+      "slug": "kafshet-ariu-dhe-zogjt",
+      "topic": "kafshet",
+      "title_sq": "Ariu dhe zogjtë",
+      "title_en": "Bear and birds",
+      "summary_sq": "Ari thotë rrr dhe Pip thotë pip-pip!",
+      "summary_en": "Ari says rrr and Pip says pip-pip!",
+      "age_band": "1-3",
+      "duration_seconds": 220,
+      "presenters": [
+        "lumi",
+        "ari",
+        "pip"
+      ],
+      "type": "animals",
+      "goals": [
+        "Imitate animal sounds",
+        "Gentle touch/care theme"
+      ],
+      "vocabulary": [
+        {
+          "word": "ariu",
+          "en": "bear"
+        },
+        {
+          "word": "zogu",
+          "en": "bird"
+        },
+        {
+          "word": "pip-pip",
+          "en": "chirp"
+        }
+      ],
+      "package": "brief",
+      "status": "draft"
+    },
+    {
+      "slug": "kafshet-ne-ferme",
+      "topic": "kafshet",
+      "title_sq": "Në fermë: lopë, dele, pulë",
+      "title_en": "On the farm: cow, sheep, hen",
+      "summary_sq": "Tinguj ferme të butë: muu, bee, kokoko.",
+      "summary_en": "Gentle farm sounds: moo, baa, cluck.",
+      "age_band": "1-3",
+      "duration_seconds": 280,
+      "presenters": [
+        "lumi",
+        "pip"
+      ],
+      "type": "animals",
+      "goals": [
+        "Imitate 3 farm sounds",
+        "Match sound to animal"
+      ],
+      "vocabulary": [
+        {
+          "word": "lopa",
+          "en": "cow"
+        },
+        {
+          "word": "delja",
+          "en": "sheep"
+        },
+        {
+          "word": "pula",
+          "en": "hen"
+        }
+      ],
+      "package": "brief",
+      "status": "draft"
+    },
+    {
+      "slug": "trupi-koka-duart-kembe",
+      "topic": "pjeset-e-trupit",
+      "title_sq": "Trupi: Koka, duart, këmbët",
+      "title_en": "Body: Head, hands, feet",
+      "summary_sq": "Prekim kokën, duart dhe këmbët me këngë dhe lëvizje.",
+      "summary_en": "Touch head, hands, and feet with song and movement.",
+      "age_band": "1-3",
+      "duration_seconds": 240,
+      "presenters": [
+        "lumi"
+      ],
+      "type": "body_move",
+      "goals": [
+        "Touch head/hands/feet on cue",
+        "Say body words"
+      ],
+      "vocabulary": [
+        {
+          "word": "koka",
+          "en": "head"
+        },
+        {
+          "word": "duart",
+          "en": "hands"
+        },
+        {
+          "word": "këmbët",
+          "en": "feet"
+        }
+      ],
+      "package": "full",
+      "status": "published"
+    },
+    {
+      "slug": "trupi-syte-hunda-goja",
+      "topic": "pjeset-e-trupit",
+      "title_sq": "Sytë, hunda, goja",
+      "title_en": "Eyes, nose, mouth",
+      "summary_sq": "Fytyra: prekim butësisht sytë, hundën, gojën.",
+      "summary_en": "Face: gently touch eyes, nose, mouth.",
+      "age_band": "1-3",
+      "duration_seconds": 200,
+      "presenters": [
+        "lumi",
+        "pip"
+      ],
+      "type": "body_move",
+      "goals": [
+        "Point to facial features",
+        "Gentle touch practice"
+      ],
+      "vocabulary": [
+        {
+          "word": "sytë",
+          "en": "eyes"
+        },
+        {
+          "word": "hunda",
+          "en": "nose"
+        },
+        {
+          "word": "goja",
+          "en": "mouth"
+        }
+      ],
+      "package": "brief",
+      "status": "draft"
+    },
+    {
+      "slug": "numrat-nje-dy-tre",
+      "topic": "numrat",
+      "title_sq": "Një, dy, tre!",
+      "title_en": "One, two, three!",
+      "summary_sq": "Numërojmë topa: një, dy, tre me pauza.",
+      "summary_en": "Count balls: one, two, three with pauses.",
+      "age_band": "1-3",
+      "duration_seconds": 220,
+      "presenters": [
+        "lumi",
+        "pip"
+      ],
+      "type": "concept_song",
+      "goals": [
+        "Count 1–3 aloud with adult",
+        "See quantity change"
+      ],
+      "vocabulary": [
+        {
+          "word": "një",
+          "en": "one"
+        },
+        {
+          "word": "dy",
+          "en": "two"
+        },
+        {
+          "word": "tre",
+          "en": "three"
+        }
+      ],
+      "package": "full",
+      "status": "draft"
+    },
+    {
+      "slug": "numrat-kater-pese",
+      "topic": "numrat",
+      "title_sq": "Katër dhe pesë",
+      "title_en": "Four and five",
+      "summary_sq": "Shtojmë gishta: katër, pesë — kënga e numrave.",
+      "summary_en": "Add fingers: four, five — counting song.",
+      "age_band": "2-3",
+      "duration_seconds": 220,
+      "presenters": [
+        "lumi"
+      ],
+      "type": "concept_song",
+      "goals": [
+        "Hear 1–5 sequence",
+        "Show fingers 4 and 5"
+      ],
+      "vocabulary": [
+        {
+          "word": "katër",
+          "en": "four"
+        },
+        {
+          "word": "pesë",
+          "en": "five"
+        }
+      ],
+      "package": "brief",
+      "status": "draft"
+    },
+    {
+      "slug": "format-rreth-katror",
+      "topic": "format",
+      "title_sq": "Rreth dhe katror",
+      "title_en": "Circle and square",
+      "summary_sq": "Prekim rrethin (rrotullo) dhe katrorin (katër anë).",
+      "summary_en": "Touch circle (roll) and square (four sides).",
+      "age_band": "2-3",
+      "duration_seconds": 210,
+      "presenters": [
+        "lumi",
+        "pip"
+      ],
+      "type": "concept_song",
+      "goals": [
+        "Discriminate circle vs square",
+        "Trace shapes in air"
+      ],
+      "vocabulary": [
+        {
+          "word": "rreth",
+          "en": "circle"
+        },
+        {
+          "word": "katror",
+          "en": "square"
+        }
+      ],
+      "package": "brief",
+      "status": "draft"
+    },
+    {
+      "slug": "format-trekendesh",
+      "topic": "format",
+      "title_sq": "Trekëndëshi",
+      "title_en": "The triangle",
+      "summary_sq": "Tre anë, tre cepa — trekëndësh!",
+      "summary_en": "Three sides, three corners — triangle!",
+      "age_band": "2-3",
+      "duration_seconds": 180,
+      "presenters": [
+        "lumi"
+      ],
+      "type": "concept_song",
+      "goals": [
+        "Recognize triangle",
+        "Count three sides with adult"
+      ],
+      "vocabulary": [
+        {
+          "word": "trekëndësh",
+          "en": "triangle"
+        },
+        {
+          "word": "anë",
+          "en": "side"
+        }
+      ],
+      "package": "brief",
+      "status": "draft"
+    },
+    {
+      "slug": "ndjenjat-gezim",
+      "topic": "ndjenjat",
+      "title_sq": "Jam gëzuar!",
+      "title_en": "I am happy!",
+      "summary_sq": "Ari dhe Lumi tregojnë gëzimin: buzëqeshje dhe kërcim i vogël.",
+      "summary_en": "Ari and Lumi show happiness: smile and little jump.",
+      "age_band": "1-3",
+      "duration_seconds": 200,
+      "presenters": [
+        "lumi",
+        "ari"
+      ],
+      "type": "feelings",
+      "goals": [
+        "Name gëzuar",
+        "Mirror smile"
+      ],
+      "vocabulary": [
+        {
+          "word": "gëzuar",
+          "en": "happy"
+        },
+        {
+          "word": "buzëqesh",
+          "en": "smile"
+        }
+      ],
+      "package": "full",
+      "status": "draft"
+    },
+    {
+      "slug": "ndjenjat-trishtim-dhe-perqafim",
+      "topic": "ndjenjat",
+      "title_sq": "I trishtuar? Përqafim!",
+      "title_en": "Sad? Hug!",
+      "summary_sq": "Kur jemi të trishtuar, kërkojmë përqafim dhe frymë të qetë.",
+      "summary_en": "When sad, we ask for a hug and a calm breath.",
+      "age_band": "1-3",
+      "duration_seconds": 240,
+      "presenters": [
+        "lumi",
+        "ari"
+      ],
+      "type": "feelings",
+      "goals": [
+        "Name i trishtuar",
+        "Request hug",
+        "Practice calm breath"
+      ],
+      "vocabulary": [
+        {
+          "word": "i trishtuar",
+          "en": "sad"
+        },
+        {
+          "word": "përqafim",
+          "en": "hug"
+        },
+        {
+          "word": "frymë",
+          "en": "breath"
+        }
+      ],
+      "package": "full",
+      "status": "draft"
+    },
+    {
+      "slug": "ndjenjat-frika-e-vogel",
+      "topic": "ndjenjat",
+      "title_sq": "Frika e vogël",
+      "title_en": "A little fear",
+      "summary_sq": "Tingull i papritur i butë — Ari frikësohet, Lumi qetëson.",
+      "summary_en": "A soft surprise sound — Ari is scared, Lumi soothes.",
+      "age_band": "2-3",
+      "duration_seconds": 220,
+      "presenters": [
+        "lumi",
+        "ari"
+      ],
+      "type": "feelings",
+      "goals": [
+        "Name i frikësuar",
+        "Use calm strategy"
+      ],
+      "vocabulary": [
+        {
+          "word": "i frikësuar",
+          "en": "scared"
+        },
+        {
+          "word": "në rregull",
+          "en": "it's okay"
+        }
+      ],
+      "package": "brief",
+      "status": "draft"
+    },
+    {
+      "slug": "familja-mama-dhe-baba",
+      "topic": "familja",
+      "title_sq": "Mama dhe baba",
+      "title_en": "Mama and baba",
+      "summary_sq": "Foto të buta, fjalë mama/baba, përqafime.",
+      "summary_en": "Soft photos, mama/baba words, hugs.",
+      "age_band": "1-2",
+      "duration_seconds": 180,
+      "presenters": [
+        "lumi"
+      ],
+      "type": "speech_practice",
+      "goals": [
+        "Say mama/baba",
+        "Point to caregiver if present"
+      ],
+      "vocabulary": [
+        {
+          "word": "mama",
+          "en": "mama"
+        },
+        {
+          "word": "baba",
+          "en": "baba"
+        },
+        {
+          "word": "dashuri",
+          "en": "love"
+        }
+      ],
+      "package": "brief",
+      "status": "draft"
+    },
+    {
+      "slug": "familja-gjysh-gjyshe",
+      "topic": "familja",
+      "title_sq": "Gjyshi dhe gjyshja",
+      "title_en": "Grandpa and grandma",
+      "summary_sq": "Nëna Mimoza na njeh me gjysh e gjyshe.",
+      "summary_en": "Nëna Mimoza introduces grandpa and grandma words.",
+      "age_band": "1-3",
+      "duration_seconds": 200,
+      "presenters": [
+        "mimoza",
+        "lumi"
+      ],
+      "type": "storylet",
+      "goals": [
+        "Hear gjysh/gjyshe",
+        "Warm family recognition"
+      ],
+      "vocabulary": [
+        {
+          "word": "gjyshi",
+          "en": "grandpa"
+        },
+        {
+          "word": "gjyshja",
+          "en": "grandma"
+        }
+      ],
+      "package": "brief",
+      "status": "draft"
+    },
+    {
+      "slug": "ushqimi-uje-dhe-buke",
+      "topic": "ushqimi",
+      "title_sq": "Ujë dhe bukë",
+      "title_en": "Water and bread",
+      "summary_sq": "Fjalë tryeze: ujë, bukë, ha, pi.",
+      "summary_en": "Meal words: water, bread, eat, drink.",
+      "age_band": "1-3",
+      "duration_seconds": 200,
+      "presenters": [
+        "lumi"
+      ],
+      "type": "routine",
+      "goals": [
+        "Request ujë with word/gesture",
+        "Name bukë"
+      ],
+      "vocabulary": [
+        {
+          "word": "ujë",
+          "en": "water"
+        },
+        {
+          "word": "bukë",
+          "en": "bread"
+        },
+        {
+          "word": "ha",
+          "en": "eat"
+        },
+        {
+          "word": "pi",
+          "en": "drink"
+        }
+      ],
+      "package": "full",
+      "status": "draft"
+    },
+    {
+      "slug": "ushqimi-fruta",
+      "topic": "ushqimi",
+      "title_sq": "Fruta: mollë dhe banane",
+      "title_en": "Fruit: apple and banana",
+      "summary_sq": "Ngjyra + ushqim: mollë e kuqe, banane e verdhë.",
+      "summary_en": "Color + food: red apple, yellow banana.",
+      "age_band": "1-3",
+      "duration_seconds": 210,
+      "presenters": [
+        "lumi",
+        "pip"
+      ],
+      "type": "concept_song",
+      "goals": [
+        "Name mollë and banane",
+        "Link color words"
+      ],
+      "vocabulary": [
+        {
+          "word": "mollë",
+          "en": "apple"
+        },
+        {
+          "word": "banane",
+          "en": "banana"
+        }
+      ],
+      "package": "brief",
+      "status": "draft"
+    },
+    {
+      "slug": "rutina-zgjimi",
+      "topic": "rutina",
+      "title_sq": "Zgjohemi!",
+      "title_en": "We wake up!",
+      "summary_sq": "Hapat e mëngjesit: zgjohem, shtrihem, laj fytyrën.",
+      "summary_en": "Morning steps: wake, stretch, wash face.",
+      "age_band": "1-3",
+      "duration_seconds": 220,
+      "presenters": [
+        "lumi",
+        "pip"
+      ],
+      "type": "routine",
+      "goals": [
+        "Follow 3-step morning sequence",
+        "Stretch with video"
+      ],
+      "vocabulary": [
+        {
+          "word": "zgjohem",
+          "en": "I wake"
+        },
+        {
+          "word": "shtrihem",
+          "en": "I stretch"
+        },
+        {
+          "word": "laj",
+          "en": "wash"
+        }
+      ],
+      "package": "brief",
+      "status": "draft"
+    },
+    {
+      "slug": "rutina-pastrimi",
+      "topic": "rutina",
+      "title_sq": "Pastrojmë lodrat",
+      "title_en": "We clean up toys",
+      "summary_sq": "Kënga e pastrimit: lodrat në kuti!",
+      "summary_en": "Clean-up song: toys in the box!",
+      "age_band": "1-3",
+      "duration_seconds": 180,
+      "presenters": [
+        "lumi",
+        "ari"
+      ],
+      "type": "routine",
+      "goals": [
+        "Join clean-up song",
+        "Put one toy in box with adult"
+      ],
+      "vocabulary": [
+        {
+          "word": "pastro",
+          "en": "clean"
+        },
+        {
+          "word": "lodra",
+          "en": "toys"
+        },
+        {
+          "word": "kuti",
+          "en": "box"
+        }
+      ],
+      "package": "brief",
+      "status": "draft"
+    },
+    {
+      "slug": "levizja-kerce-trokit",
+      "topic": "levizja",
+      "title_sq": "Kërce dhe trokit",
+      "title_en": "Jump and stomp",
+      "summary_sq": "Këngë lëvizjeje: kërce, trokit, rrotullohu — ngadalë.",
+      "summary_en": "Movement song: jump, stomp, spin — slowly.",
+      "age_band": "1-3",
+      "duration_seconds": 200,
+      "presenters": [
+        "lumi",
+        "pip"
+      ],
+      "type": "body_move",
+      "goals": [
+        "Imitate gross motor actions",
+        "Stop on freeze cue"
+      ],
+      "vocabulary": [
+        {
+          "word": "kërce",
+          "en": "jump"
+        },
+        {
+          "word": "trokit",
+          "en": "stomp"
+        },
+        {
+          "word": "ndalo",
+          "en": "stop"
+        }
+      ],
+      "package": "full",
+      "status": "draft"
+    },
+    {
+      "slug": "levizja-duart-lart",
+      "topic": "levizja",
+      "title_sq": "Duart lart!",
+      "title_en": "Hands up!",
+      "summary_sq": "Duart lart, duart poshtë, duart bashkë.",
+      "summary_en": "Hands up, hands down, hands together.",
+      "age_band": "1-2",
+      "duration_seconds": 160,
+      "presenters": [
+        "lumi"
+      ],
+      "type": "body_move",
+      "goals": [
+        "Follow up/down directions",
+        "Clap together"
+      ],
+      "vocabulary": [
+        {
+          "word": "lart",
+          "en": "up"
+        },
+        {
+          "word": "poshtë",
+          "en": "down"
+        },
+        {
+          "word": "bashkë",
+          "en": "together"
+        }
+      ],
+      "package": "brief",
+      "status": "draft"
+    },
+    {
+      "slug": "natyra-dielli",
+      "topic": "natyra",
+      "title_sq": "Dielli shkëlqen",
+      "title_en": "The sun shines",
+      "summary_sq": "Dielli, drita, ngrohtësia — fjalë natyre.",
+      "summary_en": "Sun, light, warmth — nature words.",
+      "age_band": "1-3",
+      "duration_seconds": 180,
+      "presenters": [
+        "lumi",
+        "pip"
+      ],
+      "type": "concept_song",
+      "goals": [
+        "Say dielli",
+        "Associate sun with warm"
+      ],
+      "vocabulary": [
+        {
+          "word": "dielli",
+          "en": "sun"
+        },
+        {
+          "word": "nxehtë",
+          "en": "warm/hot"
+        },
+        {
+          "word": "dritë",
+          "en": "light"
+        }
+      ],
+      "package": "brief",
+      "status": "draft"
+    },
+    {
+      "slug": "natyra-shiu",
+      "topic": "natyra",
+      "title_sq": "Shiu i butë",
+      "title_en": "Gentle rain",
+      "summary_sq": "Pik-pik shiu, çadra, kërcim në pellgje (me prind).",
+      "summary_en": "Drip-drip rain, umbrella, puddle jumps (with parent).",
+      "age_band": "1-3",
+      "duration_seconds": 200,
+      "presenters": [
+        "lumi"
+      ],
+      "type": "concept_song",
+      "goals": [
+        "Hear shiu",
+        "Finger rain motion"
+      ],
+      "vocabulary": [
+        {
+          "word": "shiu",
+          "en": "rain"
+        },
+        {
+          "word": "çadra",
+          "en": "umbrella"
+        },
+        {
+          "word": "pik-pik",
+          "en": "drip-drip"
+        }
+      ],
+      "package": "brief",
+      "status": "draft"
+    },
+    {
+      "slug": "natyra-lulja",
+      "topic": "natyra",
+      "title_sq": "Lulja e vogël",
+      "title_en": "The little flower",
+      "summary_sq": "Lule, erë e ëmbël, ngjyra — kujdes i butë.",
+      "summary_en": "Flower, sweet smell, color — gentle care.",
+      "age_band": "1-3",
+      "duration_seconds": 180,
+      "presenters": [
+        "lumi",
+        "kiki"
+      ],
+      "type": "storylet",
+      "goals": [
+        "Say lule",
+        "Gentle touch theme"
+      ],
+      "vocabulary": [
+        {
+          "word": "lule",
+          "en": "flower"
+        },
+        {
+          "word": "erë",
+          "en": "smell"
+        }
+      ],
+      "package": "brief",
+      "status": "draft"
+    },
+    {
+      "slug": "transporti-makina",
+      "topic": "transporti",
+      "title_sq": "Makina: bip bip!",
+      "title_en": "Car: beep beep!",
+      "summary_sq": "Makina e kuqe shkon bip bip! Vroom i butë.",
+      "summary_en": "Red car goes beep beep! Soft vroom.",
+      "age_band": "1-3",
+      "duration_seconds": 190,
+      "presenters": [
+        "lumi",
+        "pip"
+      ],
+      "type": "concept_song",
+      "goals": [
+        "Imitate bip bip",
+        "Say makinë"
+      ],
+      "vocabulary": [
+        {
+          "word": "makina",
+          "en": "car"
+        },
+        {
+          "word": "bip bip",
+          "en": "beep beep"
+        }
+      ],
+      "package": "brief",
+      "status": "draft"
+    },
+    {
+      "slug": "transporti-autobusi",
+      "topic": "transporti",
+      "title_sq": "Autobusi i madh",
+      "title_en": "The big bus",
+      "summary_sq": "Autobusi vjen, ndalet, dyert hapen.",
+      "summary_en": "Bus comes, stops, doors open.",
+      "age_band": "1-3",
+      "duration_seconds": 200,
+      "presenters": [
+        "lumi"
+      ],
+      "type": "concept_song",
+      "goals": [
+        "Say autobus",
+        "Practice hap/mbyll with doors"
+      ],
+      "vocabulary": [
+        {
+          "word": "autobusi",
+          "en": "bus"
+        },
+        {
+          "word": "ndalo",
+          "en": "stop"
+        },
+        {
+          "word": "derë",
+          "en": "door"
+        }
+      ],
+      "package": "brief",
+      "status": "draft"
+    },
+    {
+      "slug": "historite-topi-i-humbyer",
+      "topic": "historite",
+      "title_sq": "Topi i humbur",
+      "title_en": "The lost ball",
+      "summary_sq": "Nëna Mimoza tregon: Ari humb topin, Lumi e gjen. Tre rrahje.",
+      "summary_en": "Mimoza tells: Ari loses a ball, Lumi finds it. Three beats.",
+      "age_band": "2-3",
+      "duration_seconds": 300,
+      "presenters": [
+        "mimoza",
+        "ari",
+        "lumi"
+      ],
+      "type": "storylet",
+      "goals": [
+        "Follow simple story arc",
+        "Celebrate finding"
+      ],
+      "vocabulary": [
+        {
+          "word": "topi",
+          "en": "ball"
+        },
+        {
+          "word": "ku",
+          "en": "where"
+        },
+        {
+          "word": "gjej",
+          "en": "find"
+        }
+      ],
+      "package": "full",
+      "status": "draft"
+    },
+    {
+      "slug": "historite-pip-dhe-shiu",
+      "topic": "historite",
+      "title_sq": "Pip dhe shiu",
+      "title_en": "Pip and the rain",
+      "summary_sq": "Pip frikësohet nga shiu, pastaj kërcen në pellgje me miqtë.",
+      "summary_en": "Pip fears rain, then puddle-jumps with friends.",
+      "age_band": "2-3",
+      "duration_seconds": 280,
+      "presenters": [
+        "mimoza",
+        "pip",
+        "lumi"
+      ],
+      "type": "storylet",
+      "goals": [
+        "Story listening",
+        "Feelings → brave"
+      ],
+      "vocabulary": [
+        {
+          "word": "shiu",
+          "en": "rain"
+        },
+        {
+          "word": "guxim",
+          "en": "courage"
+        }
+      ],
+      "package": "brief",
+      "status": "draft"
+    },
+    {
+      "slug": "qetesia-fryma",
+      "topic": "qetesia",
+      "title_sq": "Frymë e qetë",
+      "title_en": "Calm breath",
+      "summary_sq": "Lumi dhe Ari thithin ngadalë si lulja, nxjerrin si era.",
+      "summary_en": "Lumi and Ari breathe in like a flower, out like wind.",
+      "age_band": "1-3",
+      "duration_seconds": 200,
+      "presenters": [
+        "lumi",
+        "ari"
+      ],
+      "type": "calm",
+      "goals": [
+        "Practice 3 slow breaths",
+        "Lower arousal"
+      ],
+      "vocabulary": [
+        {
+          "word": "frymë",
+          "en": "breath"
+        },
+        {
+          "word": "ngadalë",
+          "en": "slowly"
+        },
+        {
+          "word": "qetë",
+          "en": "calm"
+        }
+      ],
+      "package": "full",
+      "status": "draft"
+    },
+    {
+      "slug": "qetesia-nate-e-mire",
+      "topic": "qetesia",
+      "title_sq": "Natën e mirë, yje",
+      "title_en": "Good night, stars",
+      "summary_sq": "Nëna Mimoza këndon natën e mirë. Drita zbehet. Yje.",
+      "summary_en": "Mimoza sings good night. Lights dim. Stars.",
+      "age_band": "1-3",
+      "duration_seconds": 360,
+      "presenters": [
+        "mimoza",
+        "ari"
+      ],
+      "type": "calm",
+      "goals": [
+        "Wind down for sleep",
+        "Hear natën e mirë"
+      ],
+      "vocabulary": [
+        {
+          "word": "natën e mirë",
+          "en": "good night"
+        },
+        {
+          "word": "yje",
+          "en": "stars"
+        },
+        {
+          "word": "fle",
+          "en": "sleep"
+        }
+      ],
+      "package": "full",
+      "status": "draft"
+    },
+    {
+      "slug": "qetesia-perqafimi-i-arit",
+      "topic": "qetesia",
+      "title_sq": "Përqafimi i Arit",
+      "title_en": "Ari's hug",
+      "summary_sq": "Ari jep përqafime të buta. Mbyllim sytë një çast.",
+      "summary_en": "Ari gives soft hugs. We close our eyes a moment.",
+      "age_band": "1-2",
+      "duration_seconds": 160,
+      "presenters": [
+        "ari",
+        "lumi"
+      ],
+      "type": "calm",
+      "goals": [
+        "Seek comfort object/hug",
+        "Quiet co-view"
+      ],
+      "vocabulary": [
+        {
+          "word": "përqafim",
+          "en": "hug"
+        },
+        {
+          "word": "butë",
+          "en": "soft"
+        }
+      ],
+      "package": "brief",
+      "status": "draft"
+    },
+    {
+      "slug": "fjalet-uje",
+      "topic": "fjalet-e-para",
+      "title_sq": "Ujë! Ujë!",
+      "title_en": "Water! Water!",
+      "summary_sq": "Një fjalë fuqi e përditshme: ujë — me gotë dhe gjest.",
+      "summary_en": "One daily power word: water — cup and gesture.",
+      "age_band": "1-2",
+      "duration_seconds": 150,
+      "presenters": [
+        "lumi"
+      ],
+      "type": "speech_practice",
+      "goals": [
+        "Request water with word or gesture"
+      ],
+      "vocabulary": [
+        {
+          "word": "ujë",
+          "en": "water"
+        },
+        {
+          "word": "gotë",
+          "en": "cup"
+        }
+      ],
+      "package": "brief",
+      "status": "draft"
+    },
+    {
+      "slug": "ngjyrat-e-verdh-e-gjelber",
+      "topic": "ngjyrat",
+      "title_sq": "E verdhë dhe e gjelbër",
+      "title_en": "Yellow and green",
+      "summary_sq": "Diell i verdhë, gjethe e gjelbër — dy ngjyra.",
+      "summary_en": "Yellow sun, green leaf — two colors.",
+      "age_band": "1-3",
+      "duration_seconds": 200,
+      "presenters": [
+        "lumi",
+        "pip"
+      ],
+      "type": "concept_song",
+      "goals": [
+        "Distinguish yellow vs green",
+        "Point on prompt"
+      ],
+      "vocabulary": [
+        {
+          "word": "e verdhë",
+          "en": "yellow"
+        },
+        {
+          "word": "e gjelbër",
+          "en": "green"
+        },
+        {
+          "word": "gjethe",
+          "en": "leaf"
+        }
+      ],
+      "package": "brief",
+      "status": "draft"
+    },
+    {
+      "slug": "kafshet-miau-me-kiki",
+      "topic": "kafshet",
+      "title_sq": "Miau me Kiki",
+      "title_en": "Meow with Kiki",
+      "summary_sq": "Kiki fshihet dhe thotë miau — lojë fshehje-gjetje.",
+      "summary_en": "Kiki hides and says meow — peekaboo game.",
+      "age_band": "1-2",
+      "duration_seconds": 180,
+      "presenters": [
+        "lumi",
+        "kiki"
+      ],
+      "type": "animals",
+      "goals": [
+        "Anticipate reveal",
+        "Say miau"
+      ],
+      "vocabulary": [
+        {
+          "word": "miau",
+          "en": "meow"
+        },
+        {
+          "word": "ku je",
+          "en": "where are you"
+        },
+        {
+          "word": "ja",
+          "en": "here"
+        }
+      ],
+      "package": "full",
+      "status": "draft"
+    },
+    {
+      "slug": "pershendetjet-si-je",
+      "topic": "pershendetjet",
+      "title_sq": "Si je?",
+      "title_en": "How are you?",
+      "summary_sq": "Pyetja e ngrohtë: Si je? — mirë! me buzëqeshje.",
+      "summary_en": "Warm question: How are you? — fine! with a smile.",
+      "age_band": "2-3",
+      "duration_seconds": 180,
+      "presenters": [
+        "lumi",
+        "pip"
+      ],
+      "type": "speech_practice",
+      "goals": [
+        "Respond to Si je?",
+        "Say mirë"
+      ],
+      "vocabulary": [
+        {
+          "word": "si je",
+          "en": "how are you"
+        },
+        {
+          "word": "mirë",
+          "en": "well/fine"
+        }
+      ],
+      "package": "brief",
+      "status": "draft"
+    },
+    {
+      "slug": "numrat-topat-pese",
+      "topic": "numrat",
+      "title_sq": "Pesë topa me ngjyra",
+      "title_en": "Five colored balls",
+      "summary_sq": "Numërojmë pesë topa dhe i emërtojmë ngjyrat.",
+      "summary_en": "Count five balls and name their colors.",
+      "age_band": "2-3",
+      "duration_seconds": 260,
+      "presenters": [
+        "lumi",
+        "pip"
+      ],
+      "type": "concept_song",
+      "goals": [
+        "Count 1–5",
+        "Recycle color vocab"
+      ],
+      "vocabulary": [
+        {
+          "word": "pesë",
+          "en": "five"
+        },
+        {
+          "word": "topa",
+          "en": "balls"
+        }
+      ],
+      "package": "brief",
+      "status": "draft"
+    },
+    {
+      "slug": "special-miresevini-ne-playzone",
+      "topic": "pershendetjet",
+      "title_sq": "Mirësevini në PlayZone!",
+      "title_en": "Welcome to PlayZone!",
+      "summary_sq": "Speciali i sezonit: Lumi, Pip, Ari, Kiki dhe Nëna Mimoza thonë përshëndetje.",
+      "summary_en": "Season special: full cast says hello.",
+      "age_band": "1-3",
+      "duration_seconds": 300,
+      "presenters": [
+        "lumi",
+        "pip",
+        "ari",
+        "kiki",
+        "mimoza"
+      ],
+      "type": "special",
+      "goals": [
+        "Meet the cast",
+        "Wave hello",
+        "Brand ritual lock-in"
+      ],
+      "vocabulary": [
+        {
+          "word": "përshëndetje",
+          "en": "hello"
+        },
+        {
+          "word": "miq",
+          "en": "friends"
+        },
+        {
+          "word": "PlayZone",
+          "en": "PlayZone"
+        }
+      ],
+      "package": "full",
+      "status": "draft"
+    }
+  ]
+}

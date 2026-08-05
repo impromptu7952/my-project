@@ -1,0 +1,63 @@
+{
+  "version": "1",
+  "language": "sq",
+  "age_band": "1-3",
+  "episode_slug": "pershendetjet-faleminderit",
+  "learning_goals": [
+    "Hear and try faleminderit",
+    "Practice give gesture",
+    "Social turn-taking"
+  ],
+  "vocabulary": [
+    {
+      "word": "faleminderit",
+      "en": "thank you"
+    },
+    {
+      "word": "ju lutem",
+      "en": "please"
+    },
+    {
+      "word": "ja",
+      "en": "here / look"
+    }
+  ],
+  "structure": [
+    {
+      "block": "hello_ritual",
+      "duration_seconds": 30
+    },
+    {
+      "block": "teach",
+      "duration_seconds": 100
+    },
+    {
+      "block": "interactive",
+      "duration_seconds": 40
+    },
+    {
+      "block": "goodbye_ritual",
+      "duration_seconds": 25
+    }
+  ],
+  "principles": {
+    "short_phrases": true,
+    "pause_seconds": 5,
+    "parentese": true,
+    "gesture_with_words": true,
+    "max_new_words": 6
+  },
+  "presenters": [
+    "lumi",
+    "pip"
+  ],
+  "content_type": "speech_practice",
+  "co_play_tip_sq": "Pauzoni videon pas çdo pyetjeje. Përsëriteni fjalët me objekte reale.",
+  "co_play_tip_en": "Pause after every question. Repeat words with real objects in the room.",
+  "outputs_required": [
+    "script",
+    "storyboard",
+    "subtitles_vtt",
+    "vo_script"
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "slug": "transporti-autobusi",
+  "title_sq": "Autobusi i madh",
+  "title_en": "The big bus",
+  "summary_sq": "Autobusi vjen, ndalet, dyert hapen.",
+  "summary_en": "Bus comes, stops, doors open.",
+  "topic": "transporti",
+  "age_band": "1-3",
+  "duration_seconds": 200,
+  "presenters": [
+    "lumi"
+  ],
+  "type": "concept_song",
+  "package_level": "brief",
+  "status": "draft",
+  "video_asset": null
+}

@@ -1,0 +1,18 @@
+{
+  "slug": "ndjenjat-gezim",
+  "title_sq": "Jam gëzuar!",
+  "title_en": "I am happy!",
+  "summary_sq": "Ari dhe Lumi tregojnë gëzimin: buzëqeshje dhe kërcim i vogël.",
+  "summary_en": "Ari and Lumi show happiness: smile and little jump.",
+  "topic": "ndjenjat",
+  "age_band": "1-3",
+  "duration_seconds": 200,
+  "presenters": [
+    "lumi",
+    "ari"
+  ],
+  "type": "feelings",
+  "package_level": "full",
+  "status": "draft",
+  "video_asset": null
+}

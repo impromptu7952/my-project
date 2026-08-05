@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Studio;
 
+use App\Actions\Media\ResolveStudioPlayback;
 use App\Actions\Production\BuildPublishChecklist;
 use App\Actions\Production\SummarizeRunUsage;
 use App\Enums\ArtifactKind;
+use App\Enums\EpisodeStatus;
 use App\Enums\ProductionStage;
 use App\Http\Controllers\Controller;
 use App\Models\AgentProfile;
@@ -22,6 +24,7 @@ final class ProductionRunController extends Controller
         ProductionRun $run,
         SummarizeRunUsage $summarizeUsage,
         BuildPublishChecklist $buildChecklist,
+        ResolveStudioPlayback $resolveStudioPlayback,
     ): Response {
 
         $run->load(['productionSpec', 'artifacts', 'starter']);
@@ -55,6 +58,52 @@ final class ProductionRunController extends Controller
         $episode = $episodeSlug
             ? Episode::query()->where('slug', $episodeSlug)->with('mediaAssets')->first()
             : null;
+
+        $packageVtt = null;
+        $vttArtifact = $latestByKind[ArtifactKind::SubtitlesVtt->value] ?? null;
+        if ($vttArtifact !== null && is_array($vttArtifact->payload)) {
+            $candidate = $vttArtifact->payload['vtt']
+                ?? $vttArtifact->payload['subtitles_vtt']
+                ?? null;
+            if (is_string($candidate) && str_contains($candidate, 'WEBVTT')) {
+                $packageVtt = $candidate;
+            }
+        }
+
+        $episodeMedia = null;
+        $episodePreview = null;
+        if ($episode !== null) {
+            $playback = $resolveStudioPlayback->handle($episode);
+            $locale = app()->getLocale();
+            $media = $episode->mediaAssets->map(fn ($m) => [
+                'id' => $m->id,
+                'kind' => $m->kind->value,
+                'mimeType' => $m->mime_type,
+                'sizeBytes' => $m->size_bytes,
+                'url' => $m->studioUrl(),
+                'updatedAt' => $m->updated_at?->toIso8601String(),
+            ])->values();
+
+            $episodeMedia = [
+                'slug' => $episode->slug,
+                'media' => $media,
+            ];
+
+            $episodePreview = [
+                'slug' => $episode->slug,
+                'title' => $episode->localizedTitle($locale),
+                'status' => $episode->status->value,
+                'ageBand' => $episode->age_band?->value,
+                'durationSeconds' => $episode->duration_seconds,
+                'hubHref' => route('studio.episodes.show', $episode),
+                'publicHref' => $episode->status === EpisodeStatus::Published
+                    ? route('videos.show', $episode)
+                    : null,
+                'playback' => $playback,
+                'packageVtt' => $packageVtt,
+                'media' => $media,
+            ];
+        }
 
         return Inertia::render('studio/runs/show', [
             'run' => [
@@ -99,16 +148,8 @@ final class ProductionRunController extends Controller
             'xaiConfigured' => app(XaiClient::class)->isConfigured(),
             'usage' => $summarizeUsage->handle($run),
             'publishChecklist' => $buildChecklist->handle($run),
-            'episodeMedia' => $episode ? [
-                'slug' => $episode->slug,
-                'media' => $episode->mediaAssets->map(fn ($m) => [
-                    'id' => $m->id,
-                    'kind' => $m->kind->value,
-                    'mimeType' => $m->mime_type,
-                    'sizeBytes' => $m->size_bytes,
-                    'url' => $m->studioUrl(),
-                ]),
-            ] : null,
+            'episodeMedia' => $episodeMedia,
+            'episodePreview' => $episodePreview,
         ]);
     }
 

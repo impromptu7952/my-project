@@ -1,0 +1,17 @@
+{
+  "slug": "levizja-duart-lart",
+  "title_sq": "Duart lart!",
+  "title_en": "Hands up!",
+  "summary_sq": "Duart lart, duart poshtë, duart bashkë.",
+  "summary_en": "Hands up, hands down, hands together.",
+  "topic": "levizja",
+  "age_band": "1-2",
+  "duration_seconds": 160,
+  "presenters": [
+    "lumi"
+  ],
+  "type": "body_move",
+  "package_level": "brief",
+  "status": "draft",
+  "video_asset": null
+}

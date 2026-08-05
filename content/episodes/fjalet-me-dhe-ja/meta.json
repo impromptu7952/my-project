@@ -1,0 +1,18 @@
+{
+  "slug": "fjalet-me-dhe-ja",
+  "title_sq": "Më! dhe Ja!",
+  "title_en": "More! and Look!",
+  "summary_sq": "Fjalë fuqi: më (më shumë) dhe ja (shiko). Me gjeste.",
+  "summary_en": "Power words: more and look/here. With gestures.",
+  "topic": "fjalet-e-para",
+  "age_band": "1-2",
+  "duration_seconds": 180,
+  "presenters": [
+    "lumi",
+    "pip"
+  ],
+  "type": "speech_practice",
+  "package_level": "full",
+  "status": "draft",
+  "video_asset": null
+}

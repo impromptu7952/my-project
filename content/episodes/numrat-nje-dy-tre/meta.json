@@ -1,0 +1,18 @@
+{
+  "slug": "numrat-nje-dy-tre",
+  "title_sq": "Një, dy, tre!",
+  "title_en": "One, two, three!",
+  "summary_sq": "Numërojmë topa: një, dy, tre me pauza.",
+  "summary_en": "Count balls: one, two, three with pauses.",
+  "topic": "numrat",
+  "age_band": "1-3",
+  "duration_seconds": 220,
+  "presenters": [
+    "lumi",
+    "pip"
+  ],
+  "type": "concept_song",
+  "package_level": "full",
+  "status": "draft",
+  "video_asset": null
+}

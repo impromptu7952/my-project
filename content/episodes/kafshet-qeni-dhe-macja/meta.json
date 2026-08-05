@@ -1,0 +1,18 @@
+{
+  "slug": "kafshet-qeni-dhe-macja",
+  "title_sq": "Kafshët: Qeni dhe macja",
+  "title_en": "Animals: Dog and cat",
+  "summary_sq": "Qeni «ham ham» dhe macja «miau» me Kiki.",
+  "summary_en": "Dog woof and cat meow with Kiki.",
+  "topic": "kafshet",
+  "age_band": "1-3",
+  "duration_seconds": 240,
+  "presenters": [
+    "lumi",
+    "kiki"
+  ],
+  "type": "animals",
+  "package_level": "full",
+  "status": "published",
+  "video_asset": "pilot-animals.mp4"
+}

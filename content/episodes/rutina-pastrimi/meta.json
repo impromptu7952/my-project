@@ -1,0 +1,18 @@
+{
+  "slug": "rutina-pastrimi",
+  "title_sq": "Pastrojmë lodrat",
+  "title_en": "We clean up toys",
+  "summary_sq": "Kënga e pastrimit: lodrat në kuti!",
+  "summary_en": "Clean-up song: toys in the box!",
+  "topic": "rutina",
+  "age_band": "1-3",
+  "duration_seconds": 180,
+  "presenters": [
+    "lumi",
+    "ari"
+  ],
+  "type": "routine",
+  "package_level": "brief",
+  "status": "draft",
+  "video_asset": null
+}
