@@ -47,15 +47,44 @@ final readonly class ShowPublishedEpisode
                 'ageBand' => $episode->age_band?->value ?? '1-3',
                 'topicName' => $episode->series?->topic?->localizedName($locale),
                 'topicSlug' => $episode->series?->topic?->slug,
+                'topicHref' => $episode->series?->topic
+                    ? route('topics.show', $episode->series->topic)
+                    : null,
                 'seriesTitle' => $episode->series?->localizedTitle($locale),
+                'seriesHref' => $episode->series
+                    ? route('series.show', $episode->series)
+                    : null,
             ],
             'playback' => $playback,
             'linkedGames' => $linkedGames,
+            'coPlayTips' => $this->coPlayTips($locale),
             'nextEpisode' => $nextEpisode ? [
                 'slug' => $nextEpisode->slug,
                 'title' => $nextEpisode->localizedTitle($locale),
                 'href' => route('videos.show', $nextEpisode),
             ] : null,
+        ];
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function coPlayTips(string $locale): array
+    {
+        if ($locale === 'en') {
+            return [
+                'Sit together and name what you see out loud.',
+                'Pause after questions — wait 3–5 seconds for a response.',
+                'Clap, point, and wave along with Lumi.',
+                'Keep sessions short; stop while it is still fun.',
+            ];
+        }
+
+        return [
+            'Uluni bashkë dhe emërtoni me zë atë që shihni.',
+            'Bëni pauzë pas pyetjeve — prisni 3–5 sekonda për përgjigje.',
+            'Duartrokisni, tregoni me gisht dhe përshëndetni me Lumin.',
+            'Mbajini seancat të shkurtra; ndaloni kur ende është argëtuese.',
         ];
     }
 
