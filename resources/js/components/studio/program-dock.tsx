@@ -1,14 +1,24 @@
-import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import {
+    useCallback,
+    useEffect,
+    useRef,
+    useState,
+    type ReactNode,
+} from 'react';
 import { Film, GripHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
-const STORAGE_KEY = 'studio.outputDockHeightPx';
-const MIN_H = 200;
-const MAX_H_RATIO = 0.72;
-const DEFAULT_H = 320;
+const HEIGHT_KEY = 'studio.outputDockHeightPx';
+const OPEN_KEY = 'studio.outputDockOpen';
+const MIN_H = 220;
+const MAX_H_RATIO = 0.75;
+const DEFAULT_H = 360;
 
 function clampHeight(h: number): number {
+    if (typeof window === 'undefined') {
+        return Math.max(MIN_H, Math.round(h));
+    }
     const max = Math.max(
         MIN_H + 40,
         Math.floor(window.innerHeight * MAX_H_RATIO),
@@ -20,12 +30,33 @@ function readStoredHeight(): number {
     if (typeof window === 'undefined') {
         return DEFAULT_H;
     }
-    const raw = window.localStorage.getItem(STORAGE_KEY);
+    const raw = window.localStorage.getItem(HEIGHT_KEY);
     const n = raw ? Number(raw) : DEFAULT_H;
     if (!Number.isFinite(n)) {
         return DEFAULT_H;
     }
     return clampHeight(n);
+}
+
+export function readDockOpenDefault(fallback = true): boolean {
+    if (typeof window === 'undefined') {
+        return fallback;
+    }
+    const raw = window.localStorage.getItem(OPEN_KEY);
+    if (raw === '0') {
+        return false;
+    }
+    if (raw === '1') {
+        return true;
+    }
+    return fallback;
+}
+
+export function writeDockOpen(open: boolean): void {
+    if (typeof window === 'undefined') {
+        return;
+    }
+    window.localStorage.setItem(OPEN_KEY, open ? '1' : '0');
 }
 
 type Props = {
@@ -47,7 +78,9 @@ export function ProgramDock({
     className,
 }: Props) {
     const [height, setHeight] = useState(DEFAULT_H);
-    const dragRef = useRef<{ startY: number; startH: number } | null>(null);
+    const dragging = useRef(false);
+    const startY = useRef(0);
+    const startH = useRef(DEFAULT_H);
 
     useEffect(() => {
         setHeight(readStoredHeight());
@@ -64,36 +97,47 @@ export function ProgramDock({
     const persist = useCallback((h: number) => {
         const next = clampHeight(h);
         setHeight(next);
-        window.localStorage.setItem(STORAGE_KEY, String(next));
+        window.localStorage.setItem(HEIGHT_KEY, String(next));
     }, []);
 
-    const onPointerDown = useCallback(
-        (e: React.PointerEvent) => {
-            e.preventDefault();
-            dragRef.current = { startY: e.clientY, startH: height };
-            (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
-        },
-        [height],
-    );
-
-    const onPointerMove = useCallback((e: React.PointerEvent) => {
-        if (!dragRef.current) {
-            return;
-        }
-        const dy = dragRef.current.startY - e.clientY;
-        setHeight(clampHeight(dragRef.current.startH + dy));
-    }, []);
-
-    const onPointerUp = useCallback(
-        (e: React.PointerEvent) => {
-            if (!dragRef.current) {
+    useEffect(() => {
+        function onMove(e: PointerEvent) {
+            if (!dragging.current) {
                 return;
             }
-            const dy = dragRef.current.startY - e.clientY;
-            persist(dragRef.current.startH + dy);
-            dragRef.current = null;
+            const dy = startY.current - e.clientY;
+            setHeight(clampHeight(startH.current + dy));
+        }
+        function onUp(e: PointerEvent) {
+            if (!dragging.current) {
+                return;
+            }
+            dragging.current = false;
+            document.body.style.cursor = '';
+            document.body.style.userSelect = '';
+            const dy = startY.current - e.clientY;
+            persist(startH.current + dy);
+        }
+        window.addEventListener('pointermove', onMove);
+        window.addEventListener('pointerup', onUp);
+        window.addEventListener('pointercancel', onUp);
+        return () => {
+            window.removeEventListener('pointermove', onMove);
+            window.removeEventListener('pointerup', onUp);
+            window.removeEventListener('pointercancel', onUp);
+        };
+    }, [persist]);
+
+    const beginDrag = useCallback(
+        (e: React.PointerEvent) => {
+            e.preventDefault();
+            dragging.current = true;
+            startY.current = e.clientY;
+            startH.current = height;
+            document.body.style.cursor = 'ns-resize';
+            document.body.style.userSelect = 'none';
         },
-        [persist],
+        [height],
     );
 
     if (!open) {
@@ -111,22 +155,24 @@ export function ProgramDock({
             <div
                 role="separator"
                 aria-orientation="horizontal"
+                aria-valuenow={height}
+                aria-valuemin={MIN_H}
                 aria-label="Resize program output"
                 tabIndex={0}
-                onPointerDown={onPointerDown}
-                onPointerMove={onPointerMove}
-                onPointerUp={onPointerUp}
-                onPointerCancel={onPointerUp}
+                onPointerDown={beginDrag}
                 onKeyDown={(e) => {
                     if (e.key === 'ArrowUp') {
                         e.preventDefault();
-                        persist(height + 24);
+                        persist(height + 28);
                     } else if (e.key === 'ArrowDown') {
                         e.preventDefault();
-                        persist(height - 24);
+                        persist(height - 28);
+                    } else if (e.key === 'Home') {
+                        e.preventDefault();
+                        persist(DEFAULT_H);
                     }
                 }}
-                className="group flex h-3 shrink-0 cursor-ns-resize items-center justify-center border-b bg-muted/30 hover:bg-muted/60"
+                className="group flex h-3.5 shrink-0 cursor-ns-resize items-center justify-center border-b bg-muted/40 hover:bg-primary/15 active:bg-primary/25"
             >
                 <GripHorizontal className="size-3.5 text-muted-foreground group-hover:text-foreground" />
             </div>
@@ -146,14 +192,17 @@ export function ProgramDock({
                     </span>
                 )}
                 <span className="hidden text-[10px] text-muted-foreground sm:inline">
-                    drag edge · {height}px
+                    drag · {height}px
                 </span>
                 <Button
                     type="button"
                     size="sm"
                     variant="ghost"
                     className="ml-auto h-6 px-1.5 text-[10px]"
-                    onClick={() => onOpenChange(false)}
+                    onClick={() => {
+                        writeDockOpen(false);
+                        onOpenChange(false);
+                    }}
                 >
                     Hide
                 </Button>

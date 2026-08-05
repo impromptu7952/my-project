@@ -33,7 +33,11 @@ import {
     type EpisodePreview,
 } from '@/components/studio/episode-output-preview';
 import { EpisodeMediaPanel } from '@/components/studio/episode-media-panel';
-import { ProgramDock } from '@/components/studio/program-dock';
+import {
+    ProgramDock,
+    readDockOpenDefault,
+    writeDockOpen,
+} from '@/components/studio/program-dock';
 import {
     PublishChecklist,
     type ChecklistItem,
@@ -172,7 +176,9 @@ export default function StudioRunShow({
     const [centerTab, setCenterTab] = useState<CenterTab>('preview');
     const [inspectorOpen, setInspectorOpen] = useState(true);
     const [inspectorTab, setInspectorTab] = useState<InspectorTab>('tools');
-    const [outputDockOpen, setOutputDockOpen] = useState(true);
+    const [outputDockOpen, setOutputDockOpen] = useState(() =>
+        readDockOpenDefault(true),
+    );
     const [jsonError, setJsonError] = useState<string | null>(null);
 
     const activeStep = steps.find((s) => s.id === activeStepId) ?? steps[0];
@@ -251,8 +257,27 @@ export default function StudioRunShow({
                 'publishChecklist',
                 'usage',
             ],
+            preserveScroll: true,
+            preserveState: true,
         });
     }
+
+    function setDockOpen(open: boolean) {
+        writeDockOpen(open);
+        setOutputDockOpen(open);
+    }
+
+    // While a stage is regenerating, poll package + media so captions/master update.
+    useEffect(() => {
+        if (!regenerating && !run.status.includes('running')) {
+            return;
+        }
+        const id = window.setInterval(() => {
+            refreshEpisodePreview();
+        }, 2500);
+        return () => window.clearInterval(id);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [regenerating, run.status, run.id]);
 
     function saveArtifact() {
         try {
@@ -432,7 +457,7 @@ export default function StudioRunShow({
             } else if (e.key === 'o' || e.key === 'O') {
                 setCenterTab('output');
             } else if (e.key === ']') {
-                setOutputDockOpen((v) => !v);
+                setDockOpen(!outputDockOpen);
             } else if (e.key === '[') {
                 setInspectorOpen((v) => !v);
             } else if (e.key === 'r' || e.key === 'R') {
@@ -445,7 +470,15 @@ export default function StudioRunShow({
         window.addEventListener('keydown', onKey);
         return () => window.removeEventListener('keydown', onKey);
         // eslint-disable-next-line react-hooks/exhaustive-deps -- workbench hotkeys
-    }, [steps, activeStepId, isBusy, draftJson, primaryKind, run.id]);
+    }, [
+        steps,
+        activeStepId,
+        isBusy,
+        draftJson,
+        primaryKind,
+        run.id,
+        outputDockOpen,
+    ]);
 
     return (
         <>
@@ -518,7 +551,7 @@ export default function StudioRunShow({
                                 className="h-7 px-2 text-xs"
                                 onClick={() => {
                                     setCenterTab('output');
-                                    setOutputDockOpen(true);
+                                    setDockOpen(true);
                                     refreshEpisodePreview();
                                 }}
                             >
@@ -540,7 +573,7 @@ export default function StudioRunShow({
                             variant="ghost"
                             size="sm"
                             className="h-7 w-7 px-0"
-                            onClick={() => setOutputDockOpen((v) => !v)}
+                            onClick={() => setDockOpen(!outputDockOpen)}
                             title="Toggle output dock"
                         >
                             <Film className="size-3.5" />
@@ -848,7 +881,7 @@ export default function StudioRunShow({
                         {centerTab !== 'output' ? (
                             <ProgramDock
                                 open={outputDockOpen}
-                                onOpenChange={setOutputDockOpen}
+                                onOpenChange={setDockOpen}
                                 hasVideo={Boolean(
                                     episodePreview?.playback.hasVideo,
                                 )}
@@ -976,6 +1009,10 @@ export default function StudioRunShow({
                                             <EpisodeMediaPanel
                                                 episodeSlug={episodeMedia.slug}
                                                 media={episodeMedia.media}
+                                                onUploaded={() => {
+                                                    setDockOpen(true);
+                                                    refreshEpisodePreview();
+                                                }}
                                             />
                                         ) : (
                                             <p className="text-muted-foreground">
