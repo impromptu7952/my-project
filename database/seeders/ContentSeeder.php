@@ -31,6 +31,28 @@ use RuntimeException;
 
 final class ContentSeeder extends Seeder
 {
+    /**
+     * Fixture mapping for published Imagine / pilot masters.
+     *
+     * @var array<string, string>
+     */
+    private const VIDEO_FIXTURES = [
+        'ngjyrat-kuq-kalter-verdh-gjelber' => 'assembled/ep-ngjyrat-kuq-kalter-verdh-gjelber.mp4',
+        'kafshet-qeni-dhe-macja' => 'assembled/ep-kafshet-qeni-dhe-macja.mp4',
+        'pershendetjet-miremengjesi' => 'assembled/ep-pershendetjet-miremengjesi.mp4',
+        'trupi-koka-duart-kembe' => 'assembled/ep-trupi-koka-duart-kembe.mp4',
+        'fjalet-mama-baba-po-jo' => 'assembled/ep-fjalet-mama-baba-po-jo.mp4',
+        'qetesia-fryma' => 'assembled/ep-qetesia-fryma.mp4',
+        'ndjenjat-trishtim-dhe-perqafim' => 'assembled/ep-ndjenjat-trishtim-dhe-perqafim.mp4',
+        'ngjyrat-e-kuqe' => 'assembled/ep-ngjyrat-e-kuqe.mp4',
+        'kafshet-miau-me-kiki' => 'assembled/ep-kafshet-miau-me-kiki.mp4',
+        'special-miresevini-ne-playzone' => 'assembled/ep-special-miresevini-ne-playzone.mp4',
+        'qetesia-nate-e-mire' => 'assembled/ep-qetesia-nate-e-mire.mp4',
+        'historite-topi-i-humbyer' => 'assembled/ep-historite-topi-i-humbyer.mp4',
+        'numrat-nje-dy-tre' => 'assembled/ep-numrat-nje-dy-tre.mp4',
+        'levizja-kerce-trokit' => 'assembled/ep-levizja-kerce-trokit.mp4',
+    ];
+
     public function run(): void
     {
         $this->seedEditor();
@@ -39,6 +61,25 @@ final class ContentSeeder extends Seeder
         $this->seedEpisodesAndMedia();
         $this->seedCurriculumLinks();
         $this->seedProduction();
+    }
+
+    /**
+     * @return array{topics: list<array<string, mixed>>, episodes: list<array<string, mixed>>}
+     */
+    private function catalog(): array
+    {
+        $path = base_path('content/catalog/episodes-catalog.json');
+        if (! is_file($path)) {
+            return ['topics' => [], 'episodes' => []];
+        }
+
+        /** @var array{topics?: list<array<string, mixed>>, episodes?: list<array<string, mixed>>} $data */
+        $data = json_decode((string) file_get_contents($path), true, 512, JSON_THROW_ON_ERROR);
+
+        return [
+            'topics' => $data['topics'] ?? [],
+            'episodes' => $data['episodes'] ?? [],
+        ];
     }
 
     private function seedEditor(): void
@@ -65,7 +106,9 @@ final class ContentSeeder extends Seeder
 
     private function seedTopicsAndSeries(): void
     {
-        $topics = [
+        $catalogTopics = $this->catalog()['topics'];
+
+        $topics = $catalogTopics !== [] ? $catalogTopics : [
             [
                 'slug' => 'ngjyrat',
                 'name_sq' => 'Ngjyrat',
@@ -117,7 +160,12 @@ final class ContentSeeder extends Seeder
             $topic = Topic::query()->updateOrCreate(
                 ['slug' => $topicData['slug']],
                 [
-                    ...$topicData,
+                    'name_sq' => $topicData['name_sq'],
+                    'name_en' => $topicData['name_en'],
+                    'description_sq' => $topicData['description_sq'] ?? null,
+                    'description_en' => $topicData['description_en'] ?? null,
+                    'skills' => $topicData['skills'] ?? ['language'],
+                    'sort_order' => (int) ($topicData['sort_order'] ?? 0),
                     'age_band' => AgeBand::OneToThree,
                 ]
             );
@@ -256,72 +304,184 @@ final class ContentSeeder extends Seeder
     {
         Storage::disk('public')->makeDirectory('episodes');
 
+        $catalogEpisodes = $this->catalog()['episodes'];
+        $sort = 0;
+
+        if ($catalogEpisodes === []) {
+            $this->seedLegacyPilotEpisodes();
+
+            return;
+        }
+
+        // Prefer stable featured sort for published pilots.
+        $featuredSort = [
+            'ngjyrat-kuq-kalter-verdh-gjelber' => 1,
+            'pershendetjet-miremengjesi' => 2,
+            'kafshet-qeni-dhe-macja' => 3,
+            'trupi-koka-duart-kembe' => 4,
+            'fjalet-mama-baba-po-jo' => 5,
+            'qetesia-fryma' => 6,
+            'ndjenjat-trishtim-dhe-perqafim' => 7,
+            'ngjyrat-e-kuqe' => 8,
+            'kafshet-miau-me-kiki' => 9,
+            'special-miresevini-ne-playzone' => 10,
+            'qetesia-nate-e-mire' => 11,
+            'historite-topi-i-humbyer' => 12,
+            'numrat-nje-dy-tre' => 13,
+            'levizja-kerce-trokit' => 14,
+        ];
+
+        foreach ($catalogEpisodes as $data) {
+            $sort++;
+            $slug = (string) $data['slug'];
+            $topicSlug = (string) $data['topic'];
+            $series = Series::query()->where('slug', $topicSlug.'-seria-1')->first();
+            if ($series === null) {
+                continue;
+            }
+
+            $hasFixture = isset(self::VIDEO_FIXTURES[$slug]);
+            $publish = $hasFixture;
+            $ageBand = match ((string) ($data['age_band'] ?? '1-3')) {
+                '1-2' => AgeBand::OneToTwo,
+                '2-3' => AgeBand::TwoToThree,
+                default => AgeBand::OneToThree,
+            };
+
+            $skills = ['language'];
+            if (isset($data['type']) && is_string($data['type'])) {
+                $skills[] = $data['type'];
+            }
+
+            $fixture = $hasFixture ? self::VIDEO_FIXTURES[$slug] : null;
+            $duration = (int) ($data['duration_seconds'] ?? 180);
+            if ($fixture !== null) {
+                $fixtureAbs = database_path('seeders/fixtures/'.$fixture);
+                if (is_file($fixtureAbs)) {
+                    $probed = $this->probeDurationSeconds($fixtureAbs);
+                    if ($probed !== null) {
+                        $duration = $probed;
+                    }
+                }
+            }
+
+            $episode = Episode::query()->updateOrCreate(
+                ['slug' => $slug],
+                [
+                    'series_id' => $series->id,
+                    'title_sq' => (string) $data['title_sq'],
+                    'title_en' => (string) $data['title_en'],
+                    'language' => 'sq',
+                    'age_band' => $ageBand,
+                    'status' => $publish ? EpisodeStatus::Published : EpisodeStatus::Draft,
+                    'duration_seconds' => $duration,
+                    'episode_number' => $sort,
+                    'sort_order' => $featuredSort[$slug] ?? (100 + $sort),
+                    'summary_sq' => (string) ($data['summary_sq'] ?? ''),
+                    'summary_en' => (string) ($data['summary_en'] ?? ''),
+                    'published_at' => $publish ? now() : null,
+                    'skills' => $skills,
+                ]
+            );
+
+            if (! $publish || $fixture === null) {
+                continue;
+            }
+
+            $vttPath = base_path('content/episodes/'.$slug.'/captions.vtt');
+            $vtt = is_file($vttPath)
+                ? (string) file_get_contents($vttPath)
+                : $this->fallbackVtt((string) $data['title_sq']);
+
+            $this->attachEpisodeMedia($episode, $fixture, $vtt);
+        }
+    }
+
+    private function probeDurationSeconds(string $absolutePath): ?int
+    {
+        $ffmpeg = getenv('HOME').'/.local/bin/ffprobe';
+        if (! is_file($ffmpeg)) {
+            $ffmpeg = 'ffprobe';
+        }
+
+        $cmd = sprintf(
+            '%s -v error -show_entries format=duration -of csv=p=0 %s 2>/dev/null',
+            escapeshellcmd($ffmpeg),
+            escapeshellarg($absolutePath),
+        );
+        $out = trim((string) shell_exec($cmd));
+        if ($out === '' || ! is_numeric($out)) {
+            return null;
+        }
+
+        return max(1, (int) round((float) $out));
+    }
+
+    /**
+     * Fallback when content catalog is missing (older checkouts).
+     */
+    private function seedLegacyPilotEpisodes(): void
+    {
         $episodes = [
             [
                 'topic' => 'ngjyrat',
                 'slug' => 'ngjyrat-kuq-kalter-verdh-gjelber',
                 'title_sq' => 'Ngjyrat: E kuqe, e kaltër, e verdhë, e gjelbër',
                 'title_en' => 'Colors: Red, blue, yellow, green',
-                'summary_sq' => 'Lumi këndon dhe tregon katër ngjyrat. Pastaj pyet: «Ku është topi i kuq?» — pauza për fëmijën. Ideal me prindin.',
-                'summary_en' => 'Lumi sings and shows four colors, then asks “Where is the red ball?” with pauses for co-play.',
+                'summary_sq' => 'Lumi këndon dhe tregon katër ngjyrat.',
+                'summary_en' => 'Lumi sings and shows four colors.',
                 'duration' => 180,
                 'sort' => 1,
                 'fixture' => 'pilot-colors.mp4',
-                'vtt' => "WEBVTT\n\n00:00:00.000 --> 00:00:04.000\nPërshëndetje, miq të vegjël!\n\n00:00:05.000 --> 00:00:10.000\nSot mësojmë ngjyrat: e kuqe, e kaltër, e verdhë, e gjelbër.\n\n00:00:12.000 --> 00:00:18.000\nKu është topi i kuq?\n\n00:00:20.000 --> 00:00:24.000\nShumë mirë! Mirupafshim!\n",
             ],
             [
                 'topic' => 'kafshet',
                 'slug' => 'kafshet-qeni-dhe-macja',
                 'title_sq' => 'Kafshët: Qeni dhe macja',
                 'title_en' => 'Animals: Dog and cat',
-                'summary_sq' => 'Njihuni me qenin «ham ham» dhe macen «miau». Fjalë të shkurtra, tinguj të butë.',
-                'summary_en' => 'Meet the dog “woof” and cat “meow”. Short words, gentle sounds.',
+                'summary_sq' => 'Qeni ham ham dhe macja miau.',
+                'summary_en' => 'Dog woof and cat meow.',
                 'duration' => 120,
                 'sort' => 2,
                 'fixture' => 'pilot-animals.mp4',
-                'vtt' => "WEBVTT\n\n00:00:00.000 --> 00:00:03.000\nPërshëndetje!\n\n00:00:04.000 --> 00:00:08.000\nJa qeni — ham ham!\n\n00:00:09.000 --> 00:00:13.000\nJa macja — miau!\n\n00:00:14.000 --> 00:00:18.000\nMirupafshim, kafshë të dashura!\n",
             ],
             [
                 'topic' => 'pershendetjet',
                 'slug' => 'pershendetjet-miremengjesi',
                 'title_sq' => 'Përshëndetjet: Mirëmëngjesi',
                 'title_en' => 'Greetings: Good morning',
-                'summary_sq' => 'Kënga e mirëmëngjesit dhe fjalët: përshëndetje, faleminderit, mirupafshim.',
-                'summary_en' => 'A good-morning song and the words hello, thank you, goodbye.',
+                'summary_sq' => 'Kënga e mirëmëngjesit.',
+                'summary_en' => 'Good morning song.',
                 'duration' => 90,
                 'sort' => 3,
                 'fixture' => 'pilot-greetings.mp4',
-                'vtt' => "WEBVTT\n\n00:00:00.000 --> 00:00:04.000\nMirëmëngjesi!\n\n00:00:05.000 --> 00:00:09.000\nPërshëndetje, miq!\n\n00:00:10.000 --> 00:00:14.000\nFaleminderit! Mirupafshim!\n",
             ],
             [
                 'topic' => 'pjeset-e-trupit',
                 'slug' => 'trupi-koka-duart-kembe',
                 'title_sq' => 'Trupi: Koka, duart, këmbët',
                 'title_en' => 'Body: Head, hands, feet',
-                'summary_sq' => 'Prekim kokën, duart dhe këmbët me këngë dhe lëvizje. Pauza për fëmijën të tregojë.',
-                'summary_en' => 'Touch head, hands, and feet with a song and movement. Pauses for the child to show.',
+                'summary_sq' => 'Prekim kokën, duart dhe këmbët.',
+                'summary_en' => 'Touch head, hands, and feet.',
                 'duration' => 100,
                 'sort' => 4,
-                'fixture' => 'pilot-colors.mp4',
-                'vtt' => "WEBVTT\n\n00:00:00.000 --> 00:00:03.000\nPërshëndetje!\n\n00:00:04.000 --> 00:00:08.000\nJa koka — touç!\n\n00:00:09.000 --> 00:00:13.000\nJa duart — duart!\n\n00:00:14.000 --> 00:00:18.000\nJa këmbët — shumë mirë!\n",
+                'fixture' => 'lumi-body-parts.mp4',
             ],
             [
                 'topic' => 'fjalet-e-para',
                 'slug' => 'fjalet-mama-baba-po-jo',
                 'title_sq' => 'Fjalët e para: Mama, baba, po, jo',
                 'title_en' => 'First words: Mama, baba, yes, no',
-                'summary_sq' => 'Fjalë të para me përsëritje: mama, baba, po, jo. Ngadalë dhe me buzëqeshje.',
-                'summary_en' => 'First words with repetition: mama, baba, yes, no. Slow and smiling.',
+                'summary_sq' => 'Fjalë të para me përsëritje.',
+                'summary_en' => 'First words with repetition.',
                 'duration' => 95,
                 'sort' => 5,
                 'fixture' => 'pilot-animals.mp4',
-                'vtt' => "WEBVTT\n\n00:00:00.000 --> 00:00:03.000\nMirëmëngjesi!\n\n00:00:04.000 --> 00:00:08.000\nMama — mama!\n\n00:00:09.000 --> 00:00:13.000\nBaba — baba!\n\n00:00:14.000 --> 00:00:18.000\nPo! Jo! Shumë mirë!\n",
             ],
         ];
 
         foreach ($episodes as $data) {
             $series = Series::query()->where('slug', $data['topic'].'-seria-1')->firstOrFail();
-
             $episode = Episode::query()->updateOrCreate(
                 ['slug' => $data['slug']],
                 [
@@ -340,64 +500,74 @@ final class ContentSeeder extends Seeder
                     'skills' => ['language'],
                 ]
             );
-
-            $disk = (string) config('media.self.disk', 'local');
-
-            // Reuse existing asset path when re-seeding so we overwrite in place.
-            $existingVideo = MediaAsset::query()
-                ->where('episode_id', $episode->id)
-                ->where('kind', MediaKind::VideoMaster)
-                ->where('provider', MediaProvider::Self)
-                ->first();
-
-            $uuid = $existingVideo?->path
-                ? basename(dirname((string) $existingVideo->path))
-                : (string) Str::uuid();
-            $videoRel = 'episodes/'.$uuid.'/video_master.mp4';
-            $vttRel = 'episodes/'.$uuid.'/subtitle.vtt';
-
-            $this->ensurePlayableMp4(
-                Storage::disk($disk)->path($videoRel),
-                (string) ($data['fixture'] ?? 'pilot-colors.mp4'),
-            );
-            Storage::disk($disk)->put($vttRel, $data['vtt']);
-
-            MediaAsset::query()->updateOrCreate(
-                [
-                    'episode_id' => $episode->id,
-                    'kind' => MediaKind::VideoMaster,
-                    'provider' => MediaProvider::Self,
-                ],
-                [
-                    'disk' => $disk,
-                    'path' => $videoRel,
-                    'mime_type' => 'video/mp4',
-                    'size_bytes' => File::size(Storage::disk($disk)->path($videoRel)),
-                    'meta' => ['seed' => true, 'fixture' => $data['fixture'] ?? null],
-                ]
-            );
-
-            MediaAsset::query()->updateOrCreate(
-                [
-                    'episode_id' => $episode->id,
-                    'kind' => MediaKind::Subtitle,
-                    'provider' => MediaProvider::Self,
-                ],
-                [
-                    'disk' => $disk,
-                    'path' => $vttRel,
-                    'mime_type' => 'text/vtt',
-                    'size_bytes' => mb_strlen($data['vtt']),
-                    'meta' => ['language' => 'sq'],
-                ]
-            );
+            $this->attachEpisodeMedia($episode, $data['fixture'], $this->fallbackVtt($data['title_sq']));
         }
+    }
+
+    private function attachEpisodeMedia(Episode $episode, string $fixture, string $vtt): void
+    {
+        $disk = (string) config('media.self.disk', 'local');
+
+        $existingVideo = MediaAsset::query()
+            ->where('episode_id', $episode->id)
+            ->where('kind', MediaKind::VideoMaster)
+            ->where('provider', MediaProvider::Self)
+            ->first();
+
+        $uuid = $existingVideo?->path
+            ? basename(dirname((string) $existingVideo->path))
+            : (string) Str::uuid();
+        $videoRel = 'episodes/'.$uuid.'/video_master.mp4';
+        $vttRel = 'episodes/'.$uuid.'/subtitle.vtt';
+
+        $this->ensurePlayableMp4(
+            Storage::disk($disk)->path($videoRel),
+            $fixture,
+        );
+        Storage::disk($disk)->put($vttRel, $vtt);
+
+        MediaAsset::query()->updateOrCreate(
+            [
+                'episode_id' => $episode->id,
+                'kind' => MediaKind::VideoMaster,
+                'provider' => MediaProvider::Self,
+            ],
+            [
+                'disk' => $disk,
+                'path' => $videoRel,
+                'mime_type' => 'video/mp4',
+                'size_bytes' => File::size(Storage::disk($disk)->path($videoRel)),
+                'meta' => ['seed' => true, 'fixture' => $fixture],
+            ]
+        );
+
+        MediaAsset::query()->updateOrCreate(
+            [
+                'episode_id' => $episode->id,
+                'kind' => MediaKind::Subtitle,
+                'provider' => MediaProvider::Self,
+            ],
+            [
+                'disk' => $disk,
+                'path' => $vttRel,
+                'mime_type' => 'text/vtt',
+                'size_bytes' => mb_strlen($vtt),
+                'meta' => ['language' => 'sq'],
+            ]
+        );
+    }
+
+    private function fallbackVtt(string $title): string
+    {
+        return "WEBVTT\n\n00:00:00.000 --> 00:00:04.000\nPërshëndetje, miq të vegjël!\n\n00:00:05.000 --> 00:00:12.000\n{$title}\n\n00:00:13.000 --> 00:00:18.000\nShumë mirë! Mirupafshim!\n";
     }
 
     private function seedCurriculumLinks(): void
     {
         $colorEpisode = Episode::query()->where('slug', 'ngjyrat-kuq-kalter-verdh-gjelber')->first();
         $animalEpisode = Episode::query()->where('slug', 'kafshet-qeni-dhe-macja')->first();
+        $bodyEpisode = Episode::query()->where('slug', 'trupi-koka-duart-kembe')->first();
+        $feelingsEpisode = Episode::query()->where('slug', 'ndjenjat-trishtim-dhe-perqafim')->first();
         $colorPop = Game::query()->where('slug', 'color-pop')->first();
         $touch = Game::query()->where('slug', 'touch-and-tap')->first();
         $memory = Game::query()->where('slug', 'memory')->first();
@@ -426,6 +596,34 @@ final class ContentSeeder extends Seeder
                 ],
                 [
                     'topic_id' => Topic::query()->where('slug', 'kafshet')->value('id'),
+                    'sort_order' => 1,
+                ]
+            );
+        }
+
+        if ($bodyEpisode && $touch) {
+            CurriculumLink::query()->updateOrCreate(
+                [
+                    'episode_id' => $bodyEpisode->id,
+                    'game_id' => $touch->id,
+                    'relation' => 'reinforces',
+                ],
+                [
+                    'topic_id' => Topic::query()->where('slug', 'pjeset-e-trupit')->value('id'),
+                    'sort_order' => 1,
+                ]
+            );
+        }
+
+        if ($feelingsEpisode && $touch) {
+            CurriculumLink::query()->updateOrCreate(
+                [
+                    'episode_id' => $feelingsEpisode->id,
+                    'game_id' => $touch->id,
+                    'relation' => 'reinforces',
+                ],
+                [
+                    'topic_id' => Topic::query()->where('slug', 'ndjenjat')->value('id'),
                     'sort_order' => 1,
                 ]
             );
@@ -529,68 +727,32 @@ final class ContentSeeder extends Seeder
             ]
         );
 
-        ProductionSpec::query()->updateOrCreate(
-            ['slug' => 'trupi-pilot-v1'],
-            [
-                'title' => 'Trupi — body parts pilot',
-                'episode_slug' => 'trupi-koka-duart-kembe',
-                'topic_id' => Topic::query()->where('slug', 'pjeset-e-trupit')->value('id'),
-                'episode_id' => Episode::query()->where('slug', 'trupi-koka-duart-kembe')->value('id'),
-                'spec' => [
+        // Seed production specs from content library packages (full-package episodes).
+        $catalog = $this->catalog()['episodes'];
+        foreach ($catalog as $ep) {
+            if (($ep['package'] ?? '') !== 'full') {
+                continue;
+            }
+            $slug = (string) $ep['slug'];
+            $specPath = base_path('content/episodes/'.$slug.'/production-spec.json');
+            if (! is_file($specPath)) {
+                continue;
+            }
+            /** @var array<string, mixed> $specPayload */
+            $specPayload = json_decode((string) file_get_contents($specPath), true, 512, JSON_THROW_ON_ERROR);
+            ProductionSpec::query()->updateOrCreate(
+                ['slug' => $slug.'-content-v1'],
+                [
+                    'title' => (string) $ep['title_sq'],
+                    'episode_slug' => $slug,
+                    'topic_id' => Topic::query()->where('slug', (string) $ep['topic'])->value('id'),
+                    'episode_id' => Episode::query()->where('slug', $slug)->value('id'),
+                    'spec' => $specPayload,
                     'version' => '1',
-                    'language' => 'sq',
-                    'age_band' => '1-3',
-                    'episode_slug' => 'trupi-koka-duart-kembe',
-                    'learning_goals' => ['Name head, hands, feet', 'Move with the song'],
-                    'vocabulary' => [
-                        ['word' => 'koka', 'en' => 'head'],
-                        ['word' => 'duart', 'en' => 'hands'],
-                        ['word' => 'këmbët', 'en' => 'feet'],
-                    ],
-                    'structure' => [
-                        ['block' => 'hello_song', 'duration_seconds' => 30],
-                        ['block' => 'body_parts', 'duration_seconds' => 50],
-                        ['block' => 'goodbye_song', 'duration_seconds' => 20],
-                    ],
-                    'principles' => ['short_phrases' => true, 'pause_seconds' => 4],
-                    'outputs_required' => ['script', 'storyboard'],
-                ],
-                'version' => '1',
-                'created_by' => $editor?->id,
-            ]
-        );
-
-        ProductionSpec::query()->updateOrCreate(
-            ['slug' => 'fjalet-e-para-pilot-v1'],
-            [
-                'title' => 'Fjalët e para pilot',
-                'episode_slug' => 'fjalet-mama-baba-po-jo',
-                'topic_id' => Topic::query()->where('slug', 'fjalet-e-para')->value('id'),
-                'episode_id' => Episode::query()->where('slug', 'fjalet-mama-baba-po-jo')->value('id'),
-                'spec' => [
-                    'version' => '1',
-                    'language' => 'sq',
-                    'age_band' => '1-2',
-                    'episode_slug' => 'fjalet-mama-baba-po-jo',
-                    'learning_goals' => ['Say mama and baba', 'Respond po/jo with co-play'],
-                    'vocabulary' => [
-                        ['word' => 'mama', 'en' => 'mama'],
-                        ['word' => 'baba', 'en' => 'dada'],
-                        ['word' => 'po', 'en' => 'yes'],
-                        ['word' => 'jo', 'en' => 'no'],
-                    ],
-                    'structure' => [
-                        ['block' => 'hello', 'duration_seconds' => 20],
-                        ['block' => 'first_words', 'duration_seconds' => 55],
-                        ['block' => 'goodbye', 'duration_seconds' => 20],
-                    ],
-                    'principles' => ['short_phrases' => true, 'pause_seconds' => 5],
-                    'outputs_required' => ['script'],
-                ],
-                'version' => '1',
-                'created_by' => $editor?->id,
-            ]
-        );
+                    'created_by' => $editor?->id,
+                ]
+            );
+        }
 
         $run = ProductionRun::query()->updateOrCreate(
             [
@@ -654,7 +816,17 @@ final class ContentSeeder extends Seeder
         }
 
         // Fallback fixture if a named one is missing.
-        foreach (['pilot-colors.mp4', 'pilot-animals.mp4', 'pilot-greetings.mp4'] as $candidate) {
+        foreach ([
+            'lumi-hello-wave.mp4',
+            'lumi-colors-present.mp4',
+            'lumi-body-parts.mp4',
+            'lumi-ari-breathe.mp4',
+            'lumi-kiki-animals.mp4',
+            'mimoza-bedtime.mp4',
+            'pilot-colors.mp4',
+            'pilot-animals.mp4',
+            'pilot-greetings.mp4',
+        ] as $candidate) {
             $path = database_path('seeders/fixtures/'.$candidate);
             if (is_file($path) && filesize($path) > 10_000) {
                 copy($path, $absolutePath);

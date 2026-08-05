@@ -1,0 +1,34 @@
+{
+  "shots": [
+    {
+      "id": 1,
+      "scene": "Hello",
+      "visual": "Lumi wave close-up playroom",
+      "duration": 30,
+      "audio": "hello ritual"
+    },
+    {
+      "id": 2,
+      "scene": "Teach",
+      "visual": "Props for: mollë, banane",
+      "duration": 105,
+      "audio": "target words + pauses"
+    },
+    {
+      "id": 3,
+      "scene": "Interactive",
+      "visual": "Hold frame after question",
+      "duration": 40,
+      "audio": "Ku është…?"
+    },
+    {
+      "id": 4,
+      "scene": "Goodbye",
+      "visual": "Two-hand wave",
+      "duration": 25,
+      "audio": "goodbye ritual"
+    }
+  ],
+  "style": "2D stylized, low cut rate, large faces",
+  "set": "playroom"
+}

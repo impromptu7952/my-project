@@ -1,0 +1,19 @@
+{
+  "slug": "historite-topi-i-humbyer",
+  "title_sq": "Topi i humbur",
+  "title_en": "The lost ball",
+  "summary_sq": "Nëna Mimoza tregon: Ari humb topin, Lumi e gjen. Tre rrahje.",
+  "summary_en": "Mimoza tells: Ari loses a ball, Lumi finds it. Three beats.",
+  "topic": "historite",
+  "age_band": "2-3",
+  "duration_seconds": 300,
+  "presenters": [
+    "mimoza",
+    "ari",
+    "lumi"
+  ],
+  "type": "storylet",
+  "package_level": "full",
+  "status": "draft",
+  "video_asset": null
+}

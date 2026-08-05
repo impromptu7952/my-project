@@ -1,0 +1,62 @@
+{
+  "version": "1",
+  "language": "sq",
+  "age_band": "1-3",
+  "episode_slug": "qetesia-nate-e-mire",
+  "learning_goals": [
+    "Wind down for sleep",
+    "Hear natën e mirë"
+  ],
+  "vocabulary": [
+    {
+      "word": "natën e mirë",
+      "en": "good night"
+    },
+    {
+      "word": "yje",
+      "en": "stars"
+    },
+    {
+      "word": "fle",
+      "en": "sleep"
+    }
+  ],
+  "structure": [
+    {
+      "block": "hello_ritual",
+      "duration_seconds": 30
+    },
+    {
+      "block": "teach",
+      "duration_seconds": 180
+    },
+    {
+      "block": "interactive",
+      "duration_seconds": 40
+    },
+    {
+      "block": "goodbye_ritual",
+      "duration_seconds": 25
+    }
+  ],
+  "principles": {
+    "short_phrases": true,
+    "pause_seconds": 5,
+    "parentese": true,
+    "gesture_with_words": true,
+    "max_new_words": 6
+  },
+  "presenters": [
+    "mimoza",
+    "ari"
+  ],
+  "content_type": "calm",
+  "co_play_tip_sq": "Pauzoni videon pas çdo pyetjeje. Përsëriteni fjalët me objekte reale.",
+  "co_play_tip_en": "Pause after every question. Repeat words with real objects in the room.",
+  "outputs_required": [
+    "script",
+    "storyboard",
+    "subtitles_vtt",
+    "vo_script"
+  ]
+}

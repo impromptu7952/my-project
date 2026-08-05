@@ -1,0 +1,17 @@
+{
+  "slug": "format-trekendesh",
+  "title_sq": "Trekëndëshi",
+  "title_en": "The triangle",
+  "summary_sq": "Tre anë, tre cepa — trekëndësh!",
+  "summary_en": "Three sides, three corners — triangle!",
+  "topic": "format",
+  "age_band": "2-3",
+  "duration_seconds": 180,
+  "presenters": [
+    "lumi"
+  ],
+  "type": "concept_song",
+  "package_level": "brief",
+  "status": "draft",
+  "video_asset": null
+}

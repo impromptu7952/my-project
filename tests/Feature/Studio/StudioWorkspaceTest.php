@@ -130,7 +130,24 @@ test('run workspace page includes steps and agent profiles', function (): void {
             ->component('studio/runs/show')
             ->has('steps')
             ->has('agentProfilesByStage')
-            ->where('run.id', $run->id));
+            ->where('run.id', $run->id)
+            ->has('episodePreview')
+            ->where('episodePreview.slug', 'ngjyrat-kuq-kalter-verdh-gjelber')
+            ->where('episodePreview.playback.hasVideo', true)
+            ->has('episodePreview.playback.src'));
+});
+
+test('studio playback resolves masters for draft and published episodes', function (): void {
+    $episode = \App\Models\Episode::query()
+        ->where('slug', 'ngjyrat-kuq-kalter-verdh-gjelber')
+        ->with('mediaAssets')
+        ->firstOrFail();
+
+    $playback = app(\App\Actions\Media\ResolveStudioPlayback::class)->handle($episode);
+
+    expect($playback['hasVideo'])->toBeTrue()
+        ->and($playback['src'])->toBeString()
+        ->and($playback['src'])->toContain('/storage/');
 });
 
 test('editor can save stage notes on a run', function (): void {

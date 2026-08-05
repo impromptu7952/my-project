@@ -101,3 +101,4 @@ Parents/caregivers get a calm, Albanian-first watch + play experience linked by 
 | 2026-08-05 | Quality override + stage notes; voice preview package; Lumi brand bible; timeline preview; topic page polish; TTS config |
 | 2026-08-05 | Brand bible injected into Grok stage agents; visual preview stubs; series pages; progress bars; run package export |
 | 2026-08-05 | Studio workbench layout: compact IDE-like run editor (step rail, center tabs, inspector), dedicated Studio shell |
+| 2026-08-05 | Program output dock + Output tab with live episode video, package VTT captions, script read-along, media refresh |

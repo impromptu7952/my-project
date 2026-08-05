@@ -27,6 +27,11 @@ import {
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { CaptionsPreview } from '@/components/studio/captions-preview';
 import { CurriculumPreview } from '@/components/studio/curriculum-preview';
+import {
+    EpisodeOutputPreview,
+    linesFromScriptPayload,
+    type EpisodePreview,
+} from '@/components/studio/episode-output-preview';
 import { EpisodeMediaPanel } from '@/components/studio/episode-media-panel';
 import {
     PublishChecklist,
@@ -41,6 +46,7 @@ import { StoryboardPreview } from '@/components/studio/storyboard-preview';
 import { TimelinePreview } from '@/components/studio/timeline-preview';
 import { VisualPromptsPreview } from '@/components/studio/visual-prompts-preview';
 import { VoicePreview } from '@/components/studio/voice-preview';
+import { StudioPlayer } from '@/components/studio/studio-player';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -126,10 +132,11 @@ type Props = {
             url: string | null;
         }>;
     } | null;
+    episodePreview?: EpisodePreview | null;
 };
 
 type InspectorTab = 'tools' | 'agents' | 'media' | 'history';
-type CenterTab = 'preview' | 'source' | 'notes';
+type CenterTab = 'preview' | 'source' | 'notes' | 'output';
 
 const STEP_ICONS: Record<string, typeof FileText> = {
     curriculum: BookOpen,
@@ -152,6 +159,7 @@ export default function StudioRunShow({
     xaiConfigured,
     usage,
     episodeMedia = null,
+    episodePreview = null,
     publishChecklist = [],
 }: Props) {
     const [activeStepId, setActiveStepId] = useState(
@@ -160,6 +168,7 @@ export default function StudioRunShow({
     const [centerTab, setCenterTab] = useState<CenterTab>('preview');
     const [inspectorOpen, setInspectorOpen] = useState(true);
     const [inspectorTab, setInspectorTab] = useState<InspectorTab>('tools');
+    const [outputDockOpen, setOutputDockOpen] = useState(true);
     const [jsonError, setJsonError] = useState<string | null>(null);
 
     const activeStep = steps.find((s) => s.id === activeStepId) ?? steps[0];
@@ -229,6 +238,18 @@ export default function StudioRunShow({
             | undefined
     )?.[activeStepId];
 
+    function refreshEpisodePreview() {
+        router.reload({
+            only: [
+                'episodePreview',
+                'episodeMedia',
+                'run',
+                'publishChecklist',
+                'usage',
+            ],
+        });
+    }
+
     function saveArtifact() {
         try {
             const payload = JSON.parse(draftJson) as Record<
@@ -236,10 +257,16 @@ export default function StudioRunShow({
                 string | number | boolean | null | object
             >;
             setJsonError(null);
-            router.post(`/studio/runs/${run.id}/artifacts`, {
-                kind: primaryKind,
-                payload: payload as never,
-            });
+            router.post(
+                `/studio/runs/${run.id}/artifacts`,
+                {
+                    kind: primaryKind,
+                    payload: payload as never,
+                },
+                {
+                    onSuccess: () => refreshEpisodePreview(),
+                },
+            );
         } catch {
             setJsonError('Invalid JSON');
         }
@@ -247,11 +274,47 @@ export default function StudioRunShow({
 
     function regenerate(stage: string) {
         const profileId = agentForm.data.agent_profile_map[stage] ?? null;
-        router.post(`/studio/runs/${run.id}/regenerate`, {
-            stage,
-            agent_profile_id: profileId,
-        });
+        router.post(
+            `/studio/runs/${run.id}/regenerate`,
+            {
+                stage,
+                agent_profile_id: profileId,
+            },
+            {
+                onSuccess: () => {
+                    // Jobs may still be running; reload package captions + media shortly.
+                    window.setTimeout(() => refreshEpisodePreview(), 400);
+                },
+            },
+        );
     }
+
+    const scriptLines = useMemo(
+        () =>
+            linesFromScriptPayload(run.latestByKind.script?.payload),
+        [run.latestByKind.script?.payload],
+    );
+
+    const onScreenLabels = useMemo(() => {
+        const payload = run.latestByKind.on_screen_text?.payload;
+        if (!payload || typeof payload !== 'object') {
+            return [] as Array<{ text?: string; timecode?: string }>;
+        }
+        const data = payload as {
+            labels?: Array<{ text?: string; timecode?: string }>;
+            on_screen_text?: Array<{ text_sq?: string; time?: string }>;
+        };
+        if (Array.isArray(data.labels)) {
+            return data.labels;
+        }
+        if (Array.isArray(data.on_screen_text)) {
+            return data.on_screen_text.map((row) => ({
+                text: row.text_sq,
+                timecode: row.time,
+            }));
+        }
+        return [];
+    }, [run.latestByKind.on_screen_text?.payload]);
 
     function saveNotes(notes: string) {
         if (!activeStep || !notes.trim()) {
@@ -298,6 +361,10 @@ export default function StudioRunShow({
                 setCenterTab('source');
             } else if (e.key === 'n' || e.key === 'N') {
                 setCenterTab('notes');
+            } else if (e.key === 'o' || e.key === 'O') {
+                setCenterTab('output');
+            } else if (e.key === ']') {
+                setOutputDockOpen((v) => !v);
             } else if (e.key === '[') {
                 setInspectorOpen((v) => !v);
             } else if (e.key === 'r' || e.key === 'R') {
@@ -376,6 +443,21 @@ export default function StudioRunShow({
                             qualityFailed={qualityFailed}
                             isBusy={isBusy}
                         />
+                        {episodePreview?.playback.hasVideo ? (
+                            <Button
+                                variant="secondary"
+                                size="sm"
+                                className="h-7 px-2 text-xs"
+                                onClick={() => {
+                                    setCenterTab('output');
+                                    setOutputDockOpen(true);
+                                    refreshEpisodePreview();
+                                }}
+                            >
+                                <Film className="size-3" />
+                                Watch
+                            </Button>
+                        ) : null}
                         <Button
                             variant="outline"
                             size="sm"
@@ -385,6 +467,15 @@ export default function StudioRunShow({
                             <a href={`/studio/runs/${run.id}/export`} download>
                                 Export
                             </a>
+                        </Button>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 w-7 px-0"
+                            onClick={() => setOutputDockOpen((v) => !v)}
+                            title="Toggle output dock"
+                        >
+                            <Film className="size-3.5" />
                         </Button>
                         <Button
                             variant="ghost"
@@ -520,6 +611,7 @@ export default function StudioRunShow({
                                         ['preview', 'Preview'],
                                         ['source', 'Source'],
                                         ['notes', 'Notes'],
+                                        ['output', 'Output'],
                                     ] as const
                                 ).map(([id, label]) => (
                                     <button
@@ -539,7 +631,7 @@ export default function StudioRunShow({
                             </div>
 
                             <span className="ml-auto hidden text-[10px] text-muted-foreground xl:inline">
-                                1–7 steps · P/S/N · [ panel · R regen · ⌘S
+                                1–7 · P/S/N/O · [ ] docks · R · ⌘S
                             </span>
                             <div className="flex items-center gap-1">
                                 {activeStepId === 'voice' ? (
@@ -660,7 +752,55 @@ export default function StudioRunShow({
                                     </p>
                                 </div>
                             ) : null}
+
+                            {centerTab === 'output' ? (
+                                <EpisodeOutputPreview
+                                    episode={episodePreview}
+                                    scriptLines={scriptLines}
+                                    onScreenLabels={onScreenLabels}
+                                    mode="full"
+                                />
+                            ) : null}
                         </div>
+
+                        {outputDockOpen && centerTab !== 'output' ? (
+                            <div className="shrink-0 border-t bg-background">
+                                <div className="flex h-7 items-center gap-2 border-b px-2">
+                                    <Film className="size-3 text-muted-foreground" />
+                                    <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                                        Program output
+                                    </span>
+                                    {episodePreview?.playback.hasVideo ? (
+                                        <span className="text-[10px] text-emerald-600 dark:text-emerald-400">
+                                            master loaded
+                                        </span>
+                                    ) : (
+                                        <span className="text-[10px] text-muted-foreground">
+                                            no master
+                                        </span>
+                                    )}
+                                    <Button
+                                        type="button"
+                                        size="sm"
+                                        variant="ghost"
+                                        className="ml-auto h-6 px-1.5 text-[10px]"
+                                        onClick={() =>
+                                            setOutputDockOpen(false)
+                                        }
+                                    >
+                                        Hide
+                                    </Button>
+                                </div>
+                                <div className="max-h-52 overflow-auto p-2 sm:max-h-56">
+                                    <EpisodeOutputPreview
+                                        episode={episodePreview}
+                                        scriptLines={scriptLines}
+                                        onScreenLabels={onScreenLabels}
+                                        mode="dock"
+                                    />
+                                </div>
+                            </div>
+                        ) : null}
                     </section>
 
                     {/* Inspector */}
@@ -714,18 +854,69 @@ export default function StudioRunShow({
                                 ) : null}
 
                                 {inspectorTab === 'media' ? (
-                                    episodeMedia ? (
-                                        <div className="studio-dense">
+                                    <div className="space-y-3">
+                                        {episodePreview?.playback.hasVideo &&
+                                        episodePreview.playback.src ? (
+                                            <div className="space-y-1">
+                                                <div className="flex items-center justify-between gap-1">
+                                                    <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                                                        Live master
+                                                    </p>
+                                                    <button
+                                                        type="button"
+                                                        className="text-[10px] font-medium text-primary hover:underline"
+                                                        onClick={() =>
+                                                            refreshEpisodePreview()
+                                                        }
+                                                    >
+                                                        Refresh
+                                                    </button>
+                                                </div>
+                                                <StudioPlayer
+                                                    src={
+                                                        episodePreview.playback
+                                                            .src
+                                                    }
+                                                    poster={
+                                                        episodePreview.playback
+                                                            .poster
+                                                    }
+                                                    captionsSrc={
+                                                        episodePreview.playback
+                                                            .captionsSrc
+                                                    }
+                                                    packageVtt={
+                                                        episodePreview.playback
+                                                            .hasCaptions
+                                                            ? null
+                                                            : episodePreview.packageVtt
+                                                    }
+                                                    title={
+                                                        episodePreview.title
+                                                    }
+                                                    mimeType={
+                                                        episodePreview.playback
+                                                            .mimeType
+                                                    }
+                                                    captionsLang={
+                                                        episodePreview.playback
+                                                            .language
+                                                    }
+                                                    dense
+                                                />
+                                            </div>
+                                        ) : null}
+                                        {episodeMedia ? (
                                             <EpisodeMediaPanel
                                                 episodeSlug={episodeMedia.slug}
                                                 media={episodeMedia.media}
                                             />
-                                        </div>
-                                    ) : (
-                                        <p className="text-muted-foreground">
-                                            No episode linked on this spec.
-                                        </p>
-                                    )
+                                        ) : (
+                                            <p className="text-muted-foreground">
+                                                No episode linked on this spec.
+                                            </p>
+                                        )}
+                                    </div>
                                 ) : null}
 
                                 {inspectorTab === 'history' ? (

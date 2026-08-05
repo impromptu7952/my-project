@@ -1,0 +1,18 @@
+{
+  "slug": "qetesia-fryma",
+  "title_sq": "Frymë e qetë",
+  "title_en": "Calm breath",
+  "summary_sq": "Lumi dhe Ari thithin ngadalë si lulja, nxjerrin si era.",
+  "summary_en": "Lumi and Ari breathe in like a flower, out like wind.",
+  "topic": "qetesia",
+  "age_band": "1-3",
+  "duration_seconds": 200,
+  "presenters": [
+    "lumi",
+    "ari"
+  ],
+  "type": "calm",
+  "package_level": "full",
+  "status": "draft",
+  "video_asset": null
+}

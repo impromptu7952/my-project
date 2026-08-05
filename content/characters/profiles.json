@@ -1,0 +1,79 @@
+{
+  "version": "1",
+  "style_lock": "2D stylized soft shapes, big eyes, toddler-safe, non-photoreal",
+  "dialect": "standard_literary_albanian",
+  "characters": {
+    "lumi": {
+      "name_sq": "Lumi",
+      "name_en": "Lumi",
+      "role": "lead_teacher",
+      "archetype": "Ms. Rachel energy (animated)",
+      "outfit_s1": "butter-yellow cardigan, teal shirt, star pin, white sneakers",
+      "hair": "chestnut bob with one curl, teal headband",
+      "voice": {
+        "profile": "lumi_warm_parentese",
+        "tempo": "20-30% slower than adult chat",
+        "pitch": "warm mid-high",
+        "catchphrases_sq": [
+          "Përshëndetje, miq të vegjël!",
+          "A thua bashkë?",
+          "Ku është…?",
+          "Shumë mirë!",
+          "Mirupafshim, deri herën tjetër!"
+        ]
+      },
+      "canonical_art": "content/assets/characters/lumi-canonical.jpg",
+      "blurb_sq": "Lumi është mësuesja jonë e dashur. Flet ngadalë, pret, dhe këndon me ty.",
+      "blurb_en": "Lumi is our warm teacher. She speaks slowly, waits, and sings with you."
+    },
+    "pip": {
+      "name_sq": "Pip",
+      "role": "song_sidekick",
+      "species": "yellow bird",
+      "outfit_s1": "tiny blue star scarf",
+      "voice": {
+        "profile": "pip_peep",
+        "catchphrases_sq": ["Pip-pip!", "Ja!"]
+      },
+      "canonical_art": "content/assets/characters/pip-canonical.jpg",
+      "blurb_sq": "Pip është zog i vogël që tregon me krahë dhe këndon pip-pip!"
+    },
+    "ari": {
+      "name_sq": "Ari",
+      "role": "comfort_bear",
+      "species": "caramel teddy bear",
+      "signature": "honey heart chest patch",
+      "voice": {
+        "profile": "ari_soft",
+        "catchphrases_sq": ["Unë jam Ari.", "Më jep një përqafim?", "Tani jam gati!"]
+      },
+      "canonical_art": "content/assets/characters/ari-canonical.jpg",
+      "blurb_sq": "Ari është ariu i butë që na ndihmon me ndjenjat."
+    },
+    "kiki": {
+      "name_sq": "Kiki",
+      "role": "playful_kitten",
+      "species": "gray kitten cream belly",
+      "voice": {
+        "profile": "kiki_meow",
+        "catchphrases_sq": ["Miau!", "Ku jam unë?", "Të gjeta!"]
+      },
+      "canonical_art": "content/assets/characters/kiki-canonical.jpg",
+      "blurb_sq": "Kiki është kotele lozonjare për tinguj dhe fshehje-gjetje."
+    },
+    "mimoza": {
+      "name_sq": "Nëna Mimoza",
+      "role": "elder_storyteller",
+      "outfit_s1": "lavender shawl, rose dress, glasses on chain",
+      "voice": {
+        "profile": "mimoza_honey_slow",
+        "catchphrases_sq": [
+          "Ejani afër, të tregoj një histori të vogël.",
+          "Natën e mirë, yje të vegjël."
+        ]
+      },
+      "canonical_art": "content/assets/characters/mimoza-canonical.jpg",
+      "blurb_sq": "Nëna Mimoza tregon histori të qeta dhe këngë për natën."
+    }
+  }
+}

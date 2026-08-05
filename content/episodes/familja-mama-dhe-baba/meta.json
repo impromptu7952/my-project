@@ -1,0 +1,17 @@
+{
+  "slug": "familja-mama-dhe-baba",
+  "title_sq": "Mama dhe baba",
+  "title_en": "Mama and baba",
+  "summary_sq": "Foto të buta, fjalë mama/baba, përqafime.",
+  "summary_en": "Soft photos, mama/baba words, hugs.",
+  "topic": "familja",
+  "age_band": "1-2",
+  "duration_seconds": 180,
+  "presenters": [
+    "lumi"
+  ],
+  "type": "speech_practice",
+  "package_level": "brief",
+  "status": "draft",
+  "video_asset": null
+}

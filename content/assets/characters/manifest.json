@@ -1,0 +1,11 @@
+{
+  "generated_at": "2026-08-05",
+  "style": "2D stylized toddler educational",
+  "characters": {
+    "lumi": {"file": "lumi-canonical.jpg", "role": "lead_teacher"},
+    "pip": {"file": "pip-canonical.jpg", "role": "bird_sidekick"},
+    "ari": {"file": "ari-canonical.jpg", "role": "soft_bear"},
+    "kiki": {"file": "kiki-canonical.jpg", "role": "kitten"},
+    "mimoza": {"file": "mimoza-canonical.jpg", "role": "elder_storyteller"}
+  }
+}

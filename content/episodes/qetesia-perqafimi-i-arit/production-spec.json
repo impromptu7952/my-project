@@ -1,0 +1,58 @@
+{
+  "version": "1",
+  "language": "sq",
+  "age_band": "1-2",
+  "episode_slug": "qetesia-perqafimi-i-arit",
+  "learning_goals": [
+    "Seek comfort object/hug",
+    "Quiet co-view"
+  ],
+  "vocabulary": [
+    {
+      "word": "përqafim",
+      "en": "hug"
+    },
+    {
+      "word": "butë",
+      "en": "soft"
+    }
+  ],
+  "structure": [
+    {
+      "block": "hello_ritual",
+      "duration_seconds": 30
+    },
+    {
+      "block": "teach",
+      "duration_seconds": 80
+    },
+    {
+      "block": "interactive",
+      "duration_seconds": 40
+    },
+    {
+      "block": "goodbye_ritual",
+      "duration_seconds": 25
+    }
+  ],
+  "principles": {
+    "short_phrases": true,
+    "pause_seconds": 5,
+    "parentese": true,
+    "gesture_with_words": true,
+    "max_new_words": 6
+  },
+  "presenters": [
+    "ari",
+    "lumi"
+  ],
+  "content_type": "calm",
+  "co_play_tip_sq": "Pauzoni videon pas çdo pyetjeje. Përsëriteni fjalët me objekte reale.",
+  "co_play_tip_en": "Pause after every question. Repeat words with real objects in the room.",
+  "outputs_required": [
+    "script",
+    "storyboard",
+    "subtitles_vtt",
+    "vo_script"
+  ]
+}

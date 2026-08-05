@@ -1,0 +1,18 @@
+{
+  "slug": "pershendetjet-si-je",
+  "title_sq": "Si je?",
+  "title_en": "How are you?",
+  "summary_sq": "Pyetja e ngrohtë: Si je? — mirë! me buzëqeshje.",
+  "summary_en": "Warm question: How are you? — fine! with a smile.",
+  "topic": "pershendetjet",
+  "age_band": "2-3",
+  "duration_seconds": 180,
+  "presenters": [
+    "lumi",
+    "pip"
+  ],
+  "type": "speech_practice",
+  "package_level": "brief",
+  "status": "draft",
+  "video_asset": null
+}

@@ -1,0 +1,19 @@
+{
+  "slug": "kafshet-ariu-dhe-zogjt",
+  "title_sq": "Ariu dhe zogjtë",
+  "title_en": "Bear and birds",
+  "summary_sq": "Ari thotë rrr dhe Pip thotë pip-pip!",
+  "summary_en": "Ari says rrr and Pip says pip-pip!",
+  "topic": "kafshet",
+  "age_band": "1-3",
+  "duration_seconds": 220,
+  "presenters": [
+    "lumi",
+    "ari",
+    "pip"
+  ],
+  "type": "animals",
+  "package_level": "brief",
+  "status": "draft",
+  "video_asset": null
+}

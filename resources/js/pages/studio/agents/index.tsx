@@ -1,15 +1,7 @@
 import { Head, Link, useForm } from '@inertiajs/react';
-import { Bot, Plus, Sparkles } from 'lucide-react';
-import Heading from '@/components/heading';
+import { Plus, Sparkles } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -62,151 +54,171 @@ export default function StudioAgentsIndex({
     return (
         <>
             <Head title="Studio — Agents" />
-
-            <div className="flex h-full flex-1 flex-col gap-3 overflow-x-auto p-2 md:p-3">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                    <Heading
-                        title="Agent profiles"
-                        description="Customize the Grok-powered agents for each production step. Defaults apply to new regenerations."
-                    />
-                    <Badge variant={xaiConfigured ? 'default' : 'secondary'}>
+            <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+                <div className="flex h-9 shrink-0 items-center gap-2 border-b bg-background px-2">
+                    <span className="text-xs font-semibold">Agent profiles</span>
+                    <Badge
+                        variant={xaiConfigured ? 'default' : 'secondary'}
+                        className="h-5 gap-1 px-1.5 text-[10px]"
+                    >
                         <Sparkles className="size-3" />
-                        {xaiConfigured ? 'xAI connected' : 'Stub mode'}
+                        {xaiConfigured ? 'xAI' : 'Stub'}
                     </Badge>
+                    <span className="text-[10px] text-muted-foreground">
+                        {profiles.length} profiles
+                    </span>
                 </div>
 
-                <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_24rem]">
-                    <div className="space-y-6">
-                        {byStage.map((group) => (
-                            <Card key={group.value}>
-                                <CardHeader>
-                                    <CardTitle className="capitalize">
-                                        {group.label}
-                                    </CardTitle>
-                                    <CardDescription>
-                                        {group.items.length} profile
-                                        {group.items.length === 1 ? '' : 's'}
-                                    </CardDescription>
-                                </CardHeader>
-                                <CardContent className="space-y-2">
-                                    {group.items.length === 0 ? (
-                                        <p className="text-sm text-muted-foreground">
-                                            No agents for this stage yet.
-                                        </p>
-                                    ) : (
-                                        group.items.map((profile) => (
-                                            <Link
-                                                key={profile.id}
-                                                href={`/studio/agents/${profile.id}`}
-                                                className="flex items-center justify-between gap-3 rounded-lg border px-3 py-3 transition-colors hover:bg-muted/50"
-                                            >
-                                                <div className="min-w-0">
-                                                    <p className="flex items-center gap-2 font-medium">
-                                                        <Bot className="size-4 shrink-0 text-muted-foreground" />
-                                                        <span className="truncate">
-                                                            {profile.name}
+                <div className="grid min-h-0 flex-1 overflow-hidden lg:grid-cols-[1fr_18rem]">
+                    <div className="min-h-0 overflow-auto p-2">
+                        <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
+                            {byStage.map((group) => (
+                                <div
+                                    key={group.value}
+                                    className="rounded border bg-background"
+                                >
+                                    <div className="flex items-center justify-between border-b px-2 py-1">
+                                        <span className="text-[11px] font-semibold">
+                                            {group.label}
+                                        </span>
+                                        <span className="text-[10px] text-muted-foreground">
+                                            {group.items.length}
+                                        </span>
+                                    </div>
+                                    <ul className="divide-y">
+                                        {group.items.length === 0 ? (
+                                            <li className="px-2 py-2 text-[11px] text-muted-foreground">
+                                                No agents
+                                            </li>
+                                        ) : (
+                                            group.items.map((p) => (
+                                                <li key={p.id}>
+                                                    <Link
+                                                        href={`/studio/agents/${p.id}`}
+                                                        className="flex flex-col gap-0.5 px-2 py-1.5 hover:bg-muted/50"
+                                                    >
+                                                        <div className="flex items-center gap-1">
+                                                            <span className="truncate text-xs font-medium">
+                                                                {p.name}
+                                                            </span>
+                                                            {p.isDefault ? (
+                                                                <Badge
+                                                                    variant="secondary"
+                                                                    className="h-4 px-1 text-[9px]"
+                                                                >
+                                                                    default
+                                                                </Badge>
+                                                            ) : null}
+                                                        </div>
+                                                        <span className="truncate font-mono text-[10px] text-muted-foreground">
+                                                            {p.model}
                                                         </span>
-                                                    </p>
-                                                    <p className="truncate text-xs text-muted-foreground">
-                                                        {profile.model}
-                                                        {profile.description
-                                                            ? ` · ${profile.description}`
-                                                            : ''}
-                                                    </p>
-                                                </div>
-                                                <div className="flex shrink-0 gap-1">
-                                                    {profile.isDefault ? (
-                                                        <Badge variant="secondary">
-                                                            Default
-                                                        </Badge>
-                                                    ) : null}
-                                                    {!profile.isActive ? (
-                                                        <Badge variant="outline">
-                                                            Off
-                                                        </Badge>
-                                                    ) : null}
-                                                </div>
-                                            </Link>
-                                        ))
-                                    )}
-                                </CardContent>
-                            </Card>
-                        ))}
+                                                    </Link>
+                                                </li>
+                                            ))
+                                        )}
+                                    </ul>
+                                </div>
+                            ))}
+                        </div>
                     </div>
 
-                    <Card className="h-fit xl:sticky xl:top-4">
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2 text-base">
-                                <Plus className="size-4" />
-                                New agent profile
-                            </CardTitle>
-                            <CardDescription>
-                                Clone-style custom agent for a single workflow
-                                step.
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <form
-                                className="space-y-3"
-                                onSubmit={(e) => {
-                                    e.preventDefault();
-                                    form.post('/studio/agents');
-                                }}
-                            >
-                                <div className="space-y-1.5">
-                                    <Label htmlFor="name">Name</Label>
-                                    <Input
-                                        id="name"
-                                        value={form.data.name}
-                                        onChange={(e) =>
-                                            form.setData('name', e.target.value)
-                                        }
-                                        required
-                                    />
-                                </div>
-                                <div className="space-y-1.5">
-                                    <Label>Stage</Label>
-                                    <Select
-                                        value={form.data.stage}
-                                        onValueChange={(v) =>
-                                            form.setData('stage', v)
-                                        }
-                                    >
-                                        <SelectTrigger>
-                                            <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {stages.map((s) => (
-                                                <SelectItem
-                                                    key={s.value}
-                                                    value={s.value}
-                                                >
-                                                    {s.label}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                                <div className="space-y-1.5">
-                                    <Label htmlFor="model">Model</Label>
-                                    <Input
-                                        id="model"
-                                        value={form.data.model}
-                                        onChange={(e) =>
-                                            form.setData('model', e.target.value)
-                                        }
-                                    />
-                                </div>
-                                <Button
-                                    type="submit"
-                                    className="w-full"
-                                    disabled={form.processing}
+                    <aside className="flex min-h-0 flex-col border-l bg-background">
+                        <div className="flex h-8 shrink-0 items-center border-b px-2 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                            New agent
+                        </div>
+                        <form
+                            className="min-h-0 flex-1 space-y-2 overflow-auto p-2"
+                            onSubmit={(e) => {
+                                e.preventDefault();
+                                form.post('/studio/agents');
+                            }}
+                        >
+                            <div className="space-y-0.5">
+                                <Label className="text-[10px]">Name</Label>
+                                <Input
+                                    className="h-7 text-xs"
+                                    value={form.data.name}
+                                    onChange={(e) =>
+                                        form.setData('name', e.target.value)
+                                    }
+                                    required
+                                />
+                            </div>
+                            <div className="space-y-0.5">
+                                <Label className="text-[10px]">Stage</Label>
+                                <Select
+                                    value={form.data.stage}
+                                    onValueChange={(v) =>
+                                        form.setData('stage', v)
+                                    }
                                 >
-                                    Create agent
-                                </Button>
-                            </form>
-                        </CardContent>
-                    </Card>
+                                    <SelectTrigger className="h-7 text-xs">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {stages.map((s) => (
+                                            <SelectItem
+                                                key={s.value}
+                                                value={s.value}
+                                                className="text-xs"
+                                            >
+                                                {s.label}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-0.5">
+                                <Label className="text-[10px]">Model</Label>
+                                <Input
+                                    className="h-7 font-mono text-xs"
+                                    value={form.data.model}
+                                    onChange={(e) =>
+                                        form.setData('model', e.target.value)
+                                    }
+                                />
+                            </div>
+                            <div className="space-y-0.5">
+                                <Label className="text-[10px]">
+                                    System prompt
+                                </Label>
+                                <textarea
+                                    className="min-h-28 w-full rounded border bg-background p-1.5 font-mono text-[10px] focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none"
+                                    value={form.data.system_prompt}
+                                    onChange={(e) =>
+                                        form.setData(
+                                            'system_prompt',
+                                            e.target.value,
+                                        )
+                                    }
+                                    required
+                                />
+                            </div>
+                            <label className="flex items-center gap-1.5 text-[11px]">
+                                <input
+                                    type="checkbox"
+                                    checked={form.data.is_default}
+                                    onChange={(e) =>
+                                        form.setData(
+                                            'is_default',
+                                            e.target.checked,
+                                        )
+                                    }
+                                />
+                                Default for stage
+                            </label>
+                            <Button
+                                type="submit"
+                                size="sm"
+                                className="h-7 w-full text-xs"
+                                disabled={form.processing}
+                            >
+                                <Plus className="size-3" />
+                                Create
+                            </Button>
+                        </form>
+                    </aside>
                 </div>
             </div>
         </>

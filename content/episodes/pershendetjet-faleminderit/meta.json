@@ -1,0 +1,18 @@
+{
+  "slug": "pershendetjet-faleminderit",
+  "title_sq": "Faleminderit dhe ju lutem",
+  "title_en": "Thank you and please",
+  "summary_sq": "Lumi dhe Pip praktikojnë faleminderit dhe ju lutem me lojë dhënie-marrje.",
+  "summary_en": "Lumi and Pip practice thank you and please with give-and-take play.",
+  "topic": "pershendetjet",
+  "age_band": "1-3",
+  "duration_seconds": 200,
+  "presenters": [
+    "lumi",
+    "pip"
+  ],
+  "type": "speech_practice",
+  "package_level": "brief",
+  "status": "draft",
+  "video_asset": null
+}

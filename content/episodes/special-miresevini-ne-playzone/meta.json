@@ -1,0 +1,21 @@
+{
+  "slug": "special-miresevini-ne-playzone",
+  "title_sq": "Mirësevini në PlayZone!",
+  "title_en": "Welcome to PlayZone!",
+  "summary_sq": "Speciali i sezonit: Lumi, Pip, Ari, Kiki dhe Nëna Mimoza thonë përshëndetje.",
+  "summary_en": "Season special: full cast says hello.",
+  "topic": "pershendetjet",
+  "age_band": "1-3",
+  "duration_seconds": 300,
+  "presenters": [
+    "lumi",
+    "pip",
+    "ari",
+    "kiki",
+    "mimoza"
+  ],
+  "type": "special",
+  "package_level": "full",
+  "status": "draft",
+  "video_asset": null
+}
