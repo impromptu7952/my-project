@@ -36,6 +36,7 @@ import { EpisodeMediaPanel } from '@/components/studio/episode-media-panel';
 import { ScriptPreview, type ScriptPayload } from '@/components/studio/script-preview';
 import { StoryboardPreview } from '@/components/studio/storyboard-preview';
 import { VoicePreview } from '@/components/studio/voice-preview';
+import { VisualPromptsPreview } from '@/components/studio/visual-prompts-preview';
 import { cn } from '@/lib/utils';
 
 type Artifact = {
@@ -394,7 +395,7 @@ export default function StudioRunShow({
                                         ttsPayload={run.latestByKind.tts_manifest?.payload}
                                     />
                                 ) : activeStepId === 'visual_prompts' ? (
-                                    <StoryboardPreview
+                                    <VisualPromptsPreview
                                         payload={primaryArtifact?.payload}
                                     />
                                 ) : (
