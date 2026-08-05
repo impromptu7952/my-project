@@ -17,24 +17,30 @@ final class GenerateImagineMasterController extends Controller
 
     public function store(Request $request, ProductionRun $run): RedirectResponse
     {
+        $min = (int) config('services.xai.video_duration_min', 3);
+        $max = (int) config('services.xai.video_duration_max', 12);
+
         $data = $request->validate([
-            'duration' => ['sometimes', 'integer', 'min:3', 'max:12'],
+            'duration' => ['sometimes', 'integer', "min:{$min}", "max:{$max}"],
         ]);
 
+        $duration = isset($data['duration'])
+            ? (int) $data['duration']
+            : (int) config('services.xai.video_duration', 3);
+
         try {
-            $result = $this->generate->handle(
-                $run,
-                (int) ($data['duration'] ?? 6),
-            );
+            $result = $this->generate->handle($run, $duration);
         } catch (Throwable $e) {
             return back()->withErrors([
                 'imagine' => $e->getMessage(),
             ]);
         }
 
+        $usd = number_format((float) ($result['estimated_usd'] ?? 0), 2);
+
         return back()->with(
             'success',
-            'Imagine master attached. Program dock will show the new video after refresh.',
+            "Imagine master attached (~\${$usd} est.). Refresh Program output to watch.",
         );
     }
 }

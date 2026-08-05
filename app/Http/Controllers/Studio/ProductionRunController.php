@@ -152,15 +152,47 @@ final class ProductionRunController extends Controller
             'publishChecklist' => $buildChecklist->handle($run),
             'episodeMedia' => $episodeMedia,
             'episodePreview' => $episodePreview,
-            'masterDrive' => [
-                'xaiConfigured' => app(XaiClient::class)->isConfigured(),
-                'imagineConfigured' => $videoGen->isConfigured(),
-                'ffmpegAvailable' => $this->ffmpegAvailable(),
-                'last' => is_array($run->meta['last_master_drive'] ?? null)
-                    ? $run->meta['last_master_drive']
-                    : null,
-            ],
+            'masterDrive' => $this->masterDriveProps($run, $videoGen),
         ]);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function masterDriveProps(ProductionRun $run, VideoGenProvider $videoGen): array
+    {
+        $model = (string) config('services.xai.video_model', 'grok-imagine-video');
+        $defaultDuration = (int) config('services.xai.video_duration', 3);
+        $minDuration = (int) config('services.xai.video_duration_min', 3);
+        $maxDuration = (int) config('services.xai.video_duration_max', 6);
+        $resolution = (string) config('services.xai.video_resolution', '480p');
+        $rates = (array) config('services.xai.video_usd_per_sec', []);
+        $usdPerSec = (float) ($rates[$model] ?? 0.05);
+
+        $durationOptions = [];
+        for ($d = $minDuration; $d <= $maxDuration; $d++) {
+            $durationOptions[] = [
+                'seconds' => $d,
+                'estimatedUsd' => round($d * $usdPerSec, 3),
+            ];
+        }
+
+        return [
+            'xaiConfigured' => app(XaiClient::class)->isConfigured(),
+            'imagineConfigured' => $videoGen->isConfigured(),
+            'ffmpegAvailable' => $this->ffmpegAvailable(),
+            'textModel' => (string) config('services.xai.model'),
+            'videoModel' => $model,
+            'resolution' => $resolution,
+            'usdPerSec' => $usdPerSec,
+            'defaultDuration' => $defaultDuration,
+            'minDuration' => $minDuration,
+            'maxDuration' => $maxDuration,
+            'durationOptions' => $durationOptions,
+            'last' => is_array($run->meta['last_master_drive'] ?? null)
+                ? $run->meta['last_master_drive']
+                : null,
+        ];
     }
 
     private function ffmpegAvailable(): bool
