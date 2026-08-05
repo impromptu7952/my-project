@@ -50,7 +50,7 @@ export function CurriculumPreview({ payload }: Props) {
     }
 
     return (
-        <div className="space-y-4">
+        <div className="space-y-2">
             {goals.length > 0 ? (
                 <div>
                     <p className="mb-2 text-sm font-medium">Learning goals</p>
@@ -84,8 +84,8 @@ export function CurriculumPreview({ payload }: Props) {
             {structure.length > 0 ? (
                 <div className="grid gap-2 sm:grid-cols-2">
                     {structure.map((block, i) => (
-                        <Card key={i} className="shadow-none">
-                            <CardHeader className="pb-2">
+                        <Card key={i} className="gap-2 py-2 shadow-none">
+                            <CardHeader className="px-2.5 pb-0">
                                 <CardTitle className="text-sm">
                                     {block.block ?? `Block ${i + 1}`}
                                 </CardTitle>
@@ -96,7 +96,7 @@ export function CurriculumPreview({ payload }: Props) {
                                 </CardDescription>
                             </CardHeader>
                             {block.notes ? (
-                                <CardContent className="text-xs text-muted-foreground">
+                                <CardContent className="px-2.5 text-xs text-muted-foreground">
                                     {block.notes}
                                 </CardContent>
                             ) : null}

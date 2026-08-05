@@ -61,7 +61,7 @@ export default function StudioDashboard({
     return (
         <>
             <Head title="Studio" />
-            <div className="flex h-full flex-1 flex-col gap-6 overflow-x-auto p-4 md:p-6">
+            <div className="flex h-full flex-1 flex-col gap-3 overflow-x-auto p-2 md:p-3">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <Heading
                         title="Studio overview"
@@ -131,7 +131,7 @@ export default function StudioDashboard({
                                         <stat.icon className="size-3.5" />
                                         {stat.label}
                                     </CardDescription>
-                                    <CardTitle className="text-3xl">
+                                    <CardTitle className="text-2xl tabular-nums">
                                         {stat.value}
                                     </CardTitle>
                                 </CardHeader>

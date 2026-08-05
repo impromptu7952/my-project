@@ -52,7 +52,7 @@ export function StoryboardPreview({ payload }: Props) {
     }
 
     return (
-        <div className="space-y-4">
+        <div className="space-y-2">
             {scenes.map((scene, si) => (
                 <div key={scene.id ?? si} className="space-y-2">
                     <div>
@@ -68,8 +68,8 @@ export function StoryboardPreview({ payload }: Props) {
                     </div>
                     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                         {(scene.shots ?? []).map((shot, shi) => (
-                            <Card key={shot.id ?? shi} className="shadow-none">
-                                <CardHeader className="pb-2">
+                            <Card key={shot.id ?? shi} className="gap-2 py-2 shadow-none">
+                                <CardHeader className="px-2.5 pb-0">
                                     <CardTitle className="text-sm">
                                         {shot.id ?? `Shot ${shi + 1}`}
                                     </CardTitle>
@@ -80,7 +80,7 @@ export function StoryboardPreview({ payload }: Props) {
                                             : ''}
                                     </CardDescription>
                                 </CardHeader>
-                                <CardContent className="space-y-2">
+                                <CardContent className="px-2.5 space-y-2">
                                     <div className="flex aspect-video items-center justify-center rounded-lg border border-dashed bg-muted/30 text-xs text-muted-foreground">
                                         {shot.framing ?? 'Shot frame'}
                                     </div>

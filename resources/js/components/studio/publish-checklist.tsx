@@ -1,11 +1,4 @@
 import { CheckCircle2, Circle } from 'lucide-react';
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 
 export type ChecklistItem = {
@@ -23,41 +16,35 @@ export function PublishChecklist({ items }: Props) {
     const doneCount = items.filter((i) => i.done).length;
 
     return (
-        <Card>
-            <CardHeader>
-                <CardTitle className="text-base">Publish checklist</CardTitle>
-                <CardDescription>
-                    {doneCount}/{items.length} ready — complete these before going
-                    live.
-                </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-2">
-                {items.map((item) => (
-                    <div
-                        key={item.id}
-                        className={cn(
-                            'flex items-start gap-3 rounded-lg border px-3 py-2 text-sm',
-                            item.done
-                                ? 'border-primary/30 bg-primary/5'
-                                : 'bg-muted/20',
-                        )}
-                    >
-                        {item.done ? (
-                            <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-primary" />
-                        ) : (
-                            <Circle className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
-                        )}
-                        <div>
-                            <p className="font-medium">{item.label}</p>
-                            {item.detail ? (
-                                <p className="text-xs text-muted-foreground">
-                                    {item.detail}
-                                </p>
-                            ) : null}
-                        </div>
+        <div className="space-y-1">
+            <p className="text-[10px] text-muted-foreground">
+                {doneCount}/{items.length} ready
+            </p>
+            {items.map((item) => (
+                <div
+                    key={item.id}
+                    className={cn(
+                        'flex items-start gap-1.5 rounded border px-1.5 py-1 text-[11px]',
+                        item.done
+                            ? 'border-primary/30 bg-primary/5'
+                            : 'bg-muted/20',
+                    )}
+                >
+                    {item.done ? (
+                        <CheckCircle2 className="mt-0.5 size-3 shrink-0 text-primary" />
+                    ) : (
+                        <Circle className="mt-0.5 size-3 shrink-0 text-muted-foreground" />
+                    )}
+                    <div className="min-w-0">
+                        <p className="font-medium leading-tight">{item.label}</p>
+                        {item.detail ? (
+                            <p className="text-[10px] text-muted-foreground">
+                                {item.detail}
+                            </p>
+                        ) : null}
                     </div>
-                ))}
-            </CardContent>
-        </Card>
+                </div>
+            ))}
+        </div>
     );
 }

@@ -53,9 +53,9 @@ export function QualityReportPreview({ payload }: Props) {
               : null;
 
     return (
-        <div className="space-y-4">
-            <Card className="shadow-none">
-                <CardHeader className="pb-2">
+        <div className="space-y-2">
+            <Card className="gap-2 py-2 shadow-none">
+                <CardHeader className="px-2.5 pb-0">
                     <div className="flex flex-wrap items-center gap-2">
                         <CardTitle className="text-base">
                             Quality review
@@ -120,8 +120,8 @@ export function QualityReportPreview({ payload }: Props) {
             {data.agent?.notes ||
             (Array.isArray(data.agent?.risks) &&
                 data.agent.risks.length > 0) ? (
-                <Card className="shadow-none">
-                    <CardHeader className="pb-2">
+                <Card className="gap-2 py-2 shadow-none">
+                    <CardHeader className="px-2.5 pb-0">
                         <CardTitle className="text-sm">Agent notes</CardTitle>
                         {data.agent.notes ? (
                             <CardDescription>

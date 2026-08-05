@@ -5,6 +5,7 @@ import { initializeTheme } from '@/hooks/use-appearance';
 import AppLayout from '@/layouts/app-layout';
 import AuthLayout from '@/layouts/auth-layout';
 import SettingsLayout from '@/layouts/settings/layout';
+import StudioLayout from '@/layouts/studio-layout';
 
 const appName = import.meta.env.VITE_APP_NAME || 'PlayZone Kids';
 
@@ -14,9 +15,14 @@ createInertiaApp({
         switch (true) {
             case name === 'welcome':
             case name.startsWith('games/'):
+            case name.startsWith('videos/'):
+            case name.startsWith('topics/'):
+            case name.startsWith('series/'):
                 return null;
             case name.startsWith('auth/'):
                 return AuthLayout;
+            case name.startsWith('studio/'):
+                return StudioLayout;
             case name.startsWith('settings/'):
                 return [AppLayout, SettingsLayout];
             default:

@@ -85,7 +85,7 @@ export default function StudioSpecShow({ spec, runs }: Props) {
         <>
             <Head title={spec.title} />
 
-            <div className="flex h-full flex-1 flex-col gap-6 overflow-x-auto p-4 md:p-6">
+            <div className="flex h-full flex-1 flex-col gap-3 overflow-x-auto p-2 md:p-3">
                 <div className="space-y-3">
                     <Button
                         variant="ghost"
