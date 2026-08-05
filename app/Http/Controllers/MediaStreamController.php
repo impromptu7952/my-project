@@ -26,12 +26,15 @@ final class MediaStreamController extends Controller
         $isEditor = $user instanceof User && Gate::forUser($user)->allows('manage-content');
         $isPublished = $episode->status === EpisodeStatus::Published;
 
-        // Published media: require valid temporary signature (anonymous watch).
-        // Draft/unpublished: editors only (auth + manage-content).
-        if ($isPublished) {
-            abort_unless($request->hasValidSignature(), 403);
-        } else {
-            abort_unless($isEditor, 403);
+        // Editors may stream any episode media (Studio program monitor).
+        // Published media for anonymous watch still requires a valid temporary signature.
+        // Draft/unpublished: editors only.
+        if (! $isEditor) {
+            if ($isPublished) {
+                abort_unless($request->hasValidSignature(), 403);
+            } else {
+                abort(403);
+            }
         }
 
         $disk = $mediaAsset->disk ?? (string) config('media.self.disk', 'local');
