@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Studio;
 use App\Enums\ProductionStage;
 use App\Http\Controllers\Controller;
 use App\Models\AgentProfile;
+use App\Support\XaiModelCatalog;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -32,6 +33,7 @@ final class AgentProfileController extends Controller
                 'label' => str_replace('_', ' ', $s->value),
             ]),
             'xaiConfigured' => filled(config('services.xai.api_key')),
+            'textModels' => XaiModelCatalog::textModels(),
         ]);
     }
 
@@ -43,6 +45,7 @@ final class AgentProfileController extends Controller
                 'value' => $s->value,
                 'label' => str_replace('_', ' ', $s->value),
             ]),
+            'textModels' => XaiModelCatalog::textModels(),
         ]);
     }
 
@@ -52,7 +55,7 @@ final class AgentProfileController extends Controller
             'name' => ['required', 'string', 'max:120'],
             'description' => ['nullable', 'string', 'max:500'],
             'system_prompt' => ['required', 'string', 'max:20000'],
-            'model' => ['required', 'string', 'max:80'],
+            'model' => ['required', 'string', 'max:80', Rule::in(XaiModelCatalog::textModelIds())],
             'max_tokens' => ['required', 'integer', 'min:256', 'max:16000'],
             'temperature' => ['required', 'numeric', 'min:0', 'max:2'],
             'is_default' => ['boolean'],
@@ -83,7 +86,7 @@ final class AgentProfileController extends Controller
             'stage' => ['required', Rule::enum(ProductionStage::class)],
             'description' => ['nullable', 'string', 'max:500'],
             'system_prompt' => ['required', 'string', 'max:20000'],
-            'model' => ['required', 'string', 'max:80'],
+            'model' => ['required', 'string', 'max:80', Rule::in(XaiModelCatalog::textModelIds())],
             'max_tokens' => ['required', 'integer', 'min:256', 'max:16000'],
             'temperature' => ['required', 'numeric', 'min:0', 'max:2'],
             'is_default' => ['boolean'],
