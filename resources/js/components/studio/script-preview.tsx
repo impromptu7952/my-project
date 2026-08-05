@@ -35,8 +35,53 @@ type Props = {
     onChange?: (next: ScriptPayload) => void;
 };
 
+function estimateSeconds(payload: ScriptPayload): {
+    dialogueWords: number;
+    sectionDuration: number;
+    estimated: number;
+    target: number | null;
+} {
+    const sections = payload.sections ?? [];
+    let dialogueWords = 0;
+    let sectionDuration = 0;
+    let pauseTotal = 0;
+
+    for (const section of sections) {
+        if (typeof section.duration_seconds === 'number') {
+            sectionDuration += section.duration_seconds;
+        }
+        if (typeof section.pause_seconds === 'number') {
+            pauseTotal += section.pause_seconds;
+        }
+        for (const line of section.dialogue ?? []) {
+            dialogueWords += line
+                .trim()
+                .split(/\s+/)
+                .filter(Boolean).length;
+        }
+    }
+
+    // Toddler pace: ~1.2s per word + explicit pauses (fallback when sections lack duration).
+    const fromWords = Math.round(dialogueWords * 1.2 + pauseTotal);
+    const estimated =
+        sectionDuration > 0
+            ? sectionDuration + pauseTotal
+            : fromWords;
+
+    return {
+        dialogueWords,
+        sectionDuration,
+        estimated,
+        target:
+            typeof payload.duration_target_seconds === 'number'
+                ? payload.duration_target_seconds
+                : null,
+    };
+}
+
 export function ScriptPreview({ payload, editable = false, onChange }: Props) {
     const sections = payload.sections ?? [];
+    const timing = estimateSeconds(payload);
 
     function updateSection(index: number, patch: Partial<ScriptSection>) {
         if (!onChange) {
@@ -154,6 +199,35 @@ export function ScriptPreview({ payload, editable = false, onChange }: Props) {
                     </Button>
                 ) : null}
             </div>
+
+            {sections.length > 0 ? (
+                <div className="flex flex-wrap gap-2 text-xs">
+                    <span className="rounded-md border bg-muted/40 px-2 py-1">
+                        ~{Math.max(1, Math.round(timing.estimated / 60))} min (
+                        {timing.estimated}s estimated)
+                    </span>
+                    <span className="rounded-md border bg-muted/40 px-2 py-1">
+                        {timing.dialogueWords} words
+                    </span>
+                    {timing.target ? (
+                        <span
+                            className={cn(
+                                'rounded-md border px-2 py-1',
+                                Math.abs(timing.estimated - timing.target) >
+                                    timing.target * 0.25
+                                    ? 'border-amber-500/50 bg-amber-500/10 text-amber-800 dark:text-amber-200'
+                                    : 'bg-muted/40',
+                            )}
+                        >
+                            Target {timing.target}s
+                            {Math.abs(timing.estimated - timing.target) >
+                            timing.target * 0.25
+                                ? ' · off target'
+                                : ' · on pace'}
+                        </span>
+                    ) : null}
+                </div>
+            ) : null}
 
             {sections.map((section, i) => (
                 <Card key={section.id ?? i} className="shadow-none">

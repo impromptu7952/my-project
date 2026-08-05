@@ -41,6 +41,7 @@ import { StoryboardPreview } from '@/components/studio/storyboard-preview';
 import { VoicePreview } from '@/components/studio/voice-preview';
 import { VisualPromptsPreview } from '@/components/studio/visual-prompts-preview';
 import { TimelinePreview } from '@/components/studio/timeline-preview';
+import { QualityReportPreview } from '@/components/studio/quality-report-preview';
 import { cn } from '@/lib/utils';
 
 type Artifact = {
@@ -330,6 +331,17 @@ export default function StudioRunShow({
                     </Alert>
                 ) : null}
 
+                {run.status === 'rejected' ? (
+                    <Alert variant="destructive">
+                        <XCircle />
+                        <AlertTitle>Run rejected</AlertTitle>
+                        <AlertDescription>
+                            {(run.meta?.reject_reason as string | undefined) ||
+                                'No reason recorded.'}
+                        </AlertDescription>
+                    </Alert>
+                ) : null}
+
                 {/* Step navigator */}
                 <Card>
                     <CardHeader className="pb-3">
@@ -558,6 +570,10 @@ export default function StudioRunShow({
                                             }
                                         />
                                     </div>
+                                ) : activeStepId === 'quality' ? (
+                                    <QualityReportPreview
+                                        payload={primaryArtifact?.payload}
+                                    />
                                 ) : (
                                     <pre className="max-h-[22rem] overflow-auto rounded-lg border bg-muted/40 p-4 font-mono text-xs">
                                         {JSON.stringify(
