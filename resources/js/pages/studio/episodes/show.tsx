@@ -1,16 +1,8 @@
 import { Head, Link, setLayoutProps } from '@inertiajs/react';
-import { ArrowLeft, ExternalLink } from 'lucide-react';
-import Heading from '@/components/heading';
+import { ExternalLink } from 'lucide-react';
 import { EpisodeMediaPanel } from '@/components/studio/episode-media-panel';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
 
 type Props = {
     episode: {
@@ -57,128 +49,109 @@ export default function StudioEpisodeShow({ episode, media, specs }: Props) {
     return (
         <>
             <Head title={`Studio · ${episode.title}`} />
-            <div className="flex h-full flex-1 flex-col gap-3 overflow-x-auto p-2 md:p-3">
-                <div className="space-y-3">
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        asChild
-                        className="-ml-2 w-fit"
+            <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+                <div className="flex h-9 shrink-0 items-center gap-2 border-b bg-background px-2">
+                    <span className="truncate text-xs font-semibold">
+                        {episode.title}
+                    </span>
+                    <Badge
+                        variant="secondary"
+                        className="h-5 px-1.5 text-[10px] capitalize"
                     >
-                        <Link href="/studio/episodes">
-                            <ArrowLeft />
-                            All episodes
-                        </Link>
-                    </Button>
-                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                        <div className="space-y-2">
-                            <Heading
-                                title={episode.title}
-                                description={`${episode.topicName ?? 'Topic'} · ${episode.slug}`}
-                            />
-                            <div className="flex flex-wrap gap-2">
-                                <Badge variant="secondary">
-                                    {episode.status}
-                                </Badge>
-                                {episode.ageBand ? (
-                                    <Badge variant="outline">
-                                        {episode.ageBand}
-                                    </Badge>
-                                ) : null}
-                            </div>
-                        </div>
+                        {episode.status}
+                    </Badge>
+                    {episode.ageBand ? (
+                        <Badge
+                            variant="outline"
+                            className="h-5 px-1.5 text-[10px]"
+                        >
+                            {episode.ageBand}
+                        </Badge>
+                    ) : null}
+                    <span className="hidden truncate text-[10px] text-muted-foreground sm:inline">
+                        {episode.topicName} · {episode.slug}
+                    </span>
+                    <div className="ml-auto">
                         {episode.publicHref ? (
-                            <Button asChild variant="outline">
-                                <a href={episode.publicHref} target="_blank" rel="noreferrer">
-                                    <ExternalLink />
-                                    Public page
+                            <Button
+                                asChild
+                                size="sm"
+                                variant="outline"
+                                className="h-7 px-2 text-xs"
+                            >
+                                <a
+                                    href={episode.publicHref}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                >
+                                    <ExternalLink className="size-3" />
+                                    Public
                                 </a>
                             </Button>
                         ) : null}
                     </div>
                 </div>
 
-                <div className="grid gap-6 xl:grid-cols-2">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Metadata</CardTitle>
-                            <CardDescription>
-                                Titles and summaries (SQ / EN).
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-3 text-sm">
-                            <div>
-                                <p className="text-xs font-medium text-muted-foreground">
-                                    Title SQ
-                                </p>
-                                <p>{episode.titleSq}</p>
+                <div className="grid min-h-0 flex-1 overflow-hidden lg:grid-cols-2">
+                    <section className="min-h-0 overflow-auto border-r p-2">
+                        <p className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                            Media
+                        </p>
+                        <EpisodeMediaPanel
+                            episodeSlug={episode.slug}
+                            media={media}
+                        />
+                        {(episode.summarySq || episode.summaryEn) && (
+                            <div className="mt-3 space-y-1 rounded border p-2 text-[11px]">
+                                {episode.summarySq ? (
+                                    <p>
+                                        <span className="text-muted-foreground">
+                                            SQ ·{' '}
+                                        </span>
+                                        {episode.summarySq}
+                                    </p>
+                                ) : null}
+                                {episode.summaryEn ? (
+                                    <p>
+                                        <span className="text-muted-foreground">
+                                            EN ·{' '}
+                                        </span>
+                                        {episode.summaryEn}
+                                    </p>
+                                ) : null}
                             </div>
-                            <div>
-                                <p className="text-xs font-medium text-muted-foreground">
-                                    Title EN
-                                </p>
-                                <p>{episode.titleEn ?? '—'}</p>
-                            </div>
-                            <div>
-                                <p className="text-xs font-medium text-muted-foreground">
-                                    Summary SQ
-                                </p>
-                                <p className="text-muted-foreground">
-                                    {episode.summarySq ?? '—'}
-                                </p>
-                            </div>
-                            <div>
-                                <p className="text-xs font-medium text-muted-foreground">
-                                    Summary EN
-                                </p>
-                                <p className="text-muted-foreground">
-                                    {episode.summaryEn ?? '—'}
-                                </p>
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    <EpisodeMediaPanel
-                        episodeSlug={episode.slug}
-                        media={media}
-                    />
-                </div>
-
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Production specs</CardTitle>
-                        <CardDescription>
-                            Specs linked by episode slug.
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-2">
-                        {specs.length === 0 ? (
-                            <div className="space-y-2">
-                                <p className="text-sm text-muted-foreground">
-                                    No specs for this episode yet.
-                                </p>
-                                <Button asChild size="sm">
-                                    <Link href="/studio/specs/create">
-                                        Create spec
-                                    </Link>
-                                </Button>
-                            </div>
-                        ) : (
-                            specs.map((s) => (
-                                <Link
-                                    key={s.slug}
-                                    href={s.href}
-                                    className="flex items-center justify-between rounded-lg border px-3 py-3 text-sm hover:bg-muted/50"
-                                >
-                                    <span className="font-medium">{s.title}</span>
-                                    <Badge variant="outline">
-                                        {s.runsCount} runs
-                                    </Badge>
-                                </Link>
-                            ))
                         )}
-                    </CardContent>
-                </Card>
+                    </section>
+
+                    <section className="min-h-0 overflow-auto p-2">
+                        <p className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                            Linked specs
+                        </p>
+                        {specs.length === 0 ? (
+                            <p className="text-[11px] text-muted-foreground">
+                                No production specs for this episode yet.
+                            </p>
+                        ) : (
+                            <ul className="space-y-0.5">
+                                {specs.map((s) => (
+                                    <li key={s.slug}>
+                                        <Link
+                                            href={s.href}
+                                            className="flex items-center justify-between gap-2 rounded border px-2 py-1.5 text-xs hover:bg-muted/50"
+                                        >
+                                            <span className="truncate font-medium">
+                                                {s.title}
+                                            </span>
+                                            <span className="shrink-0 text-[10px] text-muted-foreground">
+                                                {s.runsCount} runs
+                                            </span>
+                                        </Link>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                    </section>
+                </div>
             </div>
         </>
     );

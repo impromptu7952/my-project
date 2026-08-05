@@ -1,19 +1,10 @@
 import { Head, Link, router, setLayoutProps, useForm } from '@inertiajs/react';
-import { ArrowLeft, Play, Save } from 'lucide-react';
+import { Play, Save } from 'lucide-react';
 import { useState } from 'react';
-import Heading from '@/components/heading';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 
 type Props = {
@@ -33,20 +24,18 @@ type Props = {
     }>;
 };
 
-function statusVariant(
-    status: string,
-): 'default' | 'secondary' | 'destructive' | 'outline' {
+function statusTone(status: string): string {
     if (status.includes('failed') || status.includes('rejected')) {
-        return 'destructive';
+        return 'text-destructive';
     }
     if (status.includes('approved') || status.includes('published')) {
-        return 'default';
+        return 'text-emerald-600 dark:text-emerald-400';
     }
-    if (status.includes('awaiting')) {
-        return 'secondary';
+    if (status.includes('awaiting') || status.includes('running')) {
+        return 'text-amber-700 dark:text-amber-300';
     }
 
-    return 'outline';
+    return 'text-muted-foreground';
 }
 
 export default function StudioSpecShow({ spec, runs }: Props) {
@@ -60,6 +49,7 @@ export default function StudioSpecShow({ spec, runs }: Props) {
     setLayoutProps({
         breadcrumbs: [
             { title: 'Studio', href: '/studio' },
+            { title: 'Specs', href: '/studio/specs' },
             { title: spec.title, href: `/studio/specs/${spec.slug}` },
         ],
     });
@@ -77,92 +67,74 @@ export default function StudioSpecShow({ spec, runs }: Props) {
                 spec: parsed as never,
             });
         } catch {
-            setJsonError('Spec JSON is invalid.');
+            setJsonError('Invalid JSON');
         }
     }
 
     return (
         <>
             <Head title={spec.title} />
-
-            <div className="flex h-full flex-1 flex-col gap-3 overflow-x-auto p-2 md:p-3">
-                <div className="space-y-3">
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        asChild
-                        className="-ml-2 w-fit"
+            <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+                <div className="flex h-9 shrink-0 items-center gap-2 border-b bg-background px-2">
+                    <span className="truncate text-xs font-semibold">
+                        {form.data.title || spec.title}
+                    </span>
+                    <Badge
+                        variant="outline"
+                        className="h-5 px-1.5 text-[10px]"
                     >
-                        <Link href="/studio/specs">
-                            <ArrowLeft />
-                            Back to specs
-                        </Link>
-                    </Button>
-
-                    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                        <div className="space-y-2">
-                            <Heading
-                                title={spec.title}
-                                description={
-                                    spec.episodeSlug
-                                        ? `Episode · ${spec.episodeSlug}`
-                                        : 'No episode linked'
-                                }
-                            />
-                            <div className="flex flex-wrap gap-2">
-                                <Badge variant="outline">v{spec.version}</Badge>
-                                <Badge variant="secondary">
-                                    {runs.length}{' '}
-                                    {runs.length === 1 ? 'run' : 'runs'}
-                                </Badge>
-                            </div>
-                        </div>
-                        <div className="flex flex-wrap gap-2">
-                            <Button variant="secondary" onClick={saveSpec}>
-                                <Save />
-                                Save spec
-                            </Button>
-                            <Button
-                                onClick={() =>
-                                    router.post(
-                                        `/studio/specs/${spec.slug}/runs`,
-                                    )
-                                }
-                            >
-                                <Play />
-                                Start production run
-                            </Button>
-                        </div>
+                        v{spec.version}
+                    </Badge>
+                    <Badge
+                        variant="secondary"
+                        className="h-5 px-1.5 text-[10px]"
+                    >
+                        {runs.length} runs
+                    </Badge>
+                    <div className="ml-auto flex items-center gap-1">
+                        <Button
+                            size="sm"
+                            variant="secondary"
+                            className="h-7 px-2 text-xs"
+                            onClick={saveSpec}
+                        >
+                            <Save className="size-3" />
+                            Save
+                        </Button>
+                        <Button
+                            size="sm"
+                            className="h-7 px-2 text-xs"
+                            onClick={() =>
+                                router.post(
+                                    `/studio/specs/${spec.slug}/runs`,
+                                )
+                            }
+                        >
+                            <Play className="size-3" />
+                            Start run
+                        </Button>
                     </div>
                 </div>
 
-                <div className="grid gap-6 xl:grid-cols-2">
-                    <Card className="min-w-0">
-                        <CardHeader>
-                            <CardTitle>Spec package</CardTitle>
-                            <CardDescription>
-                                Edit the production brief agents consume. JSON
-                                is validated on save.
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-3">
-                            <div className="grid gap-2">
-                                <Label htmlFor="title">Title</Label>
+                <div className="grid min-h-0 flex-1 lg:grid-cols-[1fr_16rem]">
+                    <section className="flex min-h-0 flex-col overflow-hidden border-r">
+                        <div className="grid shrink-0 gap-1.5 border-b p-2 sm:grid-cols-2">
+                            <div className="space-y-0.5">
+                                <Label className="text-[10px]">Title</Label>
                                 <Input
-                                    id="title"
+                                    className="h-7 text-xs"
                                     value={form.data.title}
                                     onChange={(e) =>
                                         form.setData('title', e.target.value)
                                     }
                                 />
                             </div>
-                            <div className="grid gap-2">
-                                <Label htmlFor="episode_slug">
+                            <div className="space-y-0.5">
+                                <Label className="text-[10px]">
                                     Episode slug
                                 </Label>
                                 <Input
-                                    id="episode_slug"
-                                    className="font-mono text-sm"
+                                    className="h-7 font-mono text-xs"
                                     value={form.data.episode_slug}
                                     onChange={(e) =>
                                         form.setData(
@@ -172,85 +144,84 @@ export default function StudioSpecShow({ spec, runs }: Props) {
                                     }
                                 />
                             </div>
-                            <div className="grid gap-2">
-                                <Label htmlFor="spec_json">Spec JSON</Label>
-                                <textarea
-                                    id="spec_json"
-                                    value={form.data.spec_json}
-                                    onChange={(e) =>
-                                        form.setData(
-                                            'spec_json',
-                                            e.target.value,
-                                        )
-                                    }
-                                    className={cn(
-                                        'min-h-[22rem] w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-xs',
-                                        'focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
-                                    )}
-                                    spellCheck={false}
-                                />
+                        </div>
+                        <div className="flex min-h-0 flex-1 flex-col p-2">
+                            <div className="mb-1 flex items-center justify-between text-[10px] text-muted-foreground">
+                                <span>Production spec JSON</span>
                                 {jsonError ? (
-                                    <p className="text-sm text-destructive">
+                                    <span className="text-destructive">
                                         {jsonError}
-                                    </p>
+                                    </span>
                                 ) : null}
                             </div>
-                        </CardContent>
-                    </Card>
+                            <textarea
+                                value={form.data.spec_json}
+                                onChange={(e) =>
+                                    form.setData('spec_json', e.target.value)
+                                }
+                                spellCheck={false}
+                                className="min-h-0 flex-1 resize-none rounded border bg-background p-2 font-mono text-[11px] leading-relaxed focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none"
+                            />
+                        </div>
+                    </section>
 
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Production runs</CardTitle>
-                            <CardDescription>
-                                Human gates pause after script and final package
-                                review. Open a run for the full step workspace.
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-2">
+                    <aside className="flex min-h-0 flex-col overflow-hidden bg-background">
+                        <div className="flex h-8 shrink-0 items-center border-b px-2 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                            Runs
+                        </div>
+                        <div className="min-h-0 flex-1 overflow-auto p-1.5">
                             {runs.length === 0 ? (
-                                <p className="text-sm text-muted-foreground">
-                                    No runs yet. Start a production run to
-                                    generate artifacts.
+                                <p className="px-1 py-2 text-[11px] text-muted-foreground">
+                                    No runs yet. Start one from the toolbar.
                                 </p>
                             ) : (
-                                runs.map((run, index) => (
-                                    <div key={run.id}>
-                                        {index > 0 ? (
-                                            <Separator className="my-2" />
-                                        ) : null}
-                                        <Link
-                                            href={`/studio/runs/${run.id}`}
-                                            className="flex items-center justify-between gap-3 rounded-lg p-3 transition-colors hover:bg-muted/60"
-                                        >
-                                            <div className="min-w-0 space-y-1">
-                                                <p className="font-medium">
-                                                    Run #{run.id}
-                                                </p>
-                                                <p className="truncate text-xs text-muted-foreground">
-                                                    Stage:{' '}
-                                                    {run.currentStage ?? '—'}
-                                                    {run.startedAt
-                                                        ? ` · ${new Date(run.startedAt).toLocaleString()}`
-                                                        : ''}
-                                                </p>
-                                            </div>
-                                            <Badge
-                                                variant={statusVariant(
-                                                    run.status,
-                                                )}
-                                                className="shrink-0"
+                                <ul className="space-y-0.5">
+                                    {runs.map((run) => (
+                                        <li key={run.id}>
+                                            <Link
+                                                href={`/studio/runs/${run.id}`}
+                                                className="block rounded border px-2 py-1.5 hover:bg-muted/50"
                                             >
-                                                {run.status.replaceAll(
-                                                    '_',
-                                                    ' ',
-                                                )}
-                                            </Badge>
-                                        </Link>
-                                    </div>
-                                ))
+                                                <div className="flex items-center justify-between gap-1">
+                                                    <span className="text-xs font-medium">
+                                                        #{run.id}
+                                                    </span>
+                                                    <span
+                                                        className={cn(
+                                                            'text-[10px] capitalize',
+                                                            statusTone(
+                                                                run.status,
+                                                            ),
+                                                        )}
+                                                    >
+                                                        {run.status.replaceAll(
+                                                            '_',
+                                                            ' ',
+                                                        )}
+                                                    </span>
+                                                </div>
+                                                {run.currentStage ? (
+                                                    <p className="text-[10px] text-muted-foreground">
+                                                        {run.currentStage}
+                                                    </p>
+                                                ) : null}
+                                            </Link>
+                                        </li>
+                                    ))}
+                                </ul>
                             )}
-                        </CardContent>
-                    </Card>
+                        </div>
+                        {spec.episodeSlug ? (
+                            <div className="shrink-0 border-t p-1.5 text-[11px]">
+                                <Link
+                                    href={`/studio/episodes/${spec.episodeSlug}`}
+                                    className="block rounded px-1.5 py-1 hover:bg-muted"
+                                >
+                                    Episode hub →
+                                </Link>
+                            </div>
+                        ) : null}
+                    </aside>
                 </div>
             </div>
         </>
