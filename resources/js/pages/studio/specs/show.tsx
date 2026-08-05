@@ -1,5 +1,6 @@
-import { Head, Link, router, setLayoutProps } from '@inertiajs/react';
-import { ArrowLeft, Play } from 'lucide-react';
+import { Head, Link, router, setLayoutProps, useForm } from '@inertiajs/react';
+import { ArrowLeft, Play, Save } from 'lucide-react';
+import { useState } from 'react';
 import Heading from '@/components/heading';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -10,6 +11,8 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 
@@ -47,6 +50,13 @@ function statusVariant(
 }
 
 export default function StudioSpecShow({ spec, runs }: Props) {
+    const [jsonError, setJsonError] = useState<string | null>(null);
+    const form = useForm({
+        title: spec.title,
+        episode_slug: spec.episodeSlug ?? '',
+        spec_json: JSON.stringify(spec.spec, null, 2),
+    });
+
     setLayoutProps({
         breadcrumbs: [
             { title: 'Studio', href: '/studio' },
@@ -54,13 +64,35 @@ export default function StudioSpecShow({ spec, runs }: Props) {
         ],
     });
 
+    function saveSpec() {
+        try {
+            const parsed = JSON.parse(form.data.spec_json) as Record<
+                string,
+                unknown
+            >;
+            setJsonError(null);
+            router.put(`/studio/specs/${spec.slug}`, {
+                title: form.data.title,
+                episode_slug: form.data.episode_slug,
+                spec: parsed as never,
+            });
+        } catch {
+            setJsonError('Spec JSON is invalid.');
+        }
+    }
+
     return (
         <>
             <Head title={spec.title} />
 
             <div className="flex h-full flex-1 flex-col gap-6 overflow-x-auto p-4 md:p-6">
                 <div className="space-y-3">
-                    <Button variant="ghost" size="sm" asChild className="-ml-2 w-fit">
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        asChild
+                        className="-ml-2 w-fit"
+                    >
                         <Link href="/studio">
                             <ArrowLeft />
                             Back to specs
@@ -85,14 +117,22 @@ export default function StudioSpecShow({ spec, runs }: Props) {
                                 </Badge>
                             </div>
                         </div>
-                        <Button
-                            onClick={() =>
-                                router.post(`/studio/specs/${spec.slug}/runs`)
-                            }
-                        >
-                            <Play />
-                            Start production run
-                        </Button>
+                        <div className="flex flex-wrap gap-2">
+                            <Button variant="secondary" onClick={saveSpec}>
+                                <Save />
+                                Save spec
+                            </Button>
+                            <Button
+                                onClick={() =>
+                                    router.post(
+                                        `/studio/specs/${spec.slug}/runs`,
+                                    )
+                                }
+                            >
+                                <Play />
+                                Start production run
+                            </Button>
+                        </div>
                     </div>
                 </div>
 
@@ -101,19 +141,60 @@ export default function StudioSpecShow({ spec, runs }: Props) {
                         <CardHeader>
                             <CardTitle>Spec package</CardTitle>
                             <CardDescription>
-                                Validated production specification JSON used by
-                                agents.
+                                Edit the production brief agents consume. JSON
+                                is validated on save.
                             </CardDescription>
                         </CardHeader>
-                        <CardContent>
-                            <pre
-                                className={cn(
-                                    'max-h-[28rem] overflow-auto rounded-lg border bg-muted/50 p-4 font-mono text-xs text-foreground',
-                                    'dark:bg-muted/30',
-                                )}
-                            >
-                                {JSON.stringify(spec.spec, null, 2)}
-                            </pre>
+                        <CardContent className="space-y-3">
+                            <div className="grid gap-2">
+                                <Label htmlFor="title">Title</Label>
+                                <Input
+                                    id="title"
+                                    value={form.data.title}
+                                    onChange={(e) =>
+                                        form.setData('title', e.target.value)
+                                    }
+                                />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="episode_slug">
+                                    Episode slug
+                                </Label>
+                                <Input
+                                    id="episode_slug"
+                                    className="font-mono text-sm"
+                                    value={form.data.episode_slug}
+                                    onChange={(e) =>
+                                        form.setData(
+                                            'episode_slug',
+                                            e.target.value,
+                                        )
+                                    }
+                                />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="spec_json">Spec JSON</Label>
+                                <textarea
+                                    id="spec_json"
+                                    value={form.data.spec_json}
+                                    onChange={(e) =>
+                                        form.setData(
+                                            'spec_json',
+                                            e.target.value,
+                                        )
+                                    }
+                                    className={cn(
+                                        'min-h-[22rem] w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-xs',
+                                        'focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
+                                    )}
+                                    spellCheck={false}
+                                />
+                                {jsonError ? (
+                                    <p className="text-sm text-destructive">
+                                        {jsonError}
+                                    </p>
+                                ) : null}
+                            </div>
                         </CardContent>
                     </Card>
 
@@ -122,7 +203,7 @@ export default function StudioSpecShow({ spec, runs }: Props) {
                             <CardTitle>Production runs</CardTitle>
                             <CardDescription>
                                 Human gates pause after script and final package
-                                review.
+                                review. Open a run for the full step workspace.
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-2">
@@ -159,7 +240,10 @@ export default function StudioSpecShow({ spec, runs }: Props) {
                                                 )}
                                                 className="shrink-0"
                                             >
-                                                {run.status.replaceAll('_', ' ')}
+                                                {run.status.replaceAll(
+                                                    '_',
+                                                    ' ',
+                                                )}
                                             </Badge>
                                         </Link>
                                     </div>
@@ -172,4 +256,3 @@ export default function StudioSpecShow({ spec, runs }: Props) {
         </>
     );
 }
-

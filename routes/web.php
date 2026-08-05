@@ -56,6 +56,7 @@ Route::middleware(['auth', 'verified', 'can:manage-content', EnsureStudioEnabled
     Route::get('/specs/create', [ProductionSpecController::class, 'create'])->name('specs.create');
     Route::post('/specs', [ProductionSpecController::class, 'store'])->name('specs.store');
     Route::get('/specs/{spec:slug}', [ProductionSpecController::class, 'show'])->name('specs.show');
+    Route::put('/specs/{spec:slug}', [ProductionSpecController::class, 'update'])->name('specs.update');
     Route::post('/specs/{spec:slug}/runs', [StartProductionRunController::class, 'store'])->name('specs.start-run');
 
     Route::get('/agents', [AgentProfileController::class, 'index'])->name('agents.index');

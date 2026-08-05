@@ -54,6 +54,8 @@ final class StageAgentService
             ],
             maxTokens: $profile?->max_tokens
                 ?? (int) config('services.xai.max_tokens.'.$stage->value, 3000),
+            model: $profile?->model,
+            temperature: $profile?->temperature,
         );
 
         $payload = $this->decodeJsonObject($result['content']);

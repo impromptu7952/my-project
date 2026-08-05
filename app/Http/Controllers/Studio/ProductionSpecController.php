@@ -83,4 +83,26 @@ final class ProductionSpecController extends Controller
             ]),
         ]);
     }
+
+    public function update(Request $request, ProductionSpec $spec, ValidateProductionSpec $validate): RedirectResponse
+    {
+        $data = $request->validate([
+            'title' => ['required', 'string', 'max:255'],
+            'episode_slug' => ['required', 'string', 'max:255'],
+            'spec' => ['required', 'array'],
+        ]);
+
+        $specPayload = $validate->handle($data['spec']);
+
+        $spec->update([
+            'title' => $data['title'],
+            'episode_slug' => $data['episode_slug'],
+            'spec' => $specPayload,
+            'version' => (string) ($specPayload['version'] ?? $spec->version),
+        ]);
+
+        return redirect()
+            ->route('studio.specs.show', $spec)
+            ->with('success', 'Production spec updated.');
+    }
 }
