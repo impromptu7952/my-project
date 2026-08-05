@@ -28,6 +28,7 @@ beforeEach(function (): void {
 });
 
 test('editor can open agent profiles index', function (): void {
+    Config::set('services.xai.api_key', null);
     $editor = User::query()->where('email', 'editor@playzone.test')->firstOrFail();
 
     $this->actingAs($editor)
@@ -37,6 +38,18 @@ test('editor can open agent profiles index', function (): void {
             ->component('studio/agents/index')
             ->has('profiles')
             ->where('xaiConfigured', false));
+});
+
+test('agents index reports xai configured when api key is set', function (): void {
+    Config::set('services.xai.api_key', 'test-key-not-used-for-http');
+    $editor = User::query()->where('email', 'editor@playzone.test')->firstOrFail();
+
+    $this->actingAs($editor)
+        ->get(route('studio.agents.index'))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->component('studio/agents/index')
+            ->where('xaiConfigured', true));
 });
 
 test('manual artifact edit creates a new version', function (): void {
