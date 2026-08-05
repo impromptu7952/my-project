@@ -79,7 +79,7 @@ final readonly class UploadEpisodeVideo
     private function allowedMimesFor(MediaKind $kind): array
     {
         return match ($kind) {
-            MediaKind::VideoMaster, MediaKind::Audio => array_values(
+            MediaKind::VideoMaster => array_values(
                 (array) config('media.self.allowed_mimes', ['video/mp4', 'video/webm'])
             ),
             MediaKind::Subtitle => array_values(
@@ -88,13 +88,21 @@ final readonly class UploadEpisodeVideo
             MediaKind::Thumbnail => array_values(
                 (array) config('media.self.thumbnail_mimes', ['image/jpeg', 'image/png', 'image/webp'])
             ),
+            MediaKind::Audio => array_values(
+                (array) config('media.self.audio_mimes', [
+                    'audio/mpeg',
+                    'audio/mp4',
+                    'audio/aac',
+                    'audio/wav',
+                    'audio/x-wav',
+                    'audio/wave',
+                ])
+            ),
         };
     }
 
     private function extensionFor(MediaKind $kind, string $mime, UploadedFile $file): string
     {
-        $fromFile = mb_strtolower($file->getClientOriginalExtension() ?: '');
-
         return match ($kind) {
             MediaKind::VideoMaster => match ($mime) {
                 'video/webm' => 'webm',
@@ -106,7 +114,12 @@ final readonly class UploadEpisodeVideo
                 'image/webp' => 'webp',
                 default => 'jpg',
             },
-            MediaKind::Audio => $fromFile !== '' ? $fromFile : 'm4a',
+            MediaKind::Audio => match ($mime) {
+                'audio/mpeg' => 'mp3',
+                'audio/aac' => 'aac',
+                'audio/wav', 'audio/x-wav', 'audio/wave' => 'wav',
+                default => 'm4a',
+            },
         };
     }
 
@@ -116,7 +129,7 @@ final readonly class UploadEpisodeVideo
             MediaKind::VideoMaster => in_array($extension, ['mp4', 'webm'], true),
             MediaKind::Subtitle => $extension === 'vtt',
             MediaKind::Thumbnail => in_array($extension, ['jpg', 'jpeg', 'png', 'webp'], true),
-            MediaKind::Audio => true,
+            MediaKind::Audio => in_array($extension, ['mp3', 'm4a', 'aac', 'wav'], true),
         };
 
         if (! $ok) {

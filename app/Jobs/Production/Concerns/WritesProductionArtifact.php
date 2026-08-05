@@ -78,7 +78,7 @@ trait WritesProductionArtifact
         }
     }
 
-    private function isAgentWritableStatus(ProductionRunStatus $status): bool
+    protected function isAgentWritableStatus(ProductionRunStatus $status): bool
     {
         return in_array($status, [
             ProductionRunStatus::RunningChainA,
@@ -86,7 +86,7 @@ trait WritesProductionArtifact
         ], true);
     }
 
-    private function markFailedIfFinalAttempt(int $runId, ProductionStage $stage, Throwable $e): void
+    protected function markFailedIfFinalAttempt(int $runId, ProductionStage $stage, Throwable $e): void
     {
         // Only mark Failed after the final queue attempt so automatic retries can recover.
         $attempts = method_exists($this, 'attempts') ? (int) $this->attempts() : 1;
