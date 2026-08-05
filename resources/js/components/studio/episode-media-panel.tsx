@@ -1,13 +1,6 @@
 import { useForm } from '@inertiajs/react';
 import { Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -41,106 +34,108 @@ export function EpisodeMediaPanel({ episodeSlug, media }: Props) {
     });
 
     return (
-        <Card>
-            <CardHeader>
-                <CardTitle className="text-base">Episode media</CardTitle>
-                <CardDescription>
-                    Upload masters, captions, thumbnails, or audio for{' '}
-                    <span className="font-mono">{episodeSlug}</span>
-                </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-                <div className="space-y-2">
-                    {media.length === 0 ? (
-                        <p className="text-sm text-muted-foreground">
-                            No media attached yet.
-                        </p>
-                    ) : (
-                        media.map((item) => (
-                            <div
-                                key={item.id}
-                                className="flex items-center justify-between gap-2 rounded-md border px-3 py-2 text-sm"
-                            >
-                                <div>
-                                    <p className="font-medium">{item.kind}</p>
-                                    <p className="text-xs text-muted-foreground">
-                                        {item.mimeType}
-                                        {item.sizeBytes
-                                            ? ` · ${Math.round(item.sizeBytes / 1024)} KB`
-                                            : ''}
-                                    </p>
-                                </div>
-                                {item.url ? (
-                                    <Button variant="outline" size="sm" asChild>
-                                        <a
-                                            href={item.url}
-                                            target="_blank"
-                                            rel="noreferrer"
-                                        >
-                                            Open
-                                        </a>
-                                    </Button>
-                                ) : null}
-                            </div>
-                        ))
-                    )}
-                </div>
+        <div className="space-y-2">
+            <div>
+                <p className="text-[11px] font-semibold">Media</p>
+                <p className="font-mono text-[10px] text-muted-foreground">
+                    {episodeSlug}
+                </p>
+            </div>
 
-                <form
-                    className="space-y-3 rounded-lg border p-3"
-                    onSubmit={(e) => {
-                        e.preventDefault();
-                        form.post(`/studio/episodes/${episodeSlug}/media`, {
-                            forceFormData: true,
-                            onSuccess: () => form.reset('video'),
-                        });
-                    }}
-                >
-                    <div className="space-y-1.5">
-                        <Label>Kind</Label>
-                        <Select
-                            value={form.data.kind}
-                            onValueChange={(v) => form.setData('kind', v)}
+            <div className="space-y-1">
+                {media.length === 0 ? (
+                    <p className="text-[11px] text-muted-foreground">
+                        No media yet.
+                    </p>
+                ) : (
+                    media.map((item) => (
+                        <div
+                            key={item.id}
+                            className="flex items-center justify-between gap-1 rounded border px-1.5 py-1 text-[11px]"
                         >
-                            <SelectTrigger>
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="video_master">
-                                    Video master
-                                </SelectItem>
-                                <SelectItem value="subtitle">
-                                    Subtitles (VTT)
-                                </SelectItem>
-                                <SelectItem value="thumbnail">
-                                    Thumbnail
-                                </SelectItem>
-                                <SelectItem value="audio">Audio / VO</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-                    <div className="space-y-1.5">
-                        <Label htmlFor="media-file">File</Label>
-                        <Input
-                            id="media-file"
-                            type="file"
-                            onChange={(e) =>
-                                form.setData(
-                                    'video',
-                                    e.target.files?.[0] ?? null,
-                                )
-                            }
-                        />
-                    </div>
-                    <Button
-                        type="submit"
-                        disabled={form.processing || !form.data.video}
+                            <div className="min-w-0">
+                                <p className="truncate font-medium">
+                                    {item.kind}
+                                </p>
+                                <p className="truncate text-[10px] text-muted-foreground">
+                                    {item.mimeType}
+                                    {item.sizeBytes
+                                        ? ` · ${Math.round(item.sizeBytes / 1024)} KB`
+                                        : ''}
+                                </p>
+                            </div>
+                            {item.url ? (
+                                <a
+                                    href={item.url}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="shrink-0 text-[10px] font-medium text-primary hover:underline"
+                                >
+                                    Open
+                                </a>
+                            ) : null}
+                        </div>
+                    ))
+                )}
+            </div>
+
+            <form
+                className="space-y-1.5 rounded border p-1.5"
+                onSubmit={(e) => {
+                    e.preventDefault();
+                    form.post(`/studio/episodes/${episodeSlug}/media`, {
+                        forceFormData: true,
+                        onSuccess: () => form.reset('video'),
+                    });
+                }}
+            >
+                <div className="space-y-0.5">
+                    <Label className="text-[10px]">Kind</Label>
+                    <Select
+                        value={form.data.kind}
+                        onValueChange={(v) => form.setData('kind', v)}
                     >
-                        <Upload />
-                        Upload
-                    </Button>
-                </form>
-            </CardContent>
-        </Card>
+                        <SelectTrigger className="h-7 text-xs">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="video_master">
+                                Video master
+                            </SelectItem>
+                            <SelectItem value="subtitle">
+                                Subtitles (VTT)
+                            </SelectItem>
+                            <SelectItem value="thumbnail">Thumbnail</SelectItem>
+                            <SelectItem value="audio">Audio / VO</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+                <div className="space-y-0.5">
+                    <Label className="text-[10px]" htmlFor="media-file">
+                        File
+                    </Label>
+                    <Input
+                        id="media-file"
+                        type="file"
+                        className="h-8 text-xs"
+                        onChange={(e) =>
+                            form.setData(
+                                'video',
+                                e.target.files?.[0] ?? null,
+                            )
+                        }
+                    />
+                </div>
+                <Button
+                    type="submit"
+                    size="sm"
+                    className="h-7 w-full text-xs"
+                    disabled={form.processing || !form.data.video}
+                >
+                    <Upload className="size-3" />
+                    Upload
+                </Button>
+            </form>
+        </div>
     );
 }

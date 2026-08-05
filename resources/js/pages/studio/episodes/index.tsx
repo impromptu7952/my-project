@@ -38,7 +38,7 @@ export default function StudioEpisodesIndex({ episodes, specs }: Props) {
     return (
         <>
             <Head title="Studio — Episodes" />
-            <div className="flex h-full flex-1 flex-col gap-6 overflow-x-auto p-4 md:p-6">
+            <div className="flex h-full flex-1 flex-col gap-3 overflow-x-auto p-2 md:p-3">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <Heading
                         title="Episodes"

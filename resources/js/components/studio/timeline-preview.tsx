@@ -40,13 +40,13 @@ export function TimelinePreview({ editPayload, onScreenPayload }: Props) {
     }
 
     return (
-        <div className="space-y-4">
+        <div className="space-y-2">
             {instructions.length > 0 ? (
                 <div className="space-y-2">
                     <p className="text-sm font-medium">Edit timeline</p>
                     {instructions.map((row, i) => (
-                        <Card key={i} className="shadow-none">
-                            <CardHeader className="pb-2">
+                        <Card key={i} className="gap-2 py-2 shadow-none">
+                            <CardHeader className="px-2.5 pb-0">
                                 <CardTitle className="font-mono text-xs">
                                     {row.timecode_in ?? '??'} →{' '}
                                     {row.timecode_out ?? '??'}

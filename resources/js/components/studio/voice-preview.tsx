@@ -45,7 +45,7 @@ export function VoicePreview({ voPayload, ttsPayload }: Props) {
     }
 
     return (
-        <div className="space-y-4">
+        <div className="space-y-2">
             <div className="flex flex-wrap gap-2">
                 {manifest.voice ? (
                     <Badge variant="secondary">Voice · {manifest.voice}</Badge>
@@ -62,8 +62,8 @@ export function VoicePreview({ voPayload, ttsPayload }: Props) {
 
             <div className="space-y-2">
                 {lines.map((line, i) => (
-                    <Card key={i} className="shadow-none">
-                        <CardHeader className="pb-2">
+                    <Card key={i} className="gap-2 py-2 shadow-none">
+                        <CardHeader className="px-2.5 pb-0">
                             <CardTitle className="text-xs font-medium text-muted-foreground">
                                 {line.section_id ?? `Line ${i + 1}`}
                                 {line.pause_after_seconds
@@ -75,7 +75,7 @@ export function VoicePreview({ voPayload, ttsPayload }: Props) {
                             </CardDescription>
                         </CardHeader>
                         {(line.emphasis?.length ?? 0) > 0 ? (
-                            <CardContent className="flex flex-wrap gap-1 pt-0">
+                            <CardContent className="px-2.5 flex flex-wrap gap-1 pt-0">
                                 {line.emphasis?.map((word) => (
                                     <Badge key={word} variant="outline">
                                         {word}

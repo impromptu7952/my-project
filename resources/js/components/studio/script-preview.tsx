@@ -144,14 +144,15 @@ export function ScriptPreview({ payload, editable = false, onChange }: Props) {
     }
 
     return (
-        <div className="space-y-4">
-            <div className="flex flex-wrap items-start justify-between gap-3">
-                <div>
+        <div className="space-y-2">
+            <div className="flex flex-wrap items-start justify-between gap-2">
+                <div className="min-w-0 flex-1">
                     {editable ? (
-                        <div className="grid gap-2 sm:grid-cols-2">
-                            <div className="space-y-1">
-                                <Label>Title</Label>
+                        <div className="grid gap-1.5 sm:grid-cols-2">
+                            <div className="space-y-0.5">
+                                <Label className="text-[10px]">Title</Label>
                                 <Input
+                                    className="h-7 text-xs"
                                     value={payload.title ?? ''}
                                     onChange={(e) =>
                                         onChange?.({
@@ -161,9 +162,10 @@ export function ScriptPreview({ payload, editable = false, onChange }: Props) {
                                     }
                                 />
                             </div>
-                            <div className="space-y-1">
-                                <Label>Character</Label>
+                            <div className="space-y-0.5">
+                                <Label className="text-[10px]">Character</Label>
                                 <Input
+                                    className="h-7 text-xs"
                                     value={payload.character?.name ?? ''}
                                     onChange={(e) =>
                                         onChange?.({
@@ -179,11 +181,11 @@ export function ScriptPreview({ payload, editable = false, onChange }: Props) {
                         </div>
                     ) : (
                         <>
-                            <p className="text-lg font-semibold">
+                            <p className="text-sm font-semibold">
                                 {payload.title ?? 'Script'}
                             </p>
                             {payload.character?.name ? (
-                                <p className="text-sm text-muted-foreground">
+                                <p className="text-[11px] text-muted-foreground">
                                     Character: {payload.character.name}
                                     {payload.character.tone
                                         ? ` · ${payload.character.tone}`
@@ -194,25 +196,31 @@ export function ScriptPreview({ payload, editable = false, onChange }: Props) {
                     )}
                 </div>
                 {editable ? (
-                    <Button type="button" size="sm" variant="secondary" onClick={addSection}>
+                    <Button
+                        type="button"
+                        size="sm"
+                        variant="secondary"
+                        className="h-7 text-xs"
+                        onClick={addSection}
+                    >
                         Add section
                     </Button>
                 ) : null}
             </div>
 
             {sections.length > 0 ? (
-                <div className="flex flex-wrap gap-2 text-xs">
-                    <span className="rounded-md border bg-muted/40 px-2 py-1">
+                <div className="flex flex-wrap gap-1 text-[10px]">
+                    <span className="rounded border bg-muted/40 px-1.5 py-0.5">
                         ~{Math.max(1, Math.round(timing.estimated / 60))} min (
-                        {timing.estimated}s estimated)
+                        {timing.estimated}s)
                     </span>
-                    <span className="rounded-md border bg-muted/40 px-2 py-1">
+                    <span className="rounded border bg-muted/40 px-1.5 py-0.5">
                         {timing.dialogueWords} words
                     </span>
                     {timing.target ? (
                         <span
                             className={cn(
-                                'rounded-md border px-2 py-1',
+                                'rounded border px-1.5 py-0.5',
                                 Math.abs(timing.estimated - timing.target) >
                                     timing.target * 0.25
                                     ? 'border-amber-500/50 bg-amber-500/10 text-amber-800 dark:text-amber-200'
@@ -222,21 +230,27 @@ export function ScriptPreview({ payload, editable = false, onChange }: Props) {
                             Target {timing.target}s
                             {Math.abs(timing.estimated - timing.target) >
                             timing.target * 0.25
-                                ? ' · off target'
-                                : ' · on pace'}
+                                ? ' · off'
+                                : ' · ok'}
                         </span>
                     ) : null}
                 </div>
             ) : null}
 
             {sections.map((section, i) => (
-                <Card key={section.id ?? i} className="shadow-none">
-                    <CardHeader className="pb-2">
+                <Card
+                    key={section.id ?? i}
+                    className="gap-2 py-2 shadow-none"
+                >
+                    <CardHeader className="px-2.5 pb-0">
                         {editable ? (
-                            <div className="grid gap-2 sm:grid-cols-3">
-                                <div className="space-y-1 sm:col-span-2">
-                                    <Label>Section name</Label>
+                            <div className="grid gap-1.5 sm:grid-cols-3">
+                                <div className="space-y-0.5 sm:col-span-2">
+                                    <Label className="text-[10px]">
+                                        Section
+                                    </Label>
                                     <Input
+                                        className="h-7 text-xs"
                                         value={section.name ?? ''}
                                         onChange={(e) =>
                                             updateSection(i, {
@@ -245,10 +259,13 @@ export function ScriptPreview({ payload, editable = false, onChange }: Props) {
                                         }
                                     />
                                 </div>
-                                <div className="space-y-1">
-                                    <Label>Duration (s)</Label>
+                                <div className="space-y-0.5">
+                                    <Label className="text-[10px]">
+                                        Duration (s)
+                                    </Label>
                                     <Input
                                         type="number"
+                                        className="h-7 text-xs"
                                         value={section.duration_seconds ?? 0}
                                         onChange={(e) =>
                                             updateSection(i, {
@@ -262,10 +279,12 @@ export function ScriptPreview({ payload, editable = false, onChange }: Props) {
                             </div>
                         ) : (
                             <>
-                                <CardTitle className="text-sm">
-                                    {section.name ?? section.id ?? `Section ${i + 1}`}
+                                <CardTitle className="text-xs">
+                                    {section.name ??
+                                        section.id ??
+                                        `Section ${i + 1}`}
                                 </CardTitle>
-                                <CardDescription>
+                                <CardDescription className="text-[10px]">
                                     {section.duration_seconds
                                         ? `${section.duration_seconds}s`
                                         : '—'}
@@ -276,7 +295,7 @@ export function ScriptPreview({ payload, editable = false, onChange }: Props) {
                             </>
                         )}
                     </CardHeader>
-                    <CardContent className="space-y-2 text-sm">
+                    <CardContent className="space-y-1 px-2.5 text-xs">
                         {(section.dialogue ?? []).map((line, li) =>
                             editable ? (
                                 <Input
@@ -285,29 +304,32 @@ export function ScriptPreview({ payload, editable = false, onChange }: Props) {
                                     onChange={(e) =>
                                         updateLine(i, li, e.target.value)
                                     }
-                                    className="font-normal"
+                                    className="h-7 font-normal text-xs"
                                 />
                             ) : (
-                                <p key={li} className="leading-relaxed">
+                                <p key={li} className="leading-snug">
                                     {line}
                                 </p>
                             ),
                         )}
                         {editable ? (
-                            <div className="flex flex-wrap gap-2 pt-1">
+                            <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
                                 <Button
                                     type="button"
                                     size="sm"
                                     variant="outline"
+                                    className="h-6 text-[11px]"
                                     onClick={() => addLine(i)}
                                 >
                                     Add line
                                 </Button>
-                                <div className="flex items-center gap-2">
-                                    <Label className="text-xs">Pause (s)</Label>
+                                <div className="flex items-center gap-1">
+                                    <Label className="text-[10px]">
+                                        Pause
+                                    </Label>
                                     <Input
                                         type="number"
-                                        className="h-8 w-20"
+                                        className="h-6 w-14 text-xs"
                                         value={section.pause_seconds ?? 0}
                                         onChange={(e) =>
                                             updateSection(i, {
@@ -321,12 +343,7 @@ export function ScriptPreview({ payload, editable = false, onChange }: Props) {
                             </div>
                         ) : null}
                         {section.movement ? (
-                            <p
-                                className={cn(
-                                    'text-xs font-medium text-primary',
-                                    editable && 'pt-1',
-                                )}
-                            >
+                            <p className="text-[10px] font-medium text-primary">
                                 Movement: {section.movement}
                             </p>
                         ) : null}

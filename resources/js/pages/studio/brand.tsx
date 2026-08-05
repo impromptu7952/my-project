@@ -33,7 +33,7 @@ export default function StudioBrand({ character }: { character: Character }) {
     return (
         <>
             <Head title="Character bible — Lumi" />
-            <div className="flex h-full flex-1 flex-col gap-6 overflow-x-auto p-4 md:p-6">
+            <div className="flex h-full flex-1 flex-col gap-3 overflow-x-auto p-2 md:p-3">
                 <div className="space-y-3">
                     <Button variant="ghost" size="sm" asChild className="-ml-2 w-fit">
                         <Link href="/studio">
