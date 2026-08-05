@@ -29,6 +29,14 @@ test('videos index can filter by topic', function (): void {
             ->has('episodes', 1));
 });
 
+test('videos index includes body parts and first words pilots', function (): void {
+    $this->get(route('videos.index'))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->component('videos/index')
+            ->has('episodes', 5));
+});
+
 test('published video show includes episode id for progress', function (): void {
     $this->get(route('videos.show', 'ngjyrat-kuq-kalter-verdh-gjelber'))
         ->assertOk()

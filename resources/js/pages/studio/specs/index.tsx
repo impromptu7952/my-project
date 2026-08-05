@@ -33,7 +33,7 @@ export default function StudioSpecsIndex({ specs }: { specs: Spec[] }) {
                         description="Define episode production packages, start agent runs, and review outputs."
                     />
                     <Button asChild>
-                        <Link href="/studio/specs/create">
+                        <Link href="/studio/specs/create" prefetch>
                             <Plus />
                             New spec
                         </Link>
@@ -108,6 +108,6 @@ export default function StudioSpecsIndex({ specs }: { specs: Spec[] }) {
 StudioSpecsIndex.layout = {
     breadcrumbs: [
         { title: 'Studio', href: '/studio' },
-        { title: 'Production specs', href: '/studio' },
+        { title: 'Production specs', href: '/studio/specs' },
     ],
 };

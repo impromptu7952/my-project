@@ -33,6 +33,9 @@ import {
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { EpisodeMediaPanel } from '@/components/studio/episode-media-panel';
+import { PublishChecklist, type ChecklistItem } from '@/components/studio/publish-checklist';
+import { CaptionsPreview } from '@/components/studio/captions-preview';
+import { CurriculumPreview } from '@/components/studio/curriculum-preview';
 import { ScriptPreview, type ScriptPayload } from '@/components/studio/script-preview';
 import { StoryboardPreview } from '@/components/studio/storyboard-preview';
 import { VoicePreview } from '@/components/studio/voice-preview';
@@ -96,6 +99,7 @@ type Props = {
         total_tokens: number;
         xai_calls: number;
     };
+    publishChecklist?: ChecklistItem[];
     episodeMedia?: {
         slug: string;
         media: Array<{
@@ -132,6 +136,7 @@ export default function StudioRunShow({
     xaiConfigured,
     usage,
     episodeMedia = null,
+    publishChecklist = [],
 }: Props) {
     const [activeStepId, setActiveStepId] = useState(
         steps.find((s) => s.ready)?.id ?? steps[0]?.id ?? 'script',
@@ -377,7 +382,11 @@ export default function StudioRunShow({
                                 </div>
                             </CardHeader>
                             <CardContent className="space-y-4">
-                                {activeStepId === 'script' ? (
+                                {activeStepId === 'curriculum' ? (
+                                    <CurriculumPreview
+                                        payload={primaryArtifact?.payload}
+                                    />
+                                ) : activeStepId === 'script' ? (
                                     <ScriptPreview
                                         payload={(primaryArtifact?.payload ?? {}) as ScriptPayload}
                                         editable
@@ -397,6 +406,13 @@ export default function StudioRunShow({
                                 ) : activeStepId === 'visual_prompts' ? (
                                     <VisualPromptsPreview
                                         payload={primaryArtifact?.payload}
+                                    />
+                                ) : activeStepId === 'editor' ? (
+                                    <CaptionsPreview
+                                        payload={
+                                            run.latestByKind.subtitles_vtt?.payload ??
+                                            primaryArtifact?.payload
+                                        }
                                     />
                                 ) : (
                                     <pre className="max-h-[22rem] overflow-auto rounded-lg border bg-muted/40 p-4 font-mono text-xs">
@@ -706,6 +722,10 @@ export default function StudioRunShow({
                             </CardHeader>
                         </Card>
                     </div>
+                ) : null}
+
+                {publishChecklist.length > 0 ? (
+                    <PublishChecklist items={publishChecklist} />
                 ) : null}
 
                 {episodeMedia ? (

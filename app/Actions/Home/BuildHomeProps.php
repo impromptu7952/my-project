@@ -6,6 +6,10 @@ namespace App\Actions\Home;
 
 use App\Models\Episode;
 use App\Models\Game;
+use App\Models\Topic;
+use App\Models\User;
+use App\Models\WatchProgress;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 final readonly class BuildHomeProps
@@ -34,6 +38,8 @@ final readonly class BuildHomeProps
             ->all();
 
         $featuredEpisodes = [];
+        $continueWatching = [];
+        $topics = [];
 
         if (config('features.videos')) {
             $featuredEpisodes = Episode::query()
@@ -45,10 +51,47 @@ final readonly class BuildHomeProps
                 ->map(fn (Episode $episode): array => $this->episodeCard($episode, $locale))
                 ->values()
                 ->all();
+
+            $topics = Topic::query()
+                ->orderBy('sort_order')
+                ->get()
+                ->map(fn (Topic $topic): array => [
+                    'slug' => $topic->slug,
+                    'name' => $topic->localizedName($locale),
+                    'href' => route('videos.index', ['topic' => $topic->slug]),
+                ])
+                ->values()
+                ->all();
+
+            $user = Auth::user();
+            if ($user instanceof User) {
+                $continueWatching = WatchProgress::query()
+                    ->where('user_id', $user->id)
+                    ->where('completed', false)
+                    ->with(['episode.series.topic'])
+                    ->latest('last_watched_at')
+                    ->limit(4)
+                    ->get()
+                    ->filter(fn (WatchProgress $p): bool => $p->episode !== null)
+                    ->map(function (WatchProgress $p) use ($locale): array {
+                        /** @var Episode $episode */
+                        $episode = $p->episode;
+
+                        return [
+                            ...$this->episodeCard($episode, $locale),
+                            'positionSeconds' => $p->position_seconds,
+                            'progressHref' => route('videos.show', $episode),
+                        ];
+                    })
+                    ->values()
+                    ->all();
+            }
         }
 
         return [
             'featuredEpisodes' => $featuredEpisodes,
+            'continueWatching' => $continueWatching,
+            'topics' => $topics,
             'toddlerGames' => $toddlerGames,
             'moreGames' => $moreGames,
             'locale' => $locale,

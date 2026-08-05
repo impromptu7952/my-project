@@ -93,7 +93,7 @@ export default function StudioSpecShow({ spec, runs }: Props) {
                         asChild
                         className="-ml-2 w-fit"
                     >
-                        <Link href="/studio">
+                        <Link href="/studio/specs">
                             <ArrowLeft />
                             Back to specs
                         </Link>

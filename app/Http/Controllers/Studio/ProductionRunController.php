@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Studio;
 
+use App\Actions\Production\BuildPublishChecklist;
 use App\Actions\Production\SummarizeRunUsage;
 use App\Enums\ArtifactKind;
 use App\Enums\ProductionStage;
@@ -17,8 +18,12 @@ use Inertia\Response;
 
 final class ProductionRunController extends Controller
 {
-    public function show(ProductionRun $run, SummarizeRunUsage $summarizeUsage): Response
-    {
+    public function show(
+        ProductionRun $run,
+        SummarizeRunUsage $summarizeUsage,
+        BuildPublishChecklist $buildChecklist,
+    ): Response {
+
         $run->load(['productionSpec', 'artifacts', 'starter']);
 
         $latestByKind = [];
@@ -93,6 +98,7 @@ final class ProductionRunController extends Controller
             'agentProfilesByStage' => $profiles,
             'xaiConfigured' => app(XaiClient::class)->isConfigured(),
             'usage' => $summarizeUsage->handle($run),
+            'publishChecklist' => $buildChecklist->handle($run),
             'episodeMedia' => $episode ? [
                 'slug' => $episode->slug,
                 'media' => $episode->mediaAssets->map(fn ($m) => [

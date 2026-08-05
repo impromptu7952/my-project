@@ -38,7 +38,7 @@ export default function StudioSpecsCreate() {
             <div className="flex h-full flex-1 flex-col gap-6 overflow-x-auto p-4 md:p-6">
                 <div className="space-y-3">
                     <Button variant="ghost" size="sm" asChild className="-ml-2 w-fit">
-                        <Link href="/studio">
+                        <Link href="/studio/specs">
                             <ArrowLeft />
                             Back to specs
                         </Link>
@@ -113,7 +113,7 @@ export default function StudioSpecsCreate() {
                         </CardContent>
                         <CardFooter className="justify-end gap-2">
                             <Button variant="outline" type="button" asChild>
-                                <Link href="/studio">Cancel</Link>
+                                <Link href="/studio/specs">Cancel</Link>
                             </Button>
                             <Button type="submit" disabled={form.processing}>
                                 {form.processing ? 'Creating…' : 'Create spec'}
