@@ -132,3 +132,66 @@ test('run workspace page includes steps and agent profiles', function (): void {
             ->has('agentProfilesByStage')
             ->where('run.id', $run->id));
 });
+
+test('editor can save stage notes on a run', function (): void {
+    $editor = User::query()->where('email', 'editor@playzone.test')->firstOrFail();
+    $run = ProductionRun::factory()->create([
+        'status' => ProductionRunStatus::AwaitingScriptReview,
+        'started_by' => $editor->id,
+    ]);
+
+    $this->actingAs($editor)
+        ->post(route('studio.runs.notes', $run), [
+            'stage' => ProductionStage::Script->value,
+            'notes' => 'Slow down the red ball beat.',
+        ])
+        ->assertRedirect();
+
+    $run->refresh();
+    expect($run->meta['stage_notes']['script']['notes'] ?? null)
+        ->toBe('Slow down the red ball beat.')
+        ->and($run->meta['stage_notes']['script']['updated_by'] ?? null)
+        ->toBe($editor->id);
+});
+
+test('editor can build voice preview package from vo script', function (): void {
+    $editor = User::query()->where('email', 'editor@playzone.test')->firstOrFail();
+    $run = ProductionRun::factory()->create([
+        'status' => ProductionRunStatus::AwaitingFinalReview,
+        'started_by' => $editor->id,
+    ]);
+
+    $run->artifacts()->create([
+        'kind' => ArtifactKind::VoScript,
+        'stage' => ProductionStage::Voice,
+        'version' => 1,
+        'payload' => [
+            'vo_script' => [
+                ['section_id' => 'open', 'line' => 'Përshëndetje!', 'pause_after_seconds' => 2],
+                ['section_id' => 'body', 'line' => 'Ku është topi i kuq?', 'pause_after_seconds' => 3],
+            ],
+        ],
+        'meta' => [],
+    ]);
+
+    $this->actingAs($editor)
+        ->post(route('studio.runs.preview-voice', $run))
+        ->assertRedirect();
+
+    $run->refresh();
+    expect($run->meta['tts_preview']['stored_previews'] ?? 0)->toBe(2)
+        ->and($run->meta['tts_preview']['cues'] ?? [])->toHaveCount(2)
+        ->and($run->meta['tts_preview']['provider'] ?? null)->toBe('null');
+});
+
+test('brand bible page renders character kit', function (): void {
+    $editor = User::query()->where('email', 'editor@playzone.test')->firstOrFail();
+
+    $this->actingAs($editor)
+        ->get(route('studio.brand'))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->component('studio/brand')
+            ->has('character')
+            ->where('character.name', 'Lumi'));
+});

@@ -40,6 +40,7 @@ import { ScriptPreview, type ScriptPayload } from '@/components/studio/script-pr
 import { StoryboardPreview } from '@/components/studio/storyboard-preview';
 import { VoicePreview } from '@/components/studio/voice-preview';
 import { VisualPromptsPreview } from '@/components/studio/visual-prompts-preview';
+import { TimelinePreview } from '@/components/studio/timeline-preview';
 import { cn } from '@/lib/utils';
 
 type Artifact = {
@@ -297,8 +298,24 @@ export default function StudioRunShow({
                         <XCircle />
                         <AlertTitle>Quality checks failed</AlertTitle>
                         <AlertDescription>
-                            Final approve is blocked until quality passes or you
-                            revise the package.
+                            Final approve is blocked until quality passes.
+                            Override only with a documented reason (editor
+                            accountability).
+                        </AlertDescription>
+                    </Alert>
+                ) : null}
+
+                {(run.meta?.quality_override as { reason?: string } | undefined)
+                    ?.reason ? (
+                    <Alert>
+                        <AlertTriangle />
+                        <AlertTitle>Quality override applied</AlertTitle>
+                        <AlertDescription>
+                            {(
+                                run.meta.quality_override as {
+                                    reason?: string;
+                                }
+                            ).reason}
                         </AlertDescription>
                     </Alert>
                 ) : null}
@@ -371,6 +388,20 @@ export default function StudioRunShow({
                                         <RefreshCw />
                                         Regenerate with AI
                                     </Button>
+                                    {activeStepId === 'voice' ? (
+                                        <Button
+                                            size="sm"
+                                            variant="outline"
+                                            disabled={isBusy}
+                                            onClick={() =>
+                                                router.post(
+                                                    `/studio/runs/${run.id}/preview-voice`,
+                                                )
+                                            }
+                                        >
+                                            Build voice preview cues
+                                        </Button>
+                                    ) : null}
                                     <Button
                                         size="sm"
                                         disabled={isBusy || !activeStep}
@@ -399,21 +430,75 @@ export default function StudioRunShow({
                                         payload={primaryArtifact?.payload}
                                     />
                                 ) : activeStepId === 'voice' ? (
-                                    <VoicePreview
-                                        voPayload={run.latestByKind.vo_script?.payload}
-                                        ttsPayload={run.latestByKind.tts_manifest?.payload}
-                                    />
+                                    <div className="space-y-4">
+                                        <VoicePreview
+                                            voPayload={
+                                                run.latestByKind.vo_script
+                                                    ?.payload
+                                            }
+                                            ttsPayload={
+                                                run.latestByKind.tts_manifest
+                                                    ?.payload
+                                            }
+                                        />
+                                        {Array.isArray(
+                                            (
+                                                run.meta?.tts_preview as
+                                                    | {
+                                                          cues?: unknown[];
+                                                          stored_previews?: number;
+                                                          provider?: string;
+                                                      }
+                                                    | undefined
+                                            )?.cues,
+                                        ) ? (
+                                            <div className="rounded-lg border bg-muted/30 p-3 text-sm">
+                                                <p className="font-medium">
+                                                    TTS preview package
+                                                </p>
+                                                <p className="text-muted-foreground">
+                                                    {(
+                                                        run.meta
+                                                            ?.tts_preview as {
+                                                            stored_previews?: number;
+                                                            provider?: string;
+                                                        }
+                                                    )?.stored_previews ?? 0}{' '}
+                                                    cues · provider{' '}
+                                                    {(
+                                                        run.meta
+                                                            ?.tts_preview as {
+                                                            provider?: string;
+                                                        }
+                                                    )?.provider ?? 'null'}
+                                                </p>
+                                            </div>
+                                        ) : null}
+                                    </div>
                                 ) : activeStepId === 'visual_prompts' ? (
                                     <VisualPromptsPreview
                                         payload={primaryArtifact?.payload}
                                     />
                                 ) : activeStepId === 'editor' ? (
-                                    <CaptionsPreview
-                                        payload={
-                                            run.latestByKind.subtitles_vtt?.payload ??
-                                            primaryArtifact?.payload
-                                        }
-                                    />
+                                    <div className="space-y-6">
+                                        <TimelinePreview
+                                            editPayload={
+                                                run.latestByKind.edit_instructions
+                                                    ?.payload
+                                            }
+                                            onScreenPayload={
+                                                run.latestByKind.on_screen_text
+                                                    ?.payload
+                                            }
+                                        />
+                                        <CaptionsPreview
+                                            payload={
+                                                run.latestByKind.subtitles_vtt
+                                                    ?.payload ??
+                                                primaryArtifact?.payload
+                                            }
+                                        />
+                                    </div>
                                 ) : (
                                     <pre className="max-h-[22rem] overflow-auto rounded-lg border bg-muted/40 p-4 font-mono text-xs">
                                         {JSON.stringify(
@@ -427,6 +512,66 @@ export default function StudioRunShow({
                                 )}
 
                                 <Separator />
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="stage-notes">Editor notes for this step</Label>
+                                    <textarea
+                                        id="stage-notes"
+                                        defaultValue={(() => {
+                                            const stageNotes = run.meta
+                                                ?.stage_notes as
+                                                | Record<
+                                                      string,
+                                                      { notes?: string }
+                                                  >
+                                                | undefined;
+                                            const notes =
+                                                stageNotes?.[activeStepId]
+                                                    ?.notes;
+
+                                            return typeof notes === 'string'
+                                                ? notes
+                                                : '';
+                                        })()}
+                                        key={`notes-${activeStepId}-${String(
+                                            (
+                                                run.meta?.stage_notes as
+                                                    | Record<
+                                                          string,
+                                                          {
+                                                              updated_at?: string;
+                                                          }
+                                                      >
+                                                    | undefined
+                                            )?.[activeStepId]?.updated_at ??
+                                                'new',
+                                        )}`}
+                                        className={cn(
+                                            'min-h-20 w-full rounded-md border border-input bg-background px-3 py-2 text-sm',
+                                            'focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
+                                        )}
+                                        placeholder="Direction for this stage (pacing, props, retakes…)"
+                                        onBlur={(e) => {
+                                            if (!activeStep) {
+                                                return;
+                                            }
+                                            const notes = e.target.value.trim();
+                                            if (!notes) {
+                                                return;
+                                            }
+                                            router.post(
+                                                `/studio/runs/${run.id}/notes`,
+                                                {
+                                                    stage: activeStep.id,
+                                                    notes,
+                                                },
+                                            );
+                                        }}
+                                    />
+                                    <p className="text-xs text-muted-foreground">
+                                        Notes save when you leave the field.
+                                    </p>
+                                </div>
 
                                 <div className="space-y-2">
                                     <Label htmlFor="artifact-json">
@@ -538,6 +683,28 @@ export default function StudioRunShow({
                                             <CheckCircle2 />
                                             Approve final package
                                         </Button>
+                                        {qualityFailed ? (
+                                            <Button
+                                                variant="secondary"
+                                                onClick={() => {
+                                                    const reason =
+                                                        window.prompt(
+                                                            'Quality override reason (required):',
+                                                        ) ?? '';
+                                                    if (!reason.trim()) return;
+                                                    router.post(
+                                                        `/studio/runs/${run.id}/approve`,
+                                                        {
+                                                            gate: 'final',
+                                                            force_quality_override: true,
+                                                            override_reason: reason,
+                                                        },
+                                                    );
+                                                }}
+                                            >
+                                                Override quality & approve
+                                            </Button>
+                                        ) : null}
                                         <Button
                                             variant="destructive"
                                             onClick={() =>

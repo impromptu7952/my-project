@@ -10,6 +10,9 @@ use App\Http\Controllers\Parent\WatchProgressController;
 use App\Http\Controllers\PrivacyController;
 use App\Http\Controllers\Studio\AgentProfileController;
 use App\Http\Controllers\Studio\ApproveProductionRunController;
+use App\Http\Controllers\Studio\UpdateStageNotesController;
+use App\Http\Controllers\Studio\PreviewVoiceController;
+use App\Http\Controllers\Studio\BrandBibleController;
 use App\Http\Controllers\Studio\CloneProductionRunController;
 use App\Http\Controllers\Studio\EpisodeStudioController;
 use App\Http\Controllers\Studio\MediaUploadController;
@@ -62,6 +65,7 @@ Route::middleware(['auth', 'verified', 'can:manage-content', EnsureStudioEnabled
     Route::put('/specs/{spec:slug}', [ProductionSpecController::class, 'update'])->name('specs.update');
     Route::post('/specs/{spec:slug}/runs', [StartProductionRunController::class, 'store'])->name('specs.start-run');
 
+    Route::get('/brand', BrandBibleController::class)->name('brand');
     Route::get('/agents', [AgentProfileController::class, 'index'])->name('agents.index');
     Route::post('/agents', [AgentProfileController::class, 'store'])->name('agents.store');
     Route::get('/agents/{agent}', [AgentProfileController::class, 'edit'])->name('agents.edit');
@@ -78,6 +82,8 @@ Route::middleware(['auth', 'verified', 'can:manage-content', EnsureStudioEnabled
     Route::post('/runs/{run}/publish', [PublishProductionRunController::class, 'store'])->name('runs.publish');
     Route::post('/runs/{run}/artifacts', [UpdateArtifactController::class, 'store'])->name('runs.artifacts.update');
     Route::post('/runs/{run}/regenerate', [RegenerateStageController::class, 'store'])->name('runs.regenerate');
+    Route::post('/runs/{run}/notes', [UpdateStageNotesController::class, 'store'])->name('runs.notes');
+    Route::post('/runs/{run}/preview-voice', [PreviewVoiceController::class, 'store'])->name('runs.preview-voice');
     Route::post('/runs/{run}/agents', [UpdateRunAgentsController::class, 'store'])->name('runs.agents.update');
 
     Route::post('/episodes/{episode:slug}/media', [MediaUploadController::class, 'store'])->name('episodes.media');

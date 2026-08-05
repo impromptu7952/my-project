@@ -47,9 +47,10 @@ Parents/caregivers get a calm, Albanian-first watch + play experience linked by 
 - [x] Script-focused preview (sections, pauses, Albanian)
 
 ### Phase B — Media pipeline
-- [ ] Pluggable TTS (Albanian-capable provider or human upload)
+- [x] TTS provider interface + null driver + Studio voice preview cues
+- [ ] Real Albanian-capable TTS provider or human VO upload
 - [ ] Image/video gen provider interfaces + visual approval
-- [ ] Timeline/edit instructions UI
+- [x] Timeline/edit instructions preview UI
 - [x] Master video attach + caption attach from package
 
 ### Phase C — Consumer elevation
@@ -61,7 +62,8 @@ Parents/caregivers get a calm, Albanian-first watch + play experience linked by 
 ### Phase D — Scale & quality
 - [ ] Multi-role (writer vs approver)
 - [x] Cost/usage summary per run
-- [ ] Character bible / brand kit for animated Lumi
+- [x] Character bible / brand kit for animated Lumi
+- [x] Quality override with required reason + stage editor notes
 - [ ] Analytics for parents only (no child tracking)
 - [ ] Optional third-party distribution
 
@@ -96,3 +98,4 @@ Parents/caregivers get a calm, Albanian-first watch + play experience linked by 
 | 2026-08-05 | Agent profiles + step workspace + edit/regenerate + Grok stage agents |
 | 2026-08-05 | Structured script/voice/storyboard previews; episode studio hub; media upload panel; video library topic filters; run usage tokens; watch co-play + parent progress ping |
 | 2026-08-05 | Studio overview dashboard; publish checklist; curriculum/caption previews; 5 pilot episodes; clone runs; extra specs |
+| 2026-08-05 | Quality override + stage notes; voice preview package; Lumi brand bible; timeline preview; topic page polish; TTS config |

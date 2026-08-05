@@ -183,6 +183,43 @@ test('final approve blocked when quality report failed', function (): void {
         ->toThrow(HttpException::class);
 });
 
+test('final approve with quality override requires reason and records meta', function (): void {
+    $editor = User::query()->where('email', 'editor@playzone.test')->firstOrFail();
+    $run = ProductionRun::factory()->create([
+        'status' => ProductionRunStatus::AwaitingFinalReview,
+        'started_by' => $editor->id,
+    ]);
+
+    $run->artifacts()->create([
+        'kind' => ArtifactKind::QualityReport,
+        'stage' => 'quality',
+        'version' => 1,
+        'payload' => ['passed' => false, 'checks' => []],
+    ]);
+
+    expect(fn () => app(ApproveProductionStage::class)->handle(
+        $run,
+        ProductionGate::Final,
+        $editor,
+        forceQualityOverride: true,
+        overrideReason: null,
+    ))->toThrow(HttpException::class);
+
+    $approved = app(ApproveProductionStage::class)->handle(
+        $run,
+        ProductionGate::Final,
+        $editor,
+        forceQualityOverride: true,
+        overrideReason: 'Pedagogy lead signed off on pause length.',
+    );
+
+    expect($approved->status)->toBe(ProductionRunStatus::Approved)
+        ->and($approved->meta['quality_override']['reason'] ?? null)
+        ->toBe('Pedagogy lead signed off on pause length.')
+        ->and($approved->meta['quality_override']['by'] ?? null)
+        ->toBe($editor->id);
+});
+
 test('draft media is not world readable via publicUrl', function (): void {
     $episode = Episode::factory()->create([
         'status' => EpisodeStatus::Draft,

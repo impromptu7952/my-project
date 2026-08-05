@@ -25,7 +25,12 @@ final class AppServiceProvider extends ServiceProvider
     #[Override]
     public function register(): void
     {
-        $this->app->bind(TtsProvider::class, NullTtsProvider::class);
+        $this->app->bind(TtsProvider::class, function (): TtsProvider {
+            // Real Albanian TTS drivers plug in here when TTS_DRIVER is set.
+            return match ((string) config('services.tts.driver', 'null')) {
+                default => new NullTtsProvider,
+            };
+        });
         $this->app->bind(ImageGenProvider::class, NullImageGenProvider::class);
     }
 

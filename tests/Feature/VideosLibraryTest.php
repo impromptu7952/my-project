@@ -45,3 +45,14 @@ test('published video show includes episode id for progress', function (): void 
             ->has('episode.id')
             ->has('playback.src'));
 });
+
+test('topic page lists published episodes with age band', function (): void {
+    $this->get(route('topics.show', 'ngjyrat'))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->component('topics/show')
+            ->where('topic.slug', 'ngjyrat')
+            ->has('episodes', 1)
+            ->has('episodes.0.ageBand')
+            ->has('episodes.0.href'));
+});
