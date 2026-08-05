@@ -15,8 +15,17 @@ final class TopicController extends Controller
         $locale = app()->getLocale();
         $topic->load(['series.episodes' => fn ($q) => $q->published()->orderBy('sort_order')]);
 
+        $series = $topic->series
+            ->map(fn ($s) => [
+                'slug' => $s->slug,
+                'title' => $s->localizedTitle($locale),
+                'href' => route('series.show', $s),
+                'episodeCount' => $s->episodes->count(),
+            ])
+            ->values();
+
         $episodes = $topic->series
-            ->flatMap(fn ($series) => $series->episodes)
+            ->flatMap(fn ($s) => $s->episodes)
             ->unique('id')
             ->map(fn ($episode) => [
                 'slug' => $episode->slug,
@@ -36,6 +45,7 @@ final class TopicController extends Controller
                     ? $topic->description_en
                     : $topic->description_sq,
             ],
+            'series' => $series,
             'episodes' => $episodes,
         ]);
     }

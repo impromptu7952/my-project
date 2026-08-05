@@ -12,7 +12,9 @@ use App\Http\Controllers\Studio\AgentProfileController;
 use App\Http\Controllers\Studio\ApproveProductionRunController;
 use App\Http\Controllers\Studio\UpdateStageNotesController;
 use App\Http\Controllers\Studio\PreviewVoiceController;
+use App\Http\Controllers\Studio\PreviewVisualController;
 use App\Http\Controllers\Studio\BrandBibleController;
+use App\Http\Controllers\SeriesController;
 use App\Http\Controllers\Studio\CloneProductionRunController;
 use App\Http\Controllers\Studio\EpisodeStudioController;
 use App\Http\Controllers\Studio\MediaUploadController;
@@ -38,6 +40,7 @@ Route::get('/media/{mediaAsset}', [MediaStreamController::class, 'show'])->name(
 Route::get('/videos', [EpisodeController::class, 'index'])->name('videos.index');
 Route::get('/videos/{episode:slug}', [EpisodeController::class, 'show'])->name('videos.show');
 Route::get('/topics/{topic:slug}', [TopicController::class, 'show'])->name('topics.show');
+Route::get('/series/{series:slug}', [SeriesController::class, 'show'])->name('series.show');
 
 Route::prefix('games')->name('games.')->group(function (): void {
     Route::inertia('memory', 'games/memory')->name('memory');
@@ -84,6 +87,7 @@ Route::middleware(['auth', 'verified', 'can:manage-content', EnsureStudioEnabled
     Route::post('/runs/{run}/regenerate', [RegenerateStageController::class, 'store'])->name('runs.regenerate');
     Route::post('/runs/{run}/notes', [UpdateStageNotesController::class, 'store'])->name('runs.notes');
     Route::post('/runs/{run}/preview-voice', [PreviewVoiceController::class, 'store'])->name('runs.preview-voice');
+    Route::post('/runs/{run}/preview-visual', [PreviewVisualController::class, 'store'])->name('runs.preview-visual');
     Route::post('/runs/{run}/agents', [UpdateRunAgentsController::class, 'store'])->name('runs.agents.update');
 
     Route::post('/episodes/{episode:slug}/media', [MediaUploadController::class, 'store'])->name('episodes.media');

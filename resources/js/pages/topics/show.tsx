@@ -8,6 +8,12 @@ type Props = {
         name: string;
         description: string | null;
     };
+    series?: Array<{
+        slug: string;
+        title: string;
+        href: string;
+        episodeCount: number;
+    }>;
     episodes: Array<{
         slug: string;
         title: string;
@@ -26,7 +32,11 @@ const topicEmoji: Record<string, string> = {
     'fjalet-e-para': '💬',
 };
 
-export default function TopicShow({ topic, episodes }: Props) {
+export default function TopicShow({
+    topic,
+    series = [],
+    episodes,
+}: Props) {
     const { t } = useLocale();
     const emoji = topicEmoji[topic.slug] ?? '🎬';
 
@@ -70,6 +80,28 @@ export default function TopicShow({ topic, episodes }: Props) {
                             </div>
                         </div>
                     </div>
+
+                    {series.length > 0 ? (
+                        <div className="mb-8">
+                            <h2 className="mb-3 text-lg font-black text-slate-800">
+                                Series
+                            </h2>
+                            <div className="flex flex-wrap gap-2">
+                                {series.map((s) => (
+                                    <Link
+                                        key={s.slug}
+                                        href={s.href}
+                                        className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-bold text-violet-700 shadow transition hover:bg-violet-50"
+                                    >
+                                        {s.title}
+                                        <span className="rounded-full bg-violet-100 px-2 py-0.5 text-xs text-violet-800">
+                                            {s.episodeCount}
+                                        </span>
+                                    </Link>
+                                ))}
+                            </div>
+                        </div>
+                    ) : null}
 
                     <div className="grid gap-4 sm:grid-cols-2">
                         {episodes.map((ep) => (

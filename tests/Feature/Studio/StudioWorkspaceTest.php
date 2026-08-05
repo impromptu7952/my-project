@@ -195,3 +195,32 @@ test('brand bible page renders character kit', function (): void {
             ->has('character')
             ->where('character.name', 'Lumi'));
 });
+
+test('editor can build visual preview package from image prompts', function (): void {
+    $editor = User::query()->where('email', 'editor@playzone.test')->firstOrFail();
+    $run = ProductionRun::factory()->create([
+        'status' => ProductionRunStatus::AwaitingFinalReview,
+        'started_by' => $editor->id,
+    ]);
+
+    $run->artifacts()->create([
+        'kind' => ArtifactKind::ImagePrompts,
+        'stage' => ProductionStage::VisualPrompts,
+        'version' => 1,
+        'payload' => [
+            'image_prompts' => [
+                ['shot_id' => 's1', 'prompt' => 'Lumi holds a red ball, soft 3D, sunny'],
+                ['shot_id' => 's2', 'prompt' => 'Lumi waves hello, sky blue sweater'],
+            ],
+        ],
+        'meta' => [],
+    ]);
+
+    $this->actingAs($editor)
+        ->post(route('studio.runs.preview-visual', $run))
+        ->assertRedirect();
+
+    $run->refresh();
+    expect($run->meta['visual_preview']['stored_previews'] ?? 0)->toBe(2)
+        ->and($run->meta['visual_preview']['provider'] ?? null)->toBe('null');
+});

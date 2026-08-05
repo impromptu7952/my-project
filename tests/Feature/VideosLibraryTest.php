@@ -54,5 +54,16 @@ test('topic page lists published episodes with age band', function (): void {
             ->where('topic.slug', 'ngjyrat')
             ->has('episodes', 1)
             ->has('episodes.0.ageBand')
-            ->has('episodes.0.href'));
+            ->has('episodes.0.href')
+            ->has('series'));
+});
+
+test('series page lists published episodes in order', function (): void {
+    $this->get(route('series.show', 'ngjyrat-seria-1'))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->component('series/show')
+            ->where('series.slug', 'ngjyrat-seria-1')
+            ->has('episodes', 1)
+            ->has('topic.slug'));
 });

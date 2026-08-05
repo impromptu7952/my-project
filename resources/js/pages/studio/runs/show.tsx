@@ -402,6 +402,20 @@ export default function StudioRunShow({
                                             Build voice preview cues
                                         </Button>
                                     ) : null}
+                                    {activeStepId === 'visual_prompts' ? (
+                                        <Button
+                                            size="sm"
+                                            variant="outline"
+                                            disabled={isBusy}
+                                            onClick={() =>
+                                                router.post(
+                                                    `/studio/runs/${run.id}/preview-visual`,
+                                                )
+                                            }
+                                        >
+                                            Build visual preview stubs
+                                        </Button>
+                                    ) : null}
                                     <Button
                                         size="sm"
                                         disabled={isBusy || !activeStep}
@@ -476,9 +490,44 @@ export default function StudioRunShow({
                                         ) : null}
                                     </div>
                                 ) : activeStepId === 'visual_prompts' ? (
-                                    <VisualPromptsPreview
-                                        payload={primaryArtifact?.payload}
-                                    />
+                                    <div className="space-y-4">
+                                        <VisualPromptsPreview
+                                            payload={primaryArtifact?.payload}
+                                        />
+                                        {Array.isArray(
+                                            (
+                                                run.meta?.visual_preview as
+                                                    | {
+                                                          prompts?: unknown[];
+                                                          stored_previews?: number;
+                                                          provider?: string;
+                                                      }
+                                                    | undefined
+                                            )?.prompts,
+                                        ) ? (
+                                            <div className="rounded-lg border bg-muted/30 p-3 text-sm">
+                                                <p className="font-medium">
+                                                    Visual preview package
+                                                </p>
+                                                <p className="text-muted-foreground">
+                                                    {(
+                                                        run.meta
+                                                            ?.visual_preview as {
+                                                            stored_previews?: number;
+                                                            provider?: string;
+                                                        }
+                                                    )?.stored_previews ?? 0}{' '}
+                                                    prompt stubs · provider{' '}
+                                                    {(
+                                                        run.meta
+                                                            ?.visual_preview as {
+                                                            provider?: string;
+                                                        }
+                                                    )?.provider ?? 'null'}
+                                                </p>
+                                            </div>
+                                        ) : null}
+                                    </div>
                                 ) : activeStepId === 'editor' ? (
                                     <div className="space-y-6">
                                         <TimelinePreview
