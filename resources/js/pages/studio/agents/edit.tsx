@@ -19,12 +19,22 @@ type Profile = {
     isActive: boolean;
 };
 
+type TextModelOption = {
+    id: string;
+    label: string;
+    hint?: string;
+};
+
 type Props = {
     profile: Profile;
     stages: Array<{ value: string; label: string }>;
+    textModels?: TextModelOption[];
 };
 
-export default function StudioAgentsEdit({ profile }: Props) {
+export default function StudioAgentsEdit({
+    profile,
+    textModels = [],
+}: Props) {
     const form = useForm({
         name: profile.name,
         description: profile.description ?? '',
@@ -103,14 +113,47 @@ export default function StudioAgentsEdit({ profile }: Props) {
                         </div>
                         <div className="grid grid-cols-3 gap-1.5">
                             <div className="space-y-0.5">
-                                <Label className="text-[10px]">Model</Label>
-                                <Input
-                                    className="h-7 font-mono text-xs"
-                                    value={form.data.model}
-                                    onChange={(e) =>
-                                        form.setData('model', e.target.value)
-                                    }
-                                />
+                                <Label className="text-[10px]">
+                                    Model (xAI)
+                                </Label>
+                                {textModels.length > 0 ? (
+                                    <select
+                                        className="h-7 w-full rounded border bg-background px-1.5 font-mono text-xs"
+                                        value={form.data.model}
+                                        onChange={(e) =>
+                                            form.setData(
+                                                'model',
+                                                e.target.value,
+                                            )
+                                        }
+                                    >
+                                        {!textModels.some(
+                                            (m) => m.id === form.data.model,
+                                        ) ? (
+                                            <option value={form.data.model}>
+                                                {form.data.model}
+                                            </option>
+                                        ) : null}
+                                        {textModels.map((m) => (
+                                            <option key={m.id} value={m.id}>
+                                                {m.label}
+                                                {m.hint ? ` — ${m.hint}` : ''}
+                                            </option>
+                                        ))}
+                                    </select>
+                                ) : (
+                                    <Input
+                                        className="h-7 font-mono text-xs"
+                                        value={form.data.model}
+                                        onChange={(e) =>
+                                            form.setData(
+                                                'model',
+                                                e.target.value,
+                                            )
+                                        }
+                                    />
+                                )}
+                                <InputError message={form.errors.model} />
                             </div>
                             <div className="space-y-0.5">
                                 <Label className="text-[10px]">

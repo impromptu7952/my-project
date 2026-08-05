@@ -10,6 +10,7 @@ use App\Enums\ArtifactKind;
 use App\Models\Episode;
 use App\Models\MediaAsset;
 use App\Models\ProductionRun;
+use App\Support\XaiModelCatalog;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 /**
@@ -24,11 +25,22 @@ final readonly class GenerateImagineMaster
         private AttachEpisodeMasterFromPath $attach,
     ) {}
 
+    public static function estimateUsd(int $durationSeconds, ?string $model = null): float
+    {
+        $model ??= XaiModelCatalog::defaultVideoModel();
+        $rate = XaiModelCatalog::usdPerSecFor($model);
+
+        return round(max(1, $durationSeconds) * $rate, 3);
+    }
+
     /**
      * @return array{asset: MediaAsset, method: string, prompt: string, meta: array<string, mixed>, estimated_usd: float}
      */
-    public function handle(ProductionRun $run, ?int $durationSeconds = null): array
-    {
+    public function handle(
+        ProductionRun $run,
+        ?int $durationSeconds = null,
+        ?string $model = null,
+    ): array {
         if (! $this->videoGen->isConfigured()) {
             throw new HttpException(
                 422,
@@ -40,7 +52,7 @@ final readonly class GenerateImagineMaster
         $maxDur = (int) config('services.xai.video_duration_max', 12);
         $duration = $durationSeconds ?? (int) config('services.xai.video_duration', 3);
         $duration = max($minDur, min($maxDur, $duration));
-        $model = (string) config('services.xai.video_model', 'grok-imagine-video');
+        $model = $this->resolveModel($run, $model);
         $resolution = (string) config('services.xai.video_resolution', '480p');
         $estimatedUsd = self::estimateUsd($duration, $model);
 
@@ -123,13 +135,17 @@ final readonly class GenerateImagineMaster
         ];
     }
 
-    public static function estimateUsd(int $durationSeconds, ?string $model = null): float
+    private function resolveModel(ProductionRun $run, ?string $requested): string
     {
-        $model ??= (string) config('services.xai.video_model', 'grok-imagine-video');
-        $rates = (array) config('services.xai.video_usd_per_sec', []);
-        $rate = (float) ($rates[$model] ?? $rates['grok-imagine-video'] ?? 0.05);
+        $candidate = $requested
+            ?? (is_string($run->meta['video_model'] ?? null) ? $run->meta['video_model'] : null)
+            ?? XaiModelCatalog::defaultVideoModel();
 
-        return round(max(1, $durationSeconds) * $rate, 3);
+        if (! XaiModelCatalog::isAllowedVideoModel($candidate)) {
+            throw new HttpException(422, "Unknown video model [{$candidate}].");
+        }
+
+        return $candidate;
     }
 
     private function buildPrompt(ProductionRun $run): string
@@ -165,8 +181,8 @@ final readonly class GenerateImagineMaster
                         continue;
                     }
                     foreach (array_slice($section['dialogue'] ?? [], 0, 3) as $line) {
-                        if (is_string($line) && trim($line) !== '') {
-                            $lines[] = 'Dialogue: '.trim($line);
+                        if (is_string($line) && mb_trim($line) !== '') {
+                            $lines[] = 'Dialogue: '.mb_trim($line);
                         }
                     }
                 }

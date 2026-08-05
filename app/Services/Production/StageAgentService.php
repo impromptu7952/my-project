@@ -4,17 +4,19 @@ declare(strict_types=1);
 
 namespace App\Services\Production;
 
+use App\Ai\Agents\ProductionStageAgent;
 use App\Enums\ArtifactKind;
 use App\Enums\ProductionStage;
 use App\Models\AgentProfile;
 use App\Models\ProductionRun;
 use App\Services\Xai\XaiClient;
 use Illuminate\Support\Str;
+use Laravel\Ai\Enums\Lab;
 use RuntimeException;
 use Throwable;
 
 /**
- * Builds stage artifacts via Grok (xAI) using per-stage agent profiles.
+ * Builds stage artifacts via Grok using the Laravel AI SDK (Lab::xAI).
  */
 final class StageAgentService
 {
@@ -25,6 +27,10 @@ final class StageAgentService
      */
     public function generate(ProductionRun $run, ProductionStage $stage, ArtifactKind $kind): array
     {
+        if (! $this->xai->isConfigured()) {
+            throw new RuntimeException('XAI_API_KEY is not configured.');
+        }
+
         $profile = $this->resolveProfile($run, $stage);
         $spec = $run->productionSpec?->spec ?? [];
         $prior = $this->priorContext($run, $stage);
@@ -52,36 +58,53 @@ final class StageAgentService
             throw new RuntimeException('Failed to encode agent prompt.');
         }
 
-        $result = $this->xai->chat(
-            messages: [
-                [
-                    'role' => 'system',
-                    'content' => $systemContent,
-                ],
-                [
-                    'role' => 'user',
-                    'content' => $userPrompt,
-                ],
-            ],
-            maxTokens: $profile?->max_tokens
-                ?? (int) config('services.xai.max_tokens.'.$stage->value, 3000),
-            model: $profile?->model,
-            temperature: $profile?->temperature,
+        $model = $this->resolveModel($run, $profile);
+        $maxTokens = $profile?->max_tokens
+            ?? (int) config('services.xai.max_tokens.'.$stage->value, 3000);
+        $temperature = $profile?->temperature;
+
+        $agent = new ProductionStageAgent(
+            systemInstructions: $systemContent,
+            maxTokens: $maxTokens,
+            temperature: $temperature,
         );
 
-        $payload = $this->decodeJsonObject($result['content']);
+        $response = $agent->prompt(
+            $userPrompt,
+            provider: Lab::xAI,
+            model: $model,
+            timeout: 180,
+        );
+
+        $payload = $this->decodeJsonObject($response->text);
+        $usage = $response->usage->toArray();
 
         return [
             'payload' => $payload,
             'meta' => [
-                'agent' => 'xai',
-                'model' => $profile?->model ?? config('services.xai.model'),
+                'agent' => 'laravel_ai',
+                'provider' => Lab::xAI->value,
+                'model' => $model,
                 'agent_profile_id' => $profile?->id,
                 'agent_profile_slug' => $profile?->slug,
-                'usage' => $result['usage'],
+                'usage' => $usage,
                 'kind' => $kind->value,
             ],
         ];
+    }
+
+    private function resolveModel(ProductionRun $run, ?AgentProfile $profile): string
+    {
+        $runOverride = $run->meta['text_model'] ?? null;
+        if (is_string($runOverride) && $runOverride !== '') {
+            return $runOverride;
+        }
+
+        if (filled($profile?->model)) {
+            return (string) $profile->model;
+        }
+
+        return (string) config('services.xai.model', config('ai.providers.xai.models.text.default', 'grok-4.5'));
     }
 
     private function resolveProfile(ProductionRun $run, ProductionStage $stage): ?AgentProfile
