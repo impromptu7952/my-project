@@ -51,10 +51,22 @@ export function GameShell({ title, emoji, accent, children }: GameShellProps) {
                     </div>
 
                     <main className="flex flex-1 flex-col items-center">
-                        <div className="w-full rounded-3xl border-4 border-white/50 bg-white/95 p-5 shadow-2xl sm:p-8">
+                        <div className="mb-10 w-full rounded-3xl border-4 border-white/50 bg-white/95 p-5 shadow-2xl sm:mb-14 sm:p-8">
                             {children}
                         </div>
                     </main>
+
+                    <footer className="mt-auto pb-4 text-center sm:pb-6">
+                        <p className="text-sm font-medium text-white/85 drop-shadow-sm">
+                            Made for kids · Play together · Have fun 🎉
+                        </p>
+                        <Link
+                            href={home()}
+                            className="mt-2 inline-block text-sm font-bold text-white/90 underline decoration-white/40 underline-offset-4 transition hover:text-white hover:decoration-white"
+                        >
+                            Back to all games
+                        </Link>
+                    </footer>
                 </div>
             </div>
         </>

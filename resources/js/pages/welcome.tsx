@@ -91,7 +91,7 @@ export default function Welcome() {
 
     return (
         <>
-            <Head title="Kids Mini Games" />
+            <Head />
             <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-sky-200 via-fuchsia-100 to-amber-100">
                 {/* Decorative blobs */}
                 <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
