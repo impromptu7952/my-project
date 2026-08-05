@@ -1,5 +1,6 @@
 import { Link, usePage } from '@inertiajs/react';
 import {
+    Bot,
     Clapperboard,
     Heart,
     History,
@@ -50,11 +51,18 @@ export function AppSidebar() {
     ];
 
     if (isEditor && studioEnabled) {
-        mainNavItems.push({
-            title: 'Studio',
-            href: '/studio',
-            icon: Clapperboard,
-        });
+        mainNavItems.push(
+            {
+                title: 'Studio',
+                href: '/studio',
+                icon: Clapperboard,
+            },
+            {
+                title: 'Agents',
+                href: '/studio/agents',
+                icon: Bot,
+            },
+        );
     }
 
     return (

@@ -10,6 +10,8 @@ use App\Enums\ProductionStage;
 use App\Jobs\Production\Concerns\WritesProductionArtifact;
 use App\Models\ProductionArtifact;
 use App\Models\ProductionRun;
+use App\Services\Production\StageAgentService;
+use App\Services\Xai\XaiClient;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Throwable;
@@ -29,8 +31,7 @@ final class QualityReviewAgentJob implements ShouldQueue
             return;
         }
 
-        // Same status gate as other agent jobs — never write after reject/fail/human leave.
-        if (! $this->isAgentWritableStatus($run->status)) {
+        if (! $this->canWriteArtifacts($run)) {
             return;
         }
 
@@ -45,6 +46,26 @@ final class QualityReviewAgentJob implements ShouldQueue
             $run->update(['meta' => $meta]);
 
             $checks = app(RunDeterministicQualityChecks::class)->handle($run->fresh() ?? $run);
+            $payload = ['deterministic' => $checks];
+
+            $xai = app(XaiClient::class);
+            if ($xai->isConfigured()) {
+                try {
+                    $built = app(StageAgentService::class)->generate(
+                        $run->fresh() ?? $run,
+                        ProductionStage::Quality,
+                        ArtifactKind::QualityReport,
+                    );
+                    $payload['llm'] = $built['payload'];
+                    $payload['passed'] = (bool) ($checks['passed'] ?? false)
+                        && (bool) ($built['payload']['passed'] ?? true);
+                } catch (Throwable $e) {
+                    $payload['llm_error'] = $e->getMessage();
+                    $payload['passed'] = (bool) ($checks['passed'] ?? false);
+                }
+            } else {
+                $payload['passed'] = (bool) ($checks['passed'] ?? false);
+            }
 
             $version = (int) ($run->artifacts()->where('kind', ArtifactKind::QualityReport->value)->max('version') ?? 0) + 1;
 
@@ -56,10 +77,19 @@ final class QualityReviewAgentJob implements ShouldQueue
                 ],
                 [
                     'stage' => ProductionStage::Quality->value,
-                    'payload' => $checks,
-                    'meta' => ['agent' => 'deterministic+stub'],
+                    'payload' => $payload,
+                    'meta' => ['agent' => $xai->isConfigured() ? 'xai+deterministic' : 'deterministic'],
                 ]
             );
+
+            $fresh = $run->fresh();
+            if ($fresh !== null) {
+                $meta = $fresh->meta ?? [];
+                if (($meta['regenerate_stage'] ?? null) === ProductionStage::Quality->value) {
+                    unset($meta['allow_stage_write'], $meta['regenerate_stage']);
+                    $fresh->update(['meta' => $meta]);
+                }
+            }
         } catch (Throwable $e) {
             $this->markFailedIfFinalAttempt($this->runId, ProductionStage::Quality, $e);
 

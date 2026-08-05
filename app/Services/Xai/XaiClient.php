@@ -15,23 +15,37 @@ final class XaiClient
     }
 
     /**
+     * Chat completions against xAI (OpenAI-compatible).
+     * Uses the same subscription as local Grok tooling via XAI_API_KEY.
+     *
      * @param  list<array{role: string, content: string}>  $messages
      * @return array{content: string, usage: array<string, mixed>}
      */
-    public function chat(array $messages, int $maxTokens = 2000): array
-    {
+    public function chat(
+        array $messages,
+        int $maxTokens = 2000,
+        ?string $model = null,
+        ?float $temperature = null,
+    ): array {
         if (! $this->isConfigured()) {
             throw new RuntimeException('XAI_API_KEY is not configured.');
         }
 
+        $payload = [
+            'model' => $model ?? config('services.xai.model', 'grok-4.5'),
+            'messages' => $messages,
+            'max_tokens' => $maxTokens,
+        ];
+
+        if ($temperature !== null) {
+            $payload['temperature'] = $temperature;
+        }
+
         $response = Http::baseUrl((string) config('services.xai.base_url'))
             ->withToken((string) config('services.xai.api_key'))
-            ->timeout(120)
-            ->post('/chat/completions', [
-                'model' => config('services.xai.model', 'grok-4.5'),
-                'messages' => $messages,
-                'max_tokens' => $maxTokens,
-            ]);
+            ->timeout(180)
+            ->acceptJson()
+            ->post('/chat/completions', $payload);
 
         $response->throw();
 

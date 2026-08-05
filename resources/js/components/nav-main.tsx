@@ -20,6 +20,7 @@ export function NavMain({ items = [] }: { items: NavItem[] }) {
                     const href = typeof item.href === 'string' ? item.href : '';
                     const nestUnderParent =
                         href === '/studio' ||
+                        href === '/studio/agents' ||
                         href === '/parent/favorites' ||
                         href === '/parent/progress' ||
                         href === '/videos';

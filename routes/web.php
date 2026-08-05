@@ -8,14 +8,18 @@ use App\Http\Controllers\MediaStreamController;
 use App\Http\Controllers\Parent\FavoriteController;
 use App\Http\Controllers\Parent\WatchProgressController;
 use App\Http\Controllers\PrivacyController;
+use App\Http\Controllers\Studio\AgentProfileController;
 use App\Http\Controllers\Studio\ApproveProductionRunController;
 use App\Http\Controllers\Studio\MediaUploadController;
 use App\Http\Controllers\Studio\ProductionRunController;
 use App\Http\Controllers\Studio\ProductionSpecController;
 use App\Http\Controllers\Studio\PublishProductionRunController;
+use App\Http\Controllers\Studio\RegenerateStageController;
 use App\Http\Controllers\Studio\RejectProductionRunController;
 use App\Http\Controllers\Studio\RetryProductionRunController;
 use App\Http\Controllers\Studio\StartProductionRunController;
+use App\Http\Controllers\Studio\UpdateArtifactController;
+use App\Http\Controllers\Studio\UpdateRunAgentsController;
 use App\Http\Controllers\TopicController;
 use App\Http\Middleware\EnsureStudioEnabled;
 use Illuminate\Support\Facades\Route;
@@ -53,11 +57,19 @@ Route::middleware(['auth', 'verified', 'can:manage-content', EnsureStudioEnabled
     Route::get('/specs/{spec:slug}', [ProductionSpecController::class, 'show'])->name('specs.show');
     Route::post('/specs/{spec:slug}/runs', [StartProductionRunController::class, 'store'])->name('specs.start-run');
 
+    Route::get('/agents', [AgentProfileController::class, 'index'])->name('agents.index');
+    Route::post('/agents', [AgentProfileController::class, 'store'])->name('agents.store');
+    Route::get('/agents/{agent}', [AgentProfileController::class, 'edit'])->name('agents.edit');
+    Route::put('/agents/{agent}', [AgentProfileController::class, 'update'])->name('agents.update');
+
     Route::get('/runs/{run}', [ProductionRunController::class, 'show'])->name('runs.show');
     Route::post('/runs/{run}/approve', [ApproveProductionRunController::class, 'store'])->name('runs.approve');
     Route::post('/runs/{run}/reject', [RejectProductionRunController::class, 'store'])->name('runs.reject');
     Route::post('/runs/{run}/retry', [RetryProductionRunController::class, 'store'])->name('runs.retry');
     Route::post('/runs/{run}/publish', [PublishProductionRunController::class, 'store'])->name('runs.publish');
+    Route::post('/runs/{run}/artifacts', [UpdateArtifactController::class, 'store'])->name('runs.artifacts.update');
+    Route::post('/runs/{run}/regenerate', [RegenerateStageController::class, 'store'])->name('runs.regenerate');
+    Route::post('/runs/{run}/agents', [UpdateRunAgentsController::class, 'store'])->name('runs.agents.update');
 
     Route::post('/episodes/{episode:slug}/media', [MediaUploadController::class, 'store'])->name('episodes.media');
 });

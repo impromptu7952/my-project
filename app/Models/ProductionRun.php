@@ -23,6 +23,7 @@ final class ProductionRun extends Model
         'current_stage',
         'error',
         'meta',
+        'agent_profile_map',
         'started_by',
         'started_at',
         'script_approved_by',
@@ -56,6 +57,25 @@ final class ProductionRun extends Model
         return $this->hasMany(ProductionArtifact::class);
     }
 
+    public function agentProfileIdFor(ProductionStage $stage): ?int
+    {
+        $map = $this->agent_profile_map ?? [];
+        $id = $map[$stage->value] ?? null;
+
+        return is_numeric($id) ? (int) $id : null;
+    }
+
+    /**
+     * Latest artifact for a kind (highest version).
+     */
+    public function latestArtifact(string $kind): ?ProductionArtifact
+    {
+        return $this->artifacts()
+            ->where('kind', $kind)
+            ->orderByDesc('version')
+            ->first();
+    }
+
     /**
      * @return array<string, string>
      */
@@ -65,6 +85,7 @@ final class ProductionRun extends Model
             'status' => ProductionRunStatus::class,
             'current_stage' => ProductionStage::class,
             'meta' => 'array',
+            'agent_profile_map' => 'array',
             'started_at' => 'datetime',
             'script_approved_at' => 'datetime',
             'final_approved_at' => 'datetime',
