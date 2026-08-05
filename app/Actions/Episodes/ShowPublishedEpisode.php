@@ -39,6 +39,7 @@ final readonly class ShowPublishedEpisode
 
         return [
             'episode' => [
+                'id' => $episode->id,
                 'slug' => $episode->slug,
                 'title' => $episode->localizedTitle($locale),
                 'summary' => $episode->localizedSummary($locale),

@@ -32,6 +32,10 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
+import { EpisodeMediaPanel } from '@/components/studio/episode-media-panel';
+import { ScriptPreview, type ScriptPayload } from '@/components/studio/script-preview';
+import { StoryboardPreview } from '@/components/studio/storyboard-preview';
+import { VoicePreview } from '@/components/studio/voice-preview';
 import { cn } from '@/lib/utils';
 
 type Artifact = {
@@ -83,7 +87,26 @@ type Props = {
     steps: Step[];
     agentProfilesByStage: Record<string, AgentOption[]>;
     xaiConfigured: boolean;
+    usage?: {
+        artifact_count: number;
+        versions: number;
+        prompt_tokens: number;
+        completion_tokens: number;
+        total_tokens: number;
+        xai_calls: number;
+    };
+    episodeMedia?: {
+        slug: string;
+        media: Array<{
+            id: number;
+            kind: string;
+            mimeType: string | null;
+            sizeBytes: number | null;
+            url: string | null;
+        }>;
+    } | null;
 };
+
 
 function statusVariant(
     status: string,
@@ -101,128 +124,13 @@ function statusVariant(
     return 'outline';
 }
 
-function ScriptPreview({ payload }: { payload: unknown }) {
-    if (!payload || typeof payload !== 'object') {
-        return (
-            <p className="text-sm text-muted-foreground">No script content yet.</p>
-        );
-    }
-
-    const data = payload as {
-        title?: string;
-        character?: { name?: string };
-        sections?: Array<{
-            id?: string;
-            name?: string;
-            duration_seconds?: number;
-            dialogue?: string[];
-            pause_seconds?: number | null;
-            movement?: string | null;
-        }>;
-    };
-
-    if (!data.sections?.length) {
-        return (
-            <pre className="max-h-[28rem] overflow-auto rounded-lg border bg-muted/40 p-4 font-mono text-xs">
-                {JSON.stringify(payload, null, 2)}
-            </pre>
-        );
-    }
-
-    return (
-        <div className="space-y-4">
-            <div>
-                <p className="text-lg font-semibold">{data.title ?? 'Script'}</p>
-                {data.character?.name ? (
-                    <p className="text-sm text-muted-foreground">
-                        Character: {data.character.name}
-                    </p>
-                ) : null}
-            </div>
-            {data.sections.map((section, i) => (
-                <Card key={section.id ?? i} className="shadow-none">
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-sm">
-                            {section.name ?? section.id ?? `Section ${i + 1}`}
-                        </CardTitle>
-                        <CardDescription>
-                            {section.duration_seconds
-                                ? `${section.duration_seconds}s`
-                                : '—'}
-                            {section.pause_seconds
-                                ? ` · pause ${section.pause_seconds}s`
-                                : ''}
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-2 text-sm">
-                        {(section.dialogue ?? []).map((line, li) => (
-                            <p key={li} className="leading-relaxed">
-                                {line}
-                            </p>
-                        ))}
-                        {section.movement ? (
-                            <p className="text-xs font-medium text-primary">
-                                Movement: {section.movement}
-                            </p>
-                        ) : null}
-                    </CardContent>
-                </Card>
-            ))}
-        </div>
-    );
-}
-
-function VisualPreview({ payload }: { payload: unknown }) {
-    if (!payload || typeof payload !== 'object') {
-        return (
-            <p className="text-sm text-muted-foreground">No visual prompts yet.</p>
-        );
-    }
-
-    const data = payload as {
-        image_prompts?: Array<{ shot_id?: string; prompt?: string }>;
-        video_prompts?: Array<{ shot_id?: string; prompt?: string }>;
-        thumbnail_concept?: { title?: string; prompt?: string };
-        prompts?: Array<{ prompt?: string }>;
-    };
-
-    type PromptItem = { shot_id?: string; prompt?: string };
-    const images: PromptItem[] =
-        data.image_prompts ??
-        data.prompts ??
-        (Array.isArray(payload) ? (payload as PromptItem[]) : []);
-
-    return (
-        <div className="grid gap-3 sm:grid-cols-2">
-            {images.slice(0, 8).map((item, i) => (
-                <Card key={i} className="shadow-none">
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-xs font-medium text-muted-foreground">
-                            {item.shot_id ?? `Prompt ${i + 1}`}
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="mb-3 flex aspect-video items-center justify-center rounded-lg border border-dashed bg-muted/30 text-xs text-muted-foreground">
-                            Visual preview (gen later)
-                        </div>
-                        <p className="text-xs leading-relaxed">{item.prompt}</p>
-                    </CardContent>
-                </Card>
-            ))}
-            {images.length === 0 ? (
-                <pre className="col-span-full max-h-80 overflow-auto rounded-lg border bg-muted/40 p-4 font-mono text-xs">
-                    {JSON.stringify(payload, null, 2)}
-                </pre>
-            ) : null}
-        </div>
-    );
-}
-
 export default function StudioRunShow({
     run,
     steps,
     agentProfilesByStage,
     xaiConfigured,
+    usage,
+    episodeMedia = null,
 }: Props) {
     const [activeStepId, setActiveStepId] = useState(
         steps.find((s) => s.ready)?.id ?? steps[0]?.id ?? 'script',
@@ -470,10 +378,23 @@ export default function StudioRunShow({
                             <CardContent className="space-y-4">
                                 {activeStepId === 'script' ? (
                                     <ScriptPreview
+                                        payload={(primaryArtifact?.payload ?? {}) as ScriptPayload}
+                                        editable
+                                        onChange={(next) =>
+                                            setDraftJson(JSON.stringify(next, null, 2))
+                                        }
+                                    />
+                                ) : activeStepId === 'storyboard' ? (
+                                    <StoryboardPreview
                                         payload={primaryArtifact?.payload}
                                     />
+                                ) : activeStepId === 'voice' ? (
+                                    <VoicePreview
+                                        voPayload={run.latestByKind.vo_script?.payload}
+                                        ttsPayload={run.latestByKind.tts_manifest?.payload}
+                                    />
                                 ) : activeStepId === 'visual_prompts' ? (
-                                    <VisualPreview
+                                    <StoryboardPreview
                                         payload={primaryArtifact?.payload}
                                     />
                                 ) : (
@@ -756,6 +677,42 @@ export default function StudioRunShow({
                         </CardContent>
                     </Card>
                 </div>
+
+                {usage ? (
+                    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                        <Card className="shadow-none">
+                            <CardHeader className="pb-2">
+                                <CardDescription>Artifact kinds</CardDescription>
+                                <CardTitle className="text-2xl">{usage.artifact_count}</CardTitle>
+                            </CardHeader>
+                        </Card>
+                        <Card className="shadow-none">
+                            <CardHeader className="pb-2">
+                                <CardDescription>Versions</CardDescription>
+                                <CardTitle className="text-2xl">{usage.versions}</CardTitle>
+                            </CardHeader>
+                        </Card>
+                        <Card className="shadow-none">
+                            <CardHeader className="pb-2">
+                                <CardDescription>xAI calls</CardDescription>
+                                <CardTitle className="text-2xl">{usage.xai_calls}</CardTitle>
+                            </CardHeader>
+                        </Card>
+                        <Card className="shadow-none">
+                            <CardHeader className="pb-2">
+                                <CardDescription>Tokens (approx)</CardDescription>
+                                <CardTitle className="text-2xl">{usage.total_tokens}</CardTitle>
+                            </CardHeader>
+                        </Card>
+                    </div>
+                ) : null}
+
+                {episodeMedia ? (
+                    <EpisodeMediaPanel
+                        episodeSlug={episodeMedia.slug}
+                        media={episodeMedia.media}
+                    />
+                ) : null}
 
                 <Card>
                     <CardHeader>

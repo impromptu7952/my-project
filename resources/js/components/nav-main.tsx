@@ -21,6 +21,7 @@ export function NavMain({ items = [] }: { items: NavItem[] }) {
                     const nestUnderParent =
                         href === '/studio' ||
                         href === '/studio/agents' ||
+                        href === '/studio/episodes' ||
                         href === '/parent/favorites' ||
                         href === '/parent/progress' ||
                         href === '/videos';
