@@ -13,6 +13,7 @@ use App\Http\Controllers\Studio\ApproveProductionRunController;
 use App\Http\Controllers\Studio\UpdateStageNotesController;
 use App\Http\Controllers\Studio\PreviewVoiceController;
 use App\Http\Controllers\Studio\PreviewVisualController;
+use App\Http\Controllers\Studio\ExportProductionRunController;
 use App\Http\Controllers\Studio\BrandBibleController;
 use App\Http\Controllers\SeriesController;
 use App\Http\Controllers\Studio\CloneProductionRunController;
@@ -78,6 +79,7 @@ Route::middleware(['auth', 'verified', 'can:manage-content', EnsureStudioEnabled
     Route::get('/episodes/{episode:slug}', [EpisodeStudioController::class, 'show'])->name('episodes.show');
 
     Route::get('/runs/{run}', [ProductionRunController::class, 'show'])->name('runs.show');
+    Route::get('/runs/{run}/export', [ExportProductionRunController::class, 'show'])->name('runs.export');
     Route::post('/runs/{run}/approve', [ApproveProductionRunController::class, 'store'])->name('runs.approve');
     Route::post('/runs/{run}/reject', [RejectProductionRunController::class, 'store'])->name('runs.reject');
     Route::post('/runs/{run}/retry', [RetryProductionRunController::class, 'store'])->name('runs.retry');

@@ -67,6 +67,11 @@ final class StudioDashboardController extends Controller
             'recentRuns' => $recentRuns,
             'needsAttention' => $needsAttention,
             'xaiConfigured' => app(XaiClient::class)->isConfigured(),
+            'character' => [
+                'name' => config('brand.character.name'),
+                'ageTarget' => config('brand.character.age_target'),
+                'href' => route('studio.brand'),
+            ],
         ]);
     }
 }

@@ -11,6 +11,8 @@ type EpisodeCard = {
     ageBand: string;
     topicName?: string | null;
     topicSlug?: string | null;
+    seriesSlug?: string | null;
+    seriesHref?: string | null;
     href: string;
     emoji: string;
 };
@@ -19,6 +21,7 @@ type TopicChip = {
     slug: string;
     name: string;
     href: string;
+    topicPageHref?: string;
 };
 
 type Props = {
@@ -95,6 +98,21 @@ export default function VideosIndex({
                                     {topic.name}
                                 </Link>
                             ))}
+                            {activeTopic
+                                ? topics
+                                      .filter((t) => t.slug === activeTopic)
+                                      .map((topic) =>
+                                          topic.topicPageHref ? (
+                                              <Link
+                                                  key={`${topic.slug}-page`}
+                                                  href={topic.topicPageHref}
+                                                  className="rounded-full bg-violet-100 px-4 py-2 text-sm font-bold text-violet-800 shadow-sm"
+                                              >
+                                                  Topic page →
+                                              </Link>
+                                          ) : null,
+                                      )
+                                : null}
                         </div>
                     ) : null}
 

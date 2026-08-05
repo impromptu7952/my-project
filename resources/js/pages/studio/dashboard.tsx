@@ -44,6 +44,11 @@ type Props = {
         href: string;
     }>;
     xaiConfigured: boolean;
+    character?: {
+        name: string | null;
+        ageTarget: string | null;
+        href: string;
+    } | null;
 };
 
 export default function StudioDashboard({
@@ -51,6 +56,7 @@ export default function StudioDashboard({
     recentRuns,
     needsAttention,
     xaiConfigured,
+    character = null,
 }: Props) {
     return (
         <>
@@ -66,6 +72,13 @@ export default function StudioDashboard({
                             <Sparkles className="size-3" />
                             {xaiConfigured ? 'Grok connected' : 'Stub agents'}
                         </Badge>
+                        {character?.href ? (
+                            <Button asChild size="sm" variant="outline">
+                                <Link href={character.href}>
+                                    {character.name ?? 'Brand'} bible
+                                </Link>
+                            </Button>
+                        ) : null}
                         <Button asChild size="sm">
                             <Link href="/studio/specs/create">New spec</Link>
                         </Button>

@@ -276,12 +276,22 @@ export default function StudioRunShow({
                                 ) : null}
                             </div>
                         </div>
-                        <Button variant="outline" size="sm" asChild>
-                            <Link href="/studio/agents">
-                                <Bot />
-                                Manage agents
-                            </Link>
-                        </Button>
+                        <div className="flex flex-wrap gap-2">
+                            <Button variant="outline" size="sm" asChild>
+                                <a
+                                    href={`/studio/runs/${run.id}/export`}
+                                    download
+                                >
+                                    Export package
+                                </a>
+                            </Button>
+                            <Button variant="outline" size="sm" asChild>
+                                <Link href="/studio/agents">
+                                    <Bot />
+                                    Manage agents
+                                </Link>
+                            </Button>
+                        </div>
                     </div>
                 </div>
 
@@ -703,14 +713,21 @@ export default function StudioRunShow({
                                         </Button>
                                         <Button
                                             variant="destructive"
-                                            onClick={() =>
+                                            onClick={() => {
+                                                const reason =
+                                                    window.prompt(
+                                                        'Reject reason (optional):',
+                                                        'Needs rewrite',
+                                                    ) ?? '';
                                                 router.post(
                                                     `/studio/runs/${run.id}/reject`,
                                                     {
-                                                        reason: 'Needs rewrite',
+                                                        reason:
+                                                            reason.trim() ||
+                                                            'Needs rewrite',
                                                     },
-                                                )
-                                            }
+                                                );
+                                            }}
                                         >
                                             <XCircle />
                                             Reject run
@@ -756,11 +773,18 @@ export default function StudioRunShow({
                                         ) : null}
                                         <Button
                                             variant="destructive"
-                                            onClick={() =>
+                                            onClick={() => {
+                                                const reason =
+                                                    window.prompt(
+                                                        'Reject reason (optional):',
+                                                    ) ?? '';
                                                 router.post(
                                                     `/studio/runs/${run.id}/reject`,
-                                                )
-                                            }
+                                                    reason.trim()
+                                                        ? { reason: reason }
+                                                        : {},
+                                                );
+                                            }}
                                         >
                                             <XCircle />
                                             Reject

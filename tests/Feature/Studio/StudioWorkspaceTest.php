@@ -196,6 +196,33 @@ test('brand bible page renders character kit', function (): void {
             ->where('character.name', 'Lumi'));
 });
 
+test('editor can export production run package as json', function (): void {
+    $editor = User::query()->where('email', 'editor@playzone.test')->firstOrFail();
+    $run = ProductionRun::factory()->create([
+        'status' => ProductionRunStatus::AwaitingScriptReview,
+        'started_by' => $editor->id,
+    ]);
+    $run->artifacts()->create([
+        'kind' => ArtifactKind::Script,
+        'stage' => ProductionStage::Script,
+        'version' => 1,
+        'payload' => ['title' => 'Export me', 'sections' => []],
+        'meta' => [],
+    ]);
+
+    $response = $this->actingAs($editor)
+        ->get(route('studio.runs.export', $run));
+
+    $response->assertOk();
+    $response->assertHeader('content-disposition');
+
+    $data = json_decode($response->streamedContent(), true);
+    expect($data['run']['id'] ?? null)->toBe($run->id)
+        ->and($data['character_bible']['name'] ?? null)->toBe('Lumi')
+        ->and($data['artifacts'][0]['kind'] ?? null)->toBe('script')
+        ->and($data['artifacts'][0]['payload']['title'] ?? null)->toBe('Export me');
+});
+
 test('editor can build visual preview package from image prompts', function (): void {
     $editor = User::query()->where('email', 'editor@playzone.test')->firstOrFail();
     $run = ProductionRun::factory()->create([
