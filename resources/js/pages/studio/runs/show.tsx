@@ -585,6 +585,15 @@ export default function StudioRunShow({
                                     </Button>
                                 ) : null}
 
+                                <Button
+                                    variant="outline"
+                                    onClick={() =>
+                                        router.post(`/studio/runs/${run.id}/clone`)
+                                    }
+                                >
+                                    Clone run for edits
+                                </Button>
+
                                 {!isBusy &&
                                 ![
                                     'awaiting_script_review',
