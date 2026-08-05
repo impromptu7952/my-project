@@ -19,6 +19,7 @@ type Props = {
         captionsSrc: string | null;
         poster: string | null;
         mimeType: string | null;
+        language?: string | null;
     };
     linkedGames: Array<{
         slug: string;
@@ -64,6 +65,8 @@ export default function VideoShow({
                             captionsSrc={playback.captionsSrc}
                             poster={playback.poster}
                             title={episode.title}
+                            mimeType={playback.mimeType}
+                            captionsLang={playback.language ?? 'sq'}
                         />
                     ) : (
                         <div className="flex aspect-video items-center justify-center rounded-3xl bg-black/40 text-lg font-bold">

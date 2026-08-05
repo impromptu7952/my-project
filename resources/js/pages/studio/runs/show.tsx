@@ -77,7 +77,19 @@ export default function StudioRunShow({ run }: Props) {
                                 </button>
                             </>
                         ) : null}
-                        {run.status === 'awaiting_final_review' ? (
+                        {run.artifacts.some(
+                        (a) =>
+                            a.kind === 'quality_report' &&
+                            typeof a.payload === 'object' &&
+                            a.payload !== null &&
+                            'passed' in a.payload &&
+                            (a.payload as { passed?: boolean }).passed === false,
+                    ) ? (
+                        <p className="rounded-lg bg-red-50 p-3 text-sm font-semibold text-red-700">
+                            Deterministic quality checks failed — final approve is blocked until fixed.
+                        </p>
+                    ) : null}
+                    {run.status === 'awaiting_final_review' ? (
                             <>
                                 <button
                                     type="button"

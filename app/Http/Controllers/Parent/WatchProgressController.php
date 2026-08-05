@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Parent;
 
 use App\Actions\Parent\UpdateWatchProgress;
+use App\Enums\EpisodeStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Episode;
 use App\Models\WatchProgress;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -39,7 +41,11 @@ final class WatchProgressController extends Controller
     public function store(Request $request, UpdateWatchProgress $update): RedirectResponse
     {
         $data = $request->validate([
-            'episode_id' => ['required', 'exists:episodes,id'],
+            'episode_id' => [
+                'required',
+                'integer',
+                Rule::exists('episodes', 'id')->where('status', EpisodeStatus::Published->value),
+            ],
             'position_seconds' => ['required', 'integer', 'min:0'],
             'duration_seconds' => ['nullable', 'integer', 'min:0'],
         ]);

@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 use App\Models\User;
 use Database\Seeders\ContentSeeder;
+use Illuminate\Support\Facades\Config;
 
 beforeEach(function (): void {
+    Config::set('features.studio', true);
     $this->seed(ContentSeeder::class);
 });
 
@@ -37,4 +39,29 @@ test('unverified editors are redirected', function (): void {
     $this->actingAs($editor)
         ->get(route('studio.specs.index'))
         ->assertRedirect();
+});
+
+test('studio is disabled when feature flag is off', function (): void {
+    Config::set('features.studio', false);
+    $editor = User::query()->where('email', 'editor@playzone.test')->firstOrFail();
+
+    $this->actingAs($editor)
+        ->get(route('studio.specs.index'))
+        ->assertNotFound();
+});
+
+test('is_editor cannot be mass assigned', function (): void {
+    expect(fn () => User::query()->create([
+        'name' => 'Hacker',
+        'email' => 'hacker@example.com',
+        'password' => 'password',
+        'is_editor' => true,
+    ]))->toThrow(Illuminate\Database\Eloquent\MassAssignmentException::class);
+
+    $user = User::query()->create([
+        'name' => 'Normal',
+        'email' => 'normal@example.com',
+        'password' => 'password',
+    ]);
+    expect($user->fresh()->is_editor)->toBeFalse();
 });

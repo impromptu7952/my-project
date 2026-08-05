@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Production;
 
+use App\Actions\Production\Concerns\EnforcesProductionConcurrency;
 use App\Enums\ProductionRunStatus;
 use App\Enums\ProductionStage;
 use App\Jobs\Production\CurriculumAgentJob;
@@ -19,38 +20,17 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 
 final readonly class StartProductionRun
 {
+    use EnforcesProductionConcurrency;
+
     public function handle(ProductionSpec $spec, User $editor): ProductionRun
     {
         if (RateLimiter::tooManyAttempts('production-start:'.$editor->id, maxAttempts: 2)) {
             throw new HttpException(429, 'Too many production starts. Try again shortly.');
         }
 
-        RateLimiter::hit('production-start:'.$editor->id, decaySeconds: 60);
-
-        return DB::transaction(function () use ($spec, $editor): ProductionRun {
-            $openValues = array_map(
-                fn (ProductionRunStatus $s): string => $s->value,
-                ProductionRunStatus::openStatuses()
-            );
-
-            $openCount = ProductionRun::query()
-                ->whereIn('status', $openValues)
-                ->lockForUpdate()
-                ->count();
-
-            if ($openCount >= 3) {
-                throw new HttpException(503, 'Global production run limit reached (max 3 open).');
-            }
-
-            $openOnSpec = ProductionRun::query()
-                ->where('production_spec_id', $spec->id)
-                ->whereIn('status', $openValues)
-                ->lockForUpdate()
-                ->exists();
-
-            if ($openOnSpec) {
-                throw new HttpException(422, 'This production spec already has an open run.');
-            }
+        $run = DB::transaction(function () use ($spec, $editor): ProductionRun {
+            $this->assertGlobalOpenCapacity();
+            $this->assertNoOpenRunOnSpec($spec);
 
             $run = ProductionRun::query()->create([
                 'production_spec_id' => $spec->id,
@@ -60,13 +40,22 @@ final readonly class StartProductionRun
                 'started_at' => now(),
             ]);
 
-            Bus::chain([
-                new CurriculumAgentJob($run->id),
-                new ScriptAgentJob($run->id),
-                new MarkAwaitingScriptReviewJob($run->id),
-            ])->dispatch();
+            $runId = $run->id;
+
+            // Dispatch after commit so workers never see an uncommitted run row.
+            DB::afterCommit(function () use ($runId): void {
+                Bus::chain([
+                    new CurriculumAgentJob($runId),
+                    new ScriptAgentJob($runId),
+                    new MarkAwaitingScriptReviewJob($runId),
+                ])->dispatch();
+            });
 
             return $run;
         });
+
+        RateLimiter::hit('production-start:'.$editor->id, decaySeconds: 60);
+
+        return $run;
     }
 }

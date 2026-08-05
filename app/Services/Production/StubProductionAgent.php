@@ -31,7 +31,7 @@ final class StubProductionAgent
                 'age_band' => $spec['age_band'] ?? '1-3',
                 'notes' => 'Curriculum package for co-viewing ages 1–3 (standard literary Albanian).',
             ],
-            ArtifactKind::Script => $this->ngjyratScript($title, $slug),
+            ArtifactKind::Script => $this->scriptFor($title, $slug, $spec),
             ArtifactKind::Storyboard => [
                 'shots' => [
                     ['id' => 1, 'scene' => 'Hyrje', 'visual' => 'Karakteri i animuar përshëndet fëmijët', 'duration' => 30],
@@ -127,6 +127,135 @@ final class StubProductionAgent
     /**
      * @return array<string, mixed>
      */
+    /**
+     * @param  array<string, mixed>  $spec
+     * @return array<string, mixed>
+     */
+    private function scriptFor(string $title, string $slug, array $spec): array
+    {
+        if (str_contains($slug, 'ngjyrat') || str_contains($slug, 'color')) {
+            return $this->ngjyratScript($title, $slug);
+        }
+
+        if (str_contains($slug, 'kafsh') || str_contains($slug, 'animal')) {
+            return $this->animalsScript($title, $slug);
+        }
+
+        if (str_contains($slug, 'pershendet') || str_contains($slug, 'greeting')) {
+            return $this->greetingsScript($title, $slug);
+        }
+
+        return $this->genericScript($title, $slug, $spec);
+    }
+
+    /**
+     * @param  array<string, mixed>  $spec
+     * @return array<string, mixed>
+     */
+    private function genericScript(string $title, string $slug, array $spec): array
+    {
+        $vocab = is_array($spec['vocabulary'] ?? null) ? $spec['vocabulary'] : [];
+        $words = [];
+        foreach ($vocab as $item) {
+            if (is_array($item) && isset($item['word'])) {
+                $words[] = (string) $item['word'];
+            }
+        }
+        $wordLine = $words !== [] ? implode('. ', $words).'.' : 'Fjalë të reja.';
+
+        return [
+            'title' => $title,
+            'episode_slug' => $slug,
+            'language' => 'sq',
+            'dialect' => 'standard_literary_albanian',
+            'duration_target_seconds' => 300,
+            'sections' => [
+                [
+                    'id' => 'hello',
+                    'name' => 'Përshëndetje',
+                    'dialogue' => [
+                        'Karakteri: Përshëndetje, miq të vegjël!',
+                        'Karakteri: '.$wordLine,
+                        'Karakteri: Mirupafshim!',
+                    ],
+                    'pause_seconds' => 4,
+                ],
+            ],
+            'principles' => [
+                'phrase_length' => '2-6 words',
+                'interactive_pauses_seconds' => '3-5',
+                'co_viewing' => true,
+            ],
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function animalsScript(string $title, string $slug): array
+    {
+        return [
+            'title' => $title,
+            'episode_slug' => $slug,
+            'language' => 'sq',
+            'dialect' => 'standard_literary_albanian',
+            'duration_target_seconds' => 180,
+            'sections' => [
+                [
+                    'id' => 'hello',
+                    'name' => 'Përshëndetje',
+                    'dialogue' => ['Karakteri: Përshëndetje! Sot shohim kafshë.'],
+                    'pause_seconds' => 3,
+                ],
+                [
+                    'id' => 'animals',
+                    'name' => 'Qeni dhe macja',
+                    'dialogue' => [
+                        'Karakteri: Ja qeni — ham ham!',
+                        'Karakteri: Ja macja — miau!',
+                        '[PAUZË 4 sekonda]',
+                        'Karakteri: Shumë mirë!',
+                    ],
+                    'pause_seconds' => 4,
+                ],
+                [
+                    'id' => 'goodbye',
+                    'name' => 'Mirupafshim',
+                    'dialogue' => ['Karakteri: Mirupafshim, kafshë të dashura!'],
+                    'pause_seconds' => 3,
+                ],
+            ],
+            'principles' => ['phrase_length' => '2-6 words', 'co_viewing' => true],
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function greetingsScript(string $title, string $slug): array
+    {
+        return [
+            'title' => $title,
+            'episode_slug' => $slug,
+            'language' => 'sq',
+            'dialect' => 'standard_literary_albanian',
+            'duration_target_seconds' => 120,
+            'sections' => [
+                [
+                    'id' => 'greetings',
+                    'name' => 'Mirëmëngjesi',
+                    'dialogue' => [
+                        'Karakteri: Mirëmëngjesi!',
+                        'Karakteri: Përshëndetje, miq!',
+                        'Karakteri: Faleminderit! Mirupafshim!',
+                    ],
+                    'pause_seconds' => 3,
+                ],
+            ],
+            'principles' => ['phrase_length' => '2-6 words', 'co_viewing' => true],
+        ];
+    }
+
     private function ngjyratScript(string $title, string $slug): array
     {
         return [

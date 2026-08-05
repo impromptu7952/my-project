@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Production;
 
+use App\Enums\ArtifactKind;
 use App\Enums\ProductionGate;
 use App\Enums\ProductionRunStatus;
 use App\Enums\ProductionStage;
@@ -39,19 +40,33 @@ final readonly class ApproveProductionStage
                     'script_approved_at' => now(),
                 ]);
 
-                Bus::chain([
-                    new StoryboardAgentJob($run->id),
-                    new VisualPromptAgentJob($run->id),
-                    new VoicePackageAgentJob($run->id),
-                    new EditorPackageAgentJob($run->id),
-                    new QualityReviewAgentJob($run->id),
-                    new MarkAwaitingFinalReviewJob($run->id),
-                ])->dispatch();
+                $runId = $run->id;
+
+                DB::afterCommit(function () use ($runId): void {
+                    Bus::chain([
+                        new StoryboardAgentJob($runId),
+                        new VisualPromptAgentJob($runId),
+                        new VoicePackageAgentJob($runId),
+                        new EditorPackageAgentJob($runId),
+                        new QualityReviewAgentJob($runId),
+                        new MarkAwaitingFinalReviewJob($runId),
+                    ])->dispatch();
+                });
             }
 
             if ($gate === ProductionGate::Final) {
                 if ($run->status !== ProductionRunStatus::AwaitingFinalReview) {
                     throw new HttpException(422, 'Run is not awaiting final review.');
+                }
+
+                $run->loadMissing('artifacts');
+                $report = $run->artifacts
+                    ->where('kind', ArtifactKind::QualityReport)
+                    ->sortByDesc('version')
+                    ->first();
+
+                if (is_array($report?->payload) && ($report->payload['passed'] ?? true) === false) {
+                    throw new HttpException(422, 'Cannot approve final: deterministic quality checks failed.');
                 }
 
                 $run->update([

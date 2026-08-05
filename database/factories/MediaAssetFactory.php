@@ -23,7 +23,7 @@ final class MediaAssetFactory extends Factory
             'episode_id' => Episode::factory(),
             'kind' => MediaKind::VideoMaster,
             'provider' => MediaProvider::Self,
-            'disk' => 'public',
+            'disk' => 'local',
             'path' => 'episodes/sample.mp4',
             'external_id' => null,
             'mime_type' => 'video/mp4',

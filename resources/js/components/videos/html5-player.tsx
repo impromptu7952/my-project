@@ -3,6 +3,8 @@ type Html5PlayerProps = {
     poster?: string | null;
     captionsSrc?: string | null;
     title: string;
+    mimeType?: string | null;
+    captionsLang?: string | null;
 };
 
 export function Html5Player({
@@ -10,6 +12,8 @@ export function Html5Player({
     poster,
     captionsSrc,
     title,
+    mimeType = 'video/mp4',
+    captionsLang = 'sq',
 }: Html5PlayerProps) {
     return (
         <div className="overflow-hidden rounded-3xl bg-black shadow-2xl ring-4 ring-white/60">
@@ -22,13 +26,13 @@ export function Html5Player({
                 title={title}
                 controlsList="nodownload"
             >
-                <source src={src} type="video/mp4" />
+                <source src={src} type={mimeType ?? 'video/mp4'} />
                 {captionsSrc ? (
                     <track
                         kind="captions"
-                        srcLang="sq"
+                        srcLang={captionsLang ?? 'sq'}
                         src={captionsSrc}
-                        label="Shqip"
+                        label={captionsLang === 'en' ? 'English' : 'Shqip'}
                         default
                     />
                 ) : null}

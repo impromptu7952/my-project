@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Parent;
 
 use App\Actions\Parent\ToggleFavorite;
+use App\Enums\EpisodeStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Episode;
 use App\Models\Game;
 use App\Models\ParentFavorite;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -48,8 +50,16 @@ final class FavoriteController extends Controller
     public function store(Request $request, ToggleFavorite $toggle): RedirectResponse
     {
         $data = $request->validate([
-            'episode_id' => ['nullable', 'exists:episodes,id'],
-            'game_id' => ['nullable', 'exists:games,id'],
+            'episode_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('episodes', 'id')->where('status', EpisodeStatus::Published->value),
+            ],
+            'game_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('games', 'id')->where('is_active', true),
+            ],
         ]);
 
         $episode = isset($data['episode_id']) ? Episode::query()->find($data['episode_id']) : null;

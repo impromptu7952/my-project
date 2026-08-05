@@ -72,7 +72,8 @@ export default function Welcome({
 }: HomeProps) {
     const { auth } = usePage().props;
     const { t, locale, toggleLocale } = useLocale();
-    const showVideos = features?.videos && featuredEpisodes.length >= 0;
+    const showVideos = Boolean(features?.videos);
+    const toddlerHome = features?.toddlerHome !== false;
 
     return (
         <>
@@ -203,6 +204,7 @@ export default function Welcome({
                         </section>
                     ) : null}
 
+                    {toddlerHome ? (
                     <section className="mb-12" aria-label={t('home.toddler_games')}>
                         <h2 className="mb-4 text-2xl font-black text-slate-900">
                             🧸 {t('home.toddler_games')}
@@ -213,6 +215,7 @@ export default function Welcome({
                             ))}
                         </div>
                     </section>
+                    ) : null}
 
                     {moreGames.length > 0 ? (
                         <section className="mb-12" aria-label={t('home.more_games')}>

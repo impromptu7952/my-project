@@ -26,6 +26,7 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 final class ContentSeeder extends Seeder
 {
@@ -312,11 +313,13 @@ final class ContentSeeder extends Seeder
                 ]
             );
 
-            $videoRel = 'episodes/'.$episode->slug.'/video_master.mp4';
-            $vttRel = 'episodes/'.$episode->slug.'/subtitle.vtt';
+            $disk = (string) config('media.self.disk', 'local');
+            $uuid = (string) Str::uuid();
+            $videoRel = 'episodes/'.$uuid.'/video_master.mp4';
+            $vttRel = 'episodes/'.$uuid.'/subtitle.vtt';
 
-            $this->ensureMp4(Storage::disk('public')->path($videoRel));
-            Storage::disk('public')->put($vttRel, $data['vtt']);
+            $this->ensureMp4(Storage::disk($disk)->path($videoRel));
+            Storage::disk($disk)->put($vttRel, $data['vtt']);
 
             MediaAsset::query()->updateOrCreate(
                 [
@@ -325,10 +328,10 @@ final class ContentSeeder extends Seeder
                     'provider' => MediaProvider::Self,
                 ],
                 [
-                    'disk' => 'public',
+                    'disk' => $disk,
                     'path' => $videoRel,
                     'mime_type' => 'video/mp4',
-                    'size_bytes' => File::size(Storage::disk('public')->path($videoRel)),
+                    'size_bytes' => File::size(Storage::disk($disk)->path($videoRel)),
                     'meta' => ['seed' => true],
                 ]
             );
@@ -340,7 +343,7 @@ final class ContentSeeder extends Seeder
                     'provider' => MediaProvider::Self,
                 ],
                 [
-                    'disk' => 'public',
+                    'disk' => $disk,
                     'path' => $vttRel,
                     'mime_type' => 'text/vtt',
                     'size_bytes' => mb_strlen($data['vtt']),

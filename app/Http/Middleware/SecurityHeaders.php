@@ -17,13 +17,15 @@ final class SecurityHeaders
     {
         $response = $next($request);
 
+        // Pilot: self-host only. media-src is 'self' + blob (no broad https:).
+        // script-src unsafe-inline/eval retained for Vite/Inertia/React in dev & built assets.
         $csp = implode('; ', [
             "default-src 'self'",
             "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
             "style-src 'self' 'unsafe-inline'",
             "img-src 'self' data: blob:",
             "font-src 'self' data:",
-            "media-src 'self' blob: https:",
+            "media-src 'self' blob:",
             "connect-src 'self' ws: wss:",
             "frame-ancestors 'self'",
             "base-uri 'self'",

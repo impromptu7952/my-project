@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Http\Controllers\EpisodeController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\MediaStreamController;
 use App\Http\Controllers\Parent\FavoriteController;
 use App\Http\Controllers\Parent\WatchProgressController;
 use App\Http\Controllers\PrivacyController;
@@ -16,10 +17,13 @@ use App\Http\Controllers\Studio\RejectProductionRunController;
 use App\Http\Controllers\Studio\RetryProductionRunController;
 use App\Http\Controllers\Studio\StartProductionRunController;
 use App\Http\Controllers\TopicController;
+use App\Http\Middleware\EnsureStudioEnabled;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'show'])->name('home');
 Route::get('/privacy', [PrivacyController::class, 'show'])->name('privacy');
+
+Route::get('/media/{mediaAsset}', [MediaStreamController::class, 'show'])->name('media.stream');
 
 Route::get('/videos', [EpisodeController::class, 'index'])->name('videos.index');
 Route::get('/videos/{episode:slug}', [EpisodeController::class, 'show'])->name('videos.show');
@@ -42,7 +46,7 @@ Route::middleware(['auth', 'verified'])->prefix('parent')->name('parent.')->grou
     Route::post('/progress', [WatchProgressController::class, 'store'])->name('progress.store');
 });
 
-Route::middleware(['auth', 'verified', 'can:manage-content'])->prefix('studio')->name('studio.')->group(function (): void {
+Route::middleware(['auth', 'verified', 'can:manage-content', EnsureStudioEnabled::class])->prefix('studio')->name('studio.')->group(function (): void {
     Route::get('/', [ProductionSpecController::class, 'index'])->name('specs.index');
     Route::get('/specs/create', [ProductionSpecController::class, 'create'])->name('specs.create');
     Route::post('/specs', [ProductionSpecController::class, 'store'])->name('specs.store');

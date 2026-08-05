@@ -9,6 +9,7 @@ use App\Enums\ProductionStage;
 use App\Models\ProductionRun;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Support\Facades\DB;
 
 final class MarkAwaitingFinalReviewJob implements ShouldQueue
 {
@@ -20,14 +21,22 @@ final class MarkAwaitingFinalReviewJob implements ShouldQueue
 
     public function handle(): void
     {
-        $run = ProductionRun::query()->find($this->runId);
-        if ($run === null || $run->status === ProductionRunStatus::Failed) {
-            return;
-        }
+        DB::transaction(function (): void {
+            /** @var ProductionRun|null $run */
+            $run = ProductionRun::query()->lockForUpdate()->find($this->runId);
 
-        $run->update([
-            'status' => ProductionRunStatus::AwaitingFinalReview,
-            'current_stage' => ProductionStage::Quality,
-        ]);
+            if ($run === null) {
+                return;
+            }
+
+            if ($run->status !== ProductionRunStatus::RunningChainB) {
+                return;
+            }
+
+            $run->update([
+                'status' => ProductionRunStatus::AwaitingFinalReview,
+                'current_stage' => ProductionStage::Quality,
+            ]);
+        });
     }
 }
