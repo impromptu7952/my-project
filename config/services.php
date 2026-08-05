@@ -40,16 +40,32 @@ return [
     'xai' => [
         'api_key' => env('XAI_API_KEY'),
         'base_url' => env('XAI_BASE_URL', 'https://api.x.ai/v1'),
-        'model' => env('XAI_MODEL', 'grok-4.5'),
+        // Text package agents (regen). Prefer cheaper models while iterating.
+        'model' => env('XAI_MODEL', env('APP_ENV') === 'local' ? 'grok-4.3' : 'grok-4.5'),
+        /*
+        | Imagine video — billed per second of generated video (not SuperGrok).
+        | Official list prices (docs.x.ai, 2026):
+        |   grok-imagine-video      $0.05 / sec
+        |   grok-imagine-video-1.5  $0.08 / sec
+        | Prefer the non-1.5 model + short duration while building.
+        */
         'video_model' => env('XAI_VIDEO_MODEL', 'grok-imagine-video'),
+        'video_duration' => (int) env('XAI_VIDEO_DURATION', env('APP_ENV') === 'local' ? 3 : 6),
+        'video_duration_min' => (int) env('XAI_VIDEO_DURATION_MIN', 3),
+        'video_duration_max' => (int) env('XAI_VIDEO_DURATION_MAX', env('APP_ENV') === 'local' ? 6 : 12),
+        'video_resolution' => env('XAI_VIDEO_RESOLUTION', '480p'),
+        'video_usd_per_sec' => [
+            'grok-imagine-video' => (float) env('XAI_VIDEO_USD_PER_SEC', 0.05),
+            'grok-imagine-video-1.5' => (float) env('XAI_VIDEO_1_5_USD_PER_SEC', 0.08),
+        ],
         'max_tokens' => [
-            'curriculum' => 2000,
-            'script' => 4000,
-            'storyboard' => 2000,
-            'visual_prompts' => 2000,
-            'voice' => 2000,
-            'editor' => 2000,
-            'quality' => 2000,
+            'curriculum' => (int) env('XAI_MAX_TOKENS_CURRICULUM', 1500),
+            'script' => (int) env('XAI_MAX_TOKENS_SCRIPT', env('APP_ENV') === 'local' ? 2500 : 4000),
+            'storyboard' => (int) env('XAI_MAX_TOKENS_STORYBOARD', 1500),
+            'visual_prompts' => (int) env('XAI_MAX_TOKENS_VISUAL', 1500),
+            'voice' => (int) env('XAI_MAX_TOKENS_VOICE', 1500),
+            'editor' => (int) env('XAI_MAX_TOKENS_EDITOR', 1500),
+            'quality' => (int) env('XAI_MAX_TOKENS_QUALITY', 1500),
         ],
         'max_usd_per_run' => (float) env('XAI_MAX_USD_PER_RUN', 5),
     ],

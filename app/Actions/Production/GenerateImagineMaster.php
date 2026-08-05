@@ -25,9 +25,9 @@ final readonly class GenerateImagineMaster
     ) {}
 
     /**
-     * @return array{asset: MediaAsset, method: string, prompt: string, meta: array<string, mixed>}
+     * @return array{asset: MediaAsset, method: string, prompt: string, meta: array<string, mixed>, estimated_usd: float}
      */
-    public function handle(ProductionRun $run, int $durationSeconds = 6): array
+    public function handle(ProductionRun $run, ?int $durationSeconds = null): array
     {
         if (! $this->videoGen->isConfigured()) {
             throw new HttpException(
@@ -35,6 +35,14 @@ final readonly class GenerateImagineMaster
                 'Imagine video requires XAI_API_KEY (API usage billing — not SuperGrok chat). Set it in .env.',
             );
         }
+
+        $minDur = (int) config('services.xai.video_duration_min', 3);
+        $maxDur = (int) config('services.xai.video_duration_max', 12);
+        $duration = $durationSeconds ?? (int) config('services.xai.video_duration', 3);
+        $duration = max($minDur, min($maxDur, $duration));
+        $model = (string) config('services.xai.video_model', 'grok-imagine-video');
+        $resolution = (string) config('services.xai.video_resolution', '480p');
+        $estimatedUsd = self::estimateUsd($duration, $model);
 
         $run->loadMissing(['productionSpec', 'artifacts']);
         $episodeSlug = $run->productionSpec?->episode_slug;
@@ -49,8 +57,9 @@ final readonly class GenerateImagineMaster
 
         $prompt = $this->buildPrompt($run);
         $result = $this->videoGen->generate($prompt, [
-            'duration' => max(3, min(12, $durationSeconds)),
-            'resolution' => '480p',
+            'duration' => $duration,
+            'resolution' => $resolution,
+            'model' => $model,
         ]);
 
         $path = $result['path'] ?? null;
@@ -80,6 +89,10 @@ final readonly class GenerateImagineMaster
                     'method' => 'xai_imagine',
                     'run_id' => $run->id,
                     'prompt' => mb_substr($prompt, 0, 500),
+                    'duration_seconds' => $duration,
+                    'resolution' => $resolution,
+                    'model' => $model,
+                    'estimated_usd' => $estimatedUsd,
                     'imagine' => $result['meta'] ?? [],
                 ],
                 $vtt,
@@ -94,6 +107,10 @@ final readonly class GenerateImagineMaster
             'at' => now()->toIso8601String(),
             'media_asset_id' => $asset->id,
             'prompt_preview' => mb_substr($prompt, 0, 200),
+            'duration_seconds' => $duration,
+            'model' => $model,
+            'resolution' => $resolution,
+            'estimated_usd' => $estimatedUsd,
         ];
         $run->update(['meta' => $meta]);
 
@@ -102,7 +119,17 @@ final readonly class GenerateImagineMaster
             'method' => 'imagine_video',
             'prompt' => $prompt,
             'meta' => $result['meta'] ?? [],
+            'estimated_usd' => $estimatedUsd,
         ];
+    }
+
+    public static function estimateUsd(int $durationSeconds, ?string $model = null): float
+    {
+        $model ??= (string) config('services.xai.video_model', 'grok-imagine-video');
+        $rates = (array) config('services.xai.video_usd_per_sec', []);
+        $rate = (float) ($rates[$model] ?? $rates['grok-imagine-video'] ?? 0.05);
+
+        return round(max(1, $durationSeconds) * $rate, 3);
     }
 
     private function buildPrompt(ProductionRun $run): string

@@ -32,8 +32,12 @@ final class XaiImagineVideoProvider implements VideoGenProvider
         }
 
         $model = (string) ($options['model'] ?? config('services.xai.video_model', 'grok-imagine-video'));
-        $duration = (int) ($options['duration'] ?? 6);
-        $duration = max(3, min(15, $duration));
+        $minDur = (int) config('services.xai.video_duration_min', 3);
+        $maxDur = (int) config('services.xai.video_duration_max', 12);
+        $defaultDur = (int) config('services.xai.video_duration', 3);
+        $duration = (int) ($options['duration'] ?? $defaultDur);
+        $duration = max($minDur, min($maxDur, $duration));
+        $resolution = (string) ($options['resolution'] ?? config('services.xai.video_resolution', '480p'));
         $base = rtrim((string) config('services.xai.base_url', 'https://api.x.ai/v1'), '/');
         $token = (string) config('services.xai.api_key');
 
@@ -41,10 +45,9 @@ final class XaiImagineVideoProvider implements VideoGenProvider
             'model' => $model,
             'prompt' => $prompt,
             'duration' => $duration,
+            // Always pin resolution for predictable cost/latency while building.
+            'resolution' => $resolution,
         ];
-        if (isset($options['resolution'])) {
-            $payload['resolution'] = $options['resolution'];
-        }
 
         $start = Http::baseUrl($base)
             ->withToken($token)

@@ -587,11 +587,24 @@ export default function StudioRunShow({
                                 !run.spec.episodeSlug ||
                                 !masterDrive.imagineConfigured
                             }
-                            title="Generate short Imagine video (API usage)"
+                            title="Imagine video (API $ — prefer Assemble while building)"
                             onClick={() => {
+                                const dur = masterDrive.defaultDuration ?? 3;
+                                const rate = masterDrive.usdPerSec ?? 0.05;
+                                const est = (dur * rate).toFixed(2);
+                                const model =
+                                    masterDrive.videoModel ??
+                                    'grok-imagine-video';
+                                if (
+                                    !window.confirm(
+                                        `Generate ${dur}s Imagine clip (${model})?\nEst. ~$${est} on XAI_API_KEY.\n\nUse Assemble (free) for most iteration.`,
+                                    )
+                                ) {
+                                    return;
+                                }
                                 router.post(
                                     `/studio/runs/${run.id}/imagine-master`,
-                                    { duration: 6 },
+                                    { duration: dur },
                                     {
                                         preserveScroll: true,
                                         onSuccess: () => {
