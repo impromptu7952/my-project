@@ -46,6 +46,59 @@ final readonly class RunDeterministicQualityChecks
             'detail' => is_array($vocab) ? count($vocab).' vocabulary items' : 'No vocabulary',
         ];
 
+        $sections = is_array($script?->payload)
+            ? ($script->payload['sections'] ?? [])
+            : [];
+        $longLines = 0;
+        $pauseOk = 0;
+        $pauseTotal = 0;
+        if (is_array($sections)) {
+            foreach ($sections as $section) {
+                if (! is_array($section)) {
+                    continue;
+                }
+                foreach ($section['dialogue'] ?? [] as $line) {
+                    if (! is_string($line)) {
+                        continue;
+                    }
+                    $words = count(preg_split('/\s+/u', mb_trim($line)) ?: []);
+                    if ($words > 8) {
+                        $longLines++;
+                    }
+                }
+                if (isset($section['pause_seconds']) && is_numeric($section['pause_seconds'])) {
+                    $pauseTotal++;
+                    $pause = (float) $section['pause_seconds'];
+                    if ($pause >= 2 && $pause <= 8) {
+                        $pauseOk++;
+                    }
+                }
+            }
+        }
+
+        $checks[] = [
+            'name' => 'short_dialogue_lines',
+            'passed' => $longLines === 0,
+            'detail' => $longLines === 0
+                ? 'All dialogue lines ≤ 8 words'
+                : "{$longLines} dialogue line(s) exceed 8 words",
+        ];
+
+        $checks[] = [
+            'name' => 'pause_windows',
+            'passed' => $pauseTotal === 0 || $pauseOk === $pauseTotal,
+            'detail' => $pauseTotal === 0
+                ? 'No explicit pauses (optional)'
+                : "{$pauseOk}/{$pauseTotal} pauses in 2–8s toddler range",
+        ];
+
+        $vo = $run->artifacts->firstWhere('kind', ArtifactKind::VoScript);
+        $checks[] = [
+            'name' => 'vo_script_present',
+            'passed' => $vo !== null,
+            'detail' => $vo ? 'VO script artifact found' : 'Missing VO script artifact',
+        ];
+
         $passed = collect($checks)->every(fn (array $c): bool => $c['passed']);
 
         return [

@@ -10,6 +10,7 @@ use App\Enums\ArtifactKind;
 use App\Enums\EpisodeStatus;
 use App\Enums\ProductionGate;
 use App\Enums\ProductionRunStatus;
+use App\Enums\ProductionStage;
 use App\Jobs\Production\CurriculumAgentJob;
 use App\Models\Episode;
 use App\Models\MediaAsset;
@@ -163,6 +164,37 @@ test('seeded ngjyrat package has albanian script artifact', function (): void {
     expect($script)->not->toBeNull();
     expect(json_encode($script->payload))->toContain('E kuqe');
     expect(json_encode($script->payload))->toContain('topi i kuq');
+});
+
+test('deterministic quality checks flag long toddler dialogue lines', function (): void {
+    $editor = User::query()->where('email', 'editor@playzone.test')->firstOrFail();
+    $run = ProductionRun::factory()->create([
+        'status' => ProductionRunStatus::AwaitingFinalReview,
+        'started_by' => $editor->id,
+    ]);
+
+    $run->artifacts()->create([
+        'kind' => ArtifactKind::Script,
+        'stage' => ProductionStage::Script,
+        'version' => 1,
+        'payload' => [
+            'sections' => [
+                [
+                    'dialogue' => [
+                        'This is a very long sentence that a toddler should not hear all at once',
+                    ],
+                    'pause_seconds' => 3,
+                ],
+            ],
+        ],
+        'meta' => [],
+    ]);
+
+    $checks = app(\App\Actions\Production\RunDeterministicQualityChecks::class)->handle($run);
+    $lineCheck = collect($checks['checks'])->firstWhere('name', 'short_dialogue_lines');
+
+    expect($checks['passed'])->toBeFalse()
+        ->and($lineCheck['passed'] ?? true)->toBeFalse();
 });
 
 test('final approve blocked when quality report failed', function (): void {
