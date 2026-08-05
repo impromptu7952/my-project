@@ -5,8 +5,9 @@ declare(strict_types=1);
 return [
     'default_provider' => 'self',
     'self' => [
-        // Private disk by default — stream only via signed/auth routes.
-        'disk' => env('MEDIA_DISK', 'local'),
+        // Public disk for pilot HTML5 playback (static /storage URLs work with artisan serve).
+        // Use MEDIA_DISK=local in production if you want private masters + signed streams only.
+        'disk' => env('MEDIA_DISK', 'public'),
         'max_upload_mb' => (int) env('MEDIA_MAX_UPLOAD_MB', 512),
         'allowed_mimes' => ['video/mp4', 'video/webm'],
         'subtitle_mimes' => ['text/vtt', 'text/plain'],

@@ -40,8 +40,13 @@ final class MediaAsset extends Model
     }
 
     /**
-     * Playback/stream URL. Private disk assets are never exposed via /storage;
-     * published episodes get a temporary signed stream URL; editors use auth stream.
+     * Playback/stream URL for published media.
+     *
+     * Prefer public-disk relative `/storage/...` URLs so HTML5 video works with
+     * `php artisan serve` (static files, multi-range friendly) and behind proxies
+     * without host-mismatched signed absolute URLs.
+     *
+     * Private-disk published assets fall back to a relative signed stream route.
      */
     public function publicUrl(): ?string
     {
@@ -56,15 +61,24 @@ final class MediaAsset extends Model
             return null;
         }
 
-        // Only published episodes get anonymously streamable signed URLs.
+        // Only published episodes get anonymously streamable URLs.
         if ($episode->status !== EpisodeStatus::Published) {
             return null;
         }
 
+        $disk = $this->disk ?? (string) config('media.self.disk', 'local');
+
+        // Public disk: same-origin relative path (best for artisan serve + Tailscale).
+        if ($disk === 'public') {
+            return '/storage/'.ltrim((string) $this->path, '/');
+        }
+
+        // Private disk: relative signed route (host-agnostic path signature).
         return URL::temporarySignedRoute(
             'media.stream',
             now()->addHours(2),
             ['mediaAsset' => $this->id],
+            absolute: false,
         );
     }
 

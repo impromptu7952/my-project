@@ -10,11 +10,11 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
-use Symfony\Component\HttpFoundation\StreamedResponse;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 final class MediaStreamController extends Controller
 {
-    public function show(Request $request, MediaAsset $mediaAsset): StreamedResponse
+    public function show(Request $request, MediaAsset $mediaAsset): BinaryFileResponse
     {
         $mediaAsset->loadMissing('episode');
         $episode = $mediaAsset->episode;
@@ -37,15 +37,15 @@ final class MediaStreamController extends Controller
         $disk = $mediaAsset->disk ?? (string) config('media.self.disk', 'local');
         abort_unless(Storage::disk($disk)->exists((string) $mediaAsset->path), 404);
 
-        $mime = $mediaAsset->mime_type ?? 'application/octet-stream';
+        $absolute = Storage::disk($disk)->path((string) $mediaAsset->path);
+        $mime = $mediaAsset->mime_type ?? 'video/mp4';
 
-        return Storage::disk($disk)->response(
-            (string) $mediaAsset->path,
-            headers: [
-                'Content-Type' => $mime,
-                'Cache-Control' => 'private, max-age=3600',
-                'X-Content-Type-Options' => 'nosniff',
-            ],
-        );
+        // BinaryFileResponse supports HTTP Range (needed for HTML5 seek/play).
+        return response()->file($absolute, [
+            'Content-Type' => $mime,
+            'Cache-Control' => 'private, max-age=3600',
+            'X-Content-Type-Options' => 'nosniff',
+            'Accept-Ranges' => 'bytes',
+        ]);
     }
 }

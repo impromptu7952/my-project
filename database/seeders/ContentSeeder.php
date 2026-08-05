@@ -265,6 +265,7 @@ final class ContentSeeder extends Seeder
                 'summary_en' => 'Lumi sings and shows four colors, then asks “Where is the red ball?” with pauses for co-play.',
                 'duration' => 180,
                 'sort' => 1,
+                'fixture' => 'pilot-colors.mp4',
                 'vtt' => "WEBVTT\n\n00:00:00.000 --> 00:00:04.000\nPërshëndetje, miq të vegjël!\n\n00:00:05.000 --> 00:00:10.000\nSot mësojmë ngjyrat: e kuqe, e kaltër, e verdhë, e gjelbër.\n\n00:00:12.000 --> 00:00:18.000\nKu është topi i kuq?\n\n00:00:20.000 --> 00:00:24.000\nShumë mirë! Mirupafshim!\n",
             ],
             [
@@ -276,6 +277,7 @@ final class ContentSeeder extends Seeder
                 'summary_en' => 'Meet the dog “woof” and cat “meow”. Short words, gentle sounds.',
                 'duration' => 120,
                 'sort' => 2,
+                'fixture' => 'pilot-animals.mp4',
                 'vtt' => "WEBVTT\n\n00:00:00.000 --> 00:00:03.000\nPërshëndetje!\n\n00:00:04.000 --> 00:00:08.000\nJa qeni — ham ham!\n\n00:00:09.000 --> 00:00:13.000\nJa macja — miau!\n\n00:00:14.000 --> 00:00:18.000\nMirupafshim, kafshë të dashura!\n",
             ],
             [
@@ -287,6 +289,7 @@ final class ContentSeeder extends Seeder
                 'summary_en' => 'A good-morning song and the words hello, thank you, goodbye.',
                 'duration' => 90,
                 'sort' => 3,
+                'fixture' => 'pilot-greetings.mp4',
                 'vtt' => "WEBVTT\n\n00:00:00.000 --> 00:00:04.000\nMirëmëngjesi!\n\n00:00:05.000 --> 00:00:09.000\nPërshëndetje, miq!\n\n00:00:10.000 --> 00:00:14.000\nFaleminderit! Mirupafshim!\n",
             ],
         ];
@@ -314,11 +317,24 @@ final class ContentSeeder extends Seeder
             );
 
             $disk = (string) config('media.self.disk', 'local');
-            $uuid = (string) Str::uuid();
+
+            // Reuse existing asset path when re-seeding so we overwrite in place.
+            $existingVideo = MediaAsset::query()
+                ->where('episode_id', $episode->id)
+                ->where('kind', MediaKind::VideoMaster)
+                ->where('provider', MediaProvider::Self)
+                ->first();
+
+            $uuid = $existingVideo?->path
+                ? basename(dirname((string) $existingVideo->path))
+                : (string) Str::uuid();
             $videoRel = 'episodes/'.$uuid.'/video_master.mp4';
             $vttRel = 'episodes/'.$uuid.'/subtitle.vtt';
 
-            $this->ensureMp4(Storage::disk($disk)->path($videoRel));
+            $this->ensurePlayableMp4(
+                Storage::disk($disk)->path($videoRel),
+                (string) ($data['fixture'] ?? 'pilot-colors.mp4'),
+            );
             Storage::disk($disk)->put($vttRel, $data['vtt']);
 
             MediaAsset::query()->updateOrCreate(
@@ -332,7 +348,7 @@ final class ContentSeeder extends Seeder
                     'path' => $videoRel,
                     'mime_type' => 'video/mp4',
                     'size_bytes' => File::size(Storage::disk($disk)->path($videoRel)),
-                    'meta' => ['seed' => true],
+                    'meta' => ['seed' => true, 'fixture' => $data['fixture'] ?? null],
                 ]
             );
 
@@ -530,26 +546,37 @@ final class ContentSeeder extends Seeder
         );
     }
 
-    private function ensureMp4(string $absolutePath): void
+    /**
+     * Copy a real playable pilot MP4 from database/seeders/fixtures.
+     * Tiny header-only stubs are not browser-playable.
+     */
+    private function ensurePlayableMp4(string $absolutePath, string $fixtureName): void
     {
         $dir = dirname($absolutePath);
         if (! is_dir($dir)) {
             mkdir($dir, 0755, true);
         }
 
-        if (is_file($absolutePath) && filesize($absolutePath) > 32) {
+        $fixture = database_path('seeders/fixtures/'.$fixtureName);
+
+        if (is_file($fixture) && filesize($fixture) > 10_000) {
+            copy($fixture, $absolutePath);
+
             return;
         }
 
-        // Minimal placeholder MP4 (ftyp + free + mdat) — valid enough for storage seeding.
-        $bytes = base64_decode(
-            'AAAAIGZ0eXBpc29tAAACAGlzb21pc28ybXA0MQAAAAhmcmVlAAAAGm1kYXQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==',
-            true
-        );
+        // Fallback fixture if a named one is missing.
+        foreach (['pilot-colors.mp4', 'pilot-animals.mp4', 'pilot-greetings.mp4'] as $candidate) {
+            $path = database_path('seeders/fixtures/'.$candidate);
+            if (is_file($path) && filesize($path) > 10_000) {
+                copy($path, $absolutePath);
 
-        file_put_contents(
-            $absolutePath,
-            $bytes !== false ? $bytes : "\0\0\0\x18ftypmp42\0\0\0\0mp42isom"
+                return;
+            }
+        }
+
+        throw new \RuntimeException(
+            "Playable pilot MP4 fixture missing. Expected files in database/seeders/fixtures/ (got {$fixtureName})."
         );
     }
 }
