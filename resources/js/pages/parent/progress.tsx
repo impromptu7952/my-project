@@ -59,45 +59,94 @@ export default function ParentProgress({ items }: Props) {
                     </Card>
                 ) : (
                     <div className="grid gap-3">
-                        {items.map((item, i) => (
-                            <Card key={`${item.title}-${i}`}>
-                                <CardHeader className="flex flex-row items-start justify-between gap-3 space-y-0">
-                                    <div className="space-y-1">
-                                        {item.href ? (
-                                            <CardTitle className="text-base">
-                                                <Link
-                                                    href={item.href}
-                                                    className="hover:underline"
-                                                >
+                        {items.map((item, i) => {
+                            const pct =
+                                item.durationSeconds &&
+                                item.durationSeconds > 0
+                                    ? Math.min(
+                                          100,
+                                          Math.round(
+                                              (item.positionSeconds /
+                                                  item.durationSeconds) *
+                                                  100,
+                                          ),
+                                      )
+                                    : item.completed
+                                      ? 100
+                                      : null;
+
+                            return (
+                                <Card key={`${item.title}-${i}`}>
+                                    <CardHeader className="flex flex-row items-start justify-between gap-3 space-y-0">
+                                        <div className="min-w-0 flex-1 space-y-1">
+                                            {item.href ? (
+                                                <CardTitle className="text-base">
+                                                    <Link
+                                                        href={item.href}
+                                                        className="hover:underline"
+                                                    >
+                                                        {item.title ??
+                                                            'Episode'}
+                                                    </Link>
+                                                </CardTitle>
+                                            ) : (
+                                                <CardTitle className="text-base">
                                                     {item.title ?? 'Episode'}
-                                                </Link>
-                                            </CardTitle>
-                                        ) : (
-                                            <CardTitle className="text-base">
-                                                {item.title ?? 'Episode'}
-                                            </CardTitle>
-                                        )}
-                                        <CardDescription>
-                                            Position {formatTime(item.positionSeconds)}
-                                            {item.durationSeconds
-                                                ? ` / ${formatTime(item.durationSeconds)}`
-                                                : ''}
-                                        </CardDescription>
-                                    </div>
-                                    <Badge
-                                        variant={
-                                            item.completed
-                                                ? 'default'
-                                                : 'secondary'
-                                        }
-                                    >
-                                        {item.completed
-                                            ? 'Completed'
-                                            : 'In progress'}
-                                    </Badge>
-                                </CardHeader>
-                            </Card>
-                        ))}
+                                                </CardTitle>
+                                            )}
+                                            <CardDescription>
+                                                Position{' '}
+                                                {formatTime(
+                                                    item.positionSeconds,
+                                                )}
+                                                {item.durationSeconds
+                                                    ? ` / ${formatTime(item.durationSeconds)}`
+                                                    : ''}
+                                                {pct !== null
+                                                    ? ` · ${pct}%`
+                                                    : ''}
+                                            </CardDescription>
+                                            {pct !== null ? (
+                                                <div className="mt-2 h-2 w-full max-w-sm overflow-hidden rounded-full bg-muted">
+                                                    <div
+                                                        className="h-full rounded-full bg-primary transition-all"
+                                                        style={{
+                                                            width: `${pct}%`,
+                                                        }}
+                                                    />
+                                                </div>
+                                            ) : null}
+                                        </div>
+                                        <div className="flex shrink-0 flex-col items-end gap-2">
+                                            <Badge
+                                                variant={
+                                                    item.completed
+                                                        ? 'default'
+                                                        : 'secondary'
+                                                }
+                                            >
+                                                {item.completed
+                                                    ? 'Completed'
+                                                    : 'In progress'}
+                                            </Badge>
+                                            {item.href ? (
+                                                <Button
+                                                    size="sm"
+                                                    variant="outline"
+                                                    asChild
+                                                >
+                                                    <Link href={item.href}>
+                                                        {item.completed
+                                                            ? 'Rewatch'
+                                                            : 'Resume'}
+                                                    </Link>
+                                                </Button>
+                                            ) : null}
+                                        </div>
+                                    </CardHeader>
+                                </Card>
+                            );
+                        })}
                     </div>
                 )}
             </div>

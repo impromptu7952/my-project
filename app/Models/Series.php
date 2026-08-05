@@ -46,6 +46,11 @@ final class Series extends Model
             : $this->title_sq;
     }
 
+    public function getRouteKeyName(): string
+    {
+        return 'slug';
+    }
+
     /**
      * @return array<string, string>
      */

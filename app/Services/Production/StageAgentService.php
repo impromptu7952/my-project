@@ -28,12 +28,24 @@ final class StageAgentService
         $profile = $this->resolveProfile($run, $stage);
         $spec = $run->productionSpec?->spec ?? [];
         $prior = $this->priorContext($run, $stage);
+        $brand = config('brand.character', []);
+        $stageNotes = $this->stageNotesFor($run, $stage);
+
+        $systemBase = $profile?->system_prompt
+            ?? 'You are a production agent for toddler educational video. Reply with valid JSON only.';
+
+        $brandBlock = $this->formatBrandBlock(is_array($brand) ? $brand : []);
+        $systemContent = $brandBlock !== ''
+            ? $systemBase."\n\n".$brandBlock
+            : $systemBase;
 
         $userPrompt = json_encode([
             'task' => "Generate artifact kind={$kind->value} for stage={$stage->value}",
+            'character_bible' => is_array($brand) ? $brand : [],
             'production_spec' => $spec,
+            'editor_stage_notes' => $stageNotes,
             'prior_artifacts' => $prior,
-            'instructions' => 'Return a single JSON object only. No markdown fences.',
+            'instructions' => 'Return a single JSON object only. No markdown fences. Stay true to the character bible (Lumi), short Albanian sentences, ages 1–3.',
         ], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
 
         if ($userPrompt === false) {
@@ -44,8 +56,7 @@ final class StageAgentService
             messages: [
                 [
                     'role' => 'system',
-                    'content' => $profile?->system_prompt
-                        ?? 'You are a production agent for toddler educational video. Reply with valid JSON only.',
+                    'content' => $systemContent,
                 ],
                 [
                     'role' => 'user',
@@ -115,6 +126,44 @@ final class StageAgentService
         }
 
         return $include;
+    }
+
+    /**
+     * @param  array<string, mixed>  $brand
+     */
+    private function formatBrandBlock(array $brand): string
+    {
+        if ($brand === []) {
+            return '';
+        }
+
+        $name = (string) ($brand['name'] ?? 'Lumi');
+        $lines = [
+            "Character bible ({$name}):",
+            'Role: '.(string) ($brand['role'] ?? 'toddler educator'),
+            'Language: '.(string) ($brand['language'] ?? 'sq').' / '.(string) ($brand['dialect'] ?? 'standard_literary_albanian'),
+            'Age target: '.(string) ($brand['age_target'] ?? '1-3'),
+        ];
+
+        if (is_array($brand['do'] ?? null)) {
+            $lines[] = 'Do: '.implode('; ', array_map('strval', $brand['do']));
+        }
+        if (is_array($brand['dont'] ?? null)) {
+            $lines[] = "Don't: ".implode('; ', array_map('strval', $brand['dont']));
+        }
+        if (is_array($brand['sample_lines'] ?? null)) {
+            $lines[] = 'Sample lines: '.implode(' | ', array_map('strval', $brand['sample_lines']));
+        }
+
+        return implode("\n", $lines);
+    }
+
+    private function stageNotesFor(ProductionRun $run, ProductionStage $stage): ?string
+    {
+        $meta = $run->meta ?? [];
+        $notes = $meta['stage_notes'][$stage->value]['notes'] ?? null;
+
+        return is_string($notes) && $notes !== '' ? $notes : null;
     }
 
     /**
