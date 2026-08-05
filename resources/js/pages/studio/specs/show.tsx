@@ -1,4 +1,17 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, setLayoutProps } from '@inertiajs/react';
+import { ArrowLeft, Play } from 'lucide-react';
+import Heading from '@/components/heading';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
+import { cn } from '@/lib/utils';
 
 type Props = {
     spec: {
@@ -17,47 +30,146 @@ type Props = {
     }>;
 };
 
+function statusVariant(
+    status: string,
+): 'default' | 'secondary' | 'destructive' | 'outline' {
+    if (status.includes('failed') || status.includes('rejected')) {
+        return 'destructive';
+    }
+    if (status.includes('approved') || status.includes('published')) {
+        return 'default';
+    }
+    if (status.includes('awaiting')) {
+        return 'secondary';
+    }
+
+    return 'outline';
+}
+
 export default function StudioSpecShow({ spec, runs }: Props) {
+    setLayoutProps({
+        breadcrumbs: [
+            { title: 'Studio', href: '/studio' },
+            { title: spec.title, href: `/studio/specs/${spec.slug}` },
+        ],
+    });
+
     return (
         <>
             <Head title={spec.title} />
-            <div className="min-h-screen bg-slate-50 p-6">
-                <div className="mx-auto max-w-4xl space-y-6">
-                    <Link href="/studio" className="text-sm font-bold text-slate-600">
-                        ← Specs
-                    </Link>
-                    <div className="flex flex-wrap items-start justify-between gap-3">
-                        <div>
-                            <h1 className="text-2xl font-black">{spec.title}</h1>
-                            <p className="text-sm text-slate-500">{spec.episodeSlug}</p>
-                        </div>
-                        <button
-                            type="button"
-                            className="rounded-lg bg-fuchsia-600 px-4 py-2 text-sm font-bold text-white"
-                            onClick={() => router.post(`/studio/specs/${spec.slug}/runs`)}
-                        >
-                            Start production run
-                        </button>
-                    </div>
-                    <pre className="overflow-auto rounded-xl bg-slate-900 p-4 text-xs text-green-200">
-                        {JSON.stringify(spec.spec, null, 2)}
-                    </pre>
-                    <div>
-                        <h2 className="mb-2 text-lg font-black">Runs</h2>
+
+            <div className="flex h-full flex-1 flex-col gap-6 overflow-x-auto p-4 md:p-6">
+                <div className="space-y-3">
+                    <Button variant="ghost" size="sm" asChild className="-ml-2 w-fit">
+                        <Link href="/studio">
+                            <ArrowLeft />
+                            Back to specs
+                        </Link>
+                    </Button>
+
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                         <div className="space-y-2">
-                            {runs.map((run) => (
-                                <Link
-                                    key={run.id}
-                                    href={`/studio/runs/${run.id}`}
-                                    className="block rounded-lg border bg-white p-3 hover:border-fuchsia-300"
-                                >
-                                    #{run.id} · {run.status} · {run.currentStage}
-                                </Link>
-                            ))}
+                            <Heading
+                                title={spec.title}
+                                description={
+                                    spec.episodeSlug
+                                        ? `Episode · ${spec.episodeSlug}`
+                                        : 'No episode linked'
+                                }
+                            />
+                            <div className="flex flex-wrap gap-2">
+                                <Badge variant="outline">v{spec.version}</Badge>
+                                <Badge variant="secondary">
+                                    {runs.length}{' '}
+                                    {runs.length === 1 ? 'run' : 'runs'}
+                                </Badge>
+                            </div>
                         </div>
+                        <Button
+                            onClick={() =>
+                                router.post(`/studio/specs/${spec.slug}/runs`)
+                            }
+                        >
+                            <Play />
+                            Start production run
+                        </Button>
                     </div>
+                </div>
+
+                <div className="grid gap-6 xl:grid-cols-2">
+                    <Card className="min-w-0">
+                        <CardHeader>
+                            <CardTitle>Spec package</CardTitle>
+                            <CardDescription>
+                                Validated production specification JSON used by
+                                agents.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <pre
+                                className={cn(
+                                    'max-h-[28rem] overflow-auto rounded-lg border bg-muted/50 p-4 font-mono text-xs text-foreground',
+                                    'dark:bg-muted/30',
+                                )}
+                            >
+                                {JSON.stringify(spec.spec, null, 2)}
+                            </pre>
+                        </CardContent>
+                    </Card>
+
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Production runs</CardTitle>
+                            <CardDescription>
+                                Human gates pause after script and final package
+                                review.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-2">
+                            {runs.length === 0 ? (
+                                <p className="text-sm text-muted-foreground">
+                                    No runs yet. Start a production run to
+                                    generate artifacts.
+                                </p>
+                            ) : (
+                                runs.map((run, index) => (
+                                    <div key={run.id}>
+                                        {index > 0 ? (
+                                            <Separator className="my-2" />
+                                        ) : null}
+                                        <Link
+                                            href={`/studio/runs/${run.id}`}
+                                            className="flex items-center justify-between gap-3 rounded-lg p-3 transition-colors hover:bg-muted/60"
+                                        >
+                                            <div className="min-w-0 space-y-1">
+                                                <p className="font-medium">
+                                                    Run #{run.id}
+                                                </p>
+                                                <p className="truncate text-xs text-muted-foreground">
+                                                    Stage:{' '}
+                                                    {run.currentStage ?? '—'}
+                                                    {run.startedAt
+                                                        ? ` · ${new Date(run.startedAt).toLocaleString()}`
+                                                        : ''}
+                                                </p>
+                                            </div>
+                                            <Badge
+                                                variant={statusVariant(
+                                                    run.status,
+                                                )}
+                                                className="shrink-0"
+                                            >
+                                                {run.status.replaceAll('_', ' ')}
+                                            </Badge>
+                                        </Link>
+                                    </div>
+                                ))
+                            )}
+                        </CardContent>
+                    </Card>
                 </div>
             </div>
         </>
     );
 }
+

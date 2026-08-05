@@ -1,4 +1,15 @@
 import { Head, Link } from '@inertiajs/react';
+import { Heart } from 'lucide-react';
+import Heading from '@/components/heading';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
 
 type Props = {
     favorites: Array<{ type: string; title: string | null; href: string }>;
@@ -8,28 +19,61 @@ export default function ParentFavorites({ favorites }: Props) {
     return (
         <>
             <Head title="Favorites" />
-            <div className="min-h-screen bg-slate-50 p-6">
-                <div className="mx-auto max-w-2xl">
-                    <h1 className="mb-4 text-2xl font-black">Parent favorites</h1>
-                    <div className="space-y-2">
+
+            <div className="flex h-full flex-1 flex-col gap-6 overflow-x-auto p-4 md:p-6">
+                <Heading
+                    title="Favorites"
+                    description="Episodes and games you saved for quick access while co-playing."
+                />
+
+                {favorites.length === 0 ? (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2">
+                                <Heart className="size-4 text-muted-foreground" />
+                                No favorites yet
+                            </CardTitle>
+                            <CardDescription>
+                                Save videos and games from the public site to see
+                                them here.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <Button asChild variant="secondary">
+                                <Link href="/">Browse PlayZone</Link>
+                            </Button>
+                        </CardContent>
+                    </Card>
+                ) : (
+                    <div className="grid gap-3 sm:grid-cols-2">
                         {favorites.map((fav, i) => (
                             <Link
-                                key={i}
+                                key={`${fav.type}-${fav.href}-${i}`}
                                 href={fav.href}
-                                className="block rounded-xl bg-white p-4 shadow-sm"
+                                className="group block rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                             >
-                                <span className="text-xs font-bold uppercase text-slate-400">
-                                    {fav.type}
-                                </span>
-                                <p className="font-bold">{fav.title}</p>
+                                <Card className="h-full transition-colors group-hover:bg-muted/40">
+                                    <CardHeader className="space-y-2">
+                                        <Badge
+                                            variant="outline"
+                                            className="w-fit capitalize"
+                                        >
+                                            {fav.type}
+                                        </Badge>
+                                        <CardTitle className="text-base">
+                                            {fav.title ?? 'Untitled'}
+                                        </CardTitle>
+                                    </CardHeader>
+                                </Card>
                             </Link>
                         ))}
-                        {favorites.length === 0 ? (
-                            <p className="text-slate-500">No favorites yet.</p>
-                        ) : null}
                     </div>
-                </div>
+                )}
             </div>
         </>
     );
 }
+
+ParentFavorites.layout = {
+    breadcrumbs: [{ title: 'Favorites', href: '/parent/favorites' }],
+};
