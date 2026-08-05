@@ -160,6 +160,12 @@ export function ProgramDock({
                 aria-label="Resize program output"
                 tabIndex={0}
                 onPointerDown={beginDrag}
+                onDoubleClick={() => {
+                    const tall = clampHeight(
+                        Math.floor(window.innerHeight * 0.55),
+                    );
+                    persist(height < tall - 40 ? tall : DEFAULT_H);
+                }}
                 onKeyDown={(e) => {
                     if (e.key === 'ArrowUp') {
                         e.preventDefault();
@@ -173,6 +179,7 @@ export function ProgramDock({
                     }
                 }}
                 className="group flex h-3.5 shrink-0 cursor-ns-resize items-center justify-center border-b bg-muted/40 hover:bg-primary/15 active:bg-primary/25"
+                title="Drag to resize · double-click to toggle tall/default"
             >
                 <GripHorizontal className="size-3.5 text-muted-foreground group-hover:text-foreground" />
             </div>
@@ -192,8 +199,25 @@ export function ProgramDock({
                     </span>
                 )}
                 <span className="hidden text-[10px] text-muted-foreground sm:inline">
-                    drag · {height}px
+                    {height}px
                 </span>
+                <div className="hidden items-center gap-0.5 sm:flex">
+                    {[280, 360, 480].map((preset) => (
+                        <button
+                            key={preset}
+                            type="button"
+                            className={cn(
+                                'rounded px-1 py-0.5 text-[9px] font-medium tabular-nums',
+                                height === preset
+                                    ? 'bg-muted text-foreground'
+                                    : 'text-muted-foreground hover:bg-muted/60',
+                            )}
+                            onClick={() => persist(preset)}
+                        >
+                            {preset}
+                        </button>
+                    ))}
+                </div>
                 <Button
                     type="button"
                     size="sm"

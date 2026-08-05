@@ -102,3 +102,4 @@ Parents/caregivers get a calm, Albanian-first watch + play experience linked by 
 | 2026-08-05 | Brand bible injected into Grok stage agents; visual preview stubs; series pages; progress bars; run package export |
 | 2026-08-05 | Studio workbench layout: compact IDE-like run editor (step rail, center tabs, inspector), dedicated Studio shell |
 | 2026-08-05 | Program output dock + Output tab with live episode video, package VTT captions, script read-along, media refresh |
+| 2026-08-06 | Resizable program dock (fill-height video, no scroll); live package VTT; regen poll; dock height presets |
