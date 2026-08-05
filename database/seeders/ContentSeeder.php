@@ -27,6 +27,7 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use RuntimeException;
 
 final class ContentSeeder extends Seeder
 {
@@ -291,6 +292,30 @@ final class ContentSeeder extends Seeder
                 'sort' => 3,
                 'fixture' => 'pilot-greetings.mp4',
                 'vtt' => "WEBVTT\n\n00:00:00.000 --> 00:00:04.000\nMirëmëngjesi!\n\n00:00:05.000 --> 00:00:09.000\nPërshëndetje, miq!\n\n00:00:10.000 --> 00:00:14.000\nFaleminderit! Mirupafshim!\n",
+            ],
+            [
+                'topic' => 'pjeset-e-trupit',
+                'slug' => 'trupi-koka-duart-kembe',
+                'title_sq' => 'Trupi: Koka, duart, këmbët',
+                'title_en' => 'Body: Head, hands, feet',
+                'summary_sq' => 'Prekim kokën, duart dhe këmbët me këngë dhe lëvizje. Pauza për fëmijën të tregojë.',
+                'summary_en' => 'Touch head, hands, and feet with a song and movement. Pauses for the child to show.',
+                'duration' => 100,
+                'sort' => 4,
+                'fixture' => 'pilot-colors.mp4',
+                'vtt' => "WEBVTT\n\n00:00:00.000 --> 00:00:03.000\nPërshëndetje!\n\n00:00:04.000 --> 00:00:08.000\nJa koka — touç!\n\n00:00:09.000 --> 00:00:13.000\nJa duart — duart!\n\n00:00:14.000 --> 00:00:18.000\nJa këmbët — shumë mirë!\n",
+            ],
+            [
+                'topic' => 'fjalet-e-para',
+                'slug' => 'fjalet-mama-baba-po-jo',
+                'title_sq' => 'Fjalët e para: Mama, baba, po, jo',
+                'title_en' => 'First words: Mama, baba, yes, no',
+                'summary_sq' => 'Fjalë të para me përsëritje: mama, baba, po, jo. Ngadalë dhe me buzëqeshje.',
+                'summary_en' => 'First words with repetition: mama, baba, yes, no. Slow and smiling.',
+                'duration' => 95,
+                'sort' => 5,
+                'fixture' => 'pilot-animals.mp4',
+                'vtt' => "WEBVTT\n\n00:00:00.000 --> 00:00:03.000\nMirëmëngjesi!\n\n00:00:04.000 --> 00:00:08.000\nMama — mama!\n\n00:00:09.000 --> 00:00:13.000\nBaba — baba!\n\n00:00:14.000 --> 00:00:18.000\nPo! Jo! Shumë mirë!\n",
             ],
         ];
 
@@ -575,7 +600,7 @@ final class ContentSeeder extends Seeder
             }
         }
 
-        throw new \RuntimeException(
+        throw new RuntimeException(
             "Playable pilot MP4 fixture missing. Expected files in database/seeders/fixtures/ (got {$fixtureName})."
         );
     }

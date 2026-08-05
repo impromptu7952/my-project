@@ -27,6 +27,8 @@ type EpisodeCard = {
 
 type HomeProps = {
     featuredEpisodes: EpisodeCard[];
+    continueWatching?: Array<EpisodeCard & { positionSeconds?: number }>;
+    topics?: Array<{ slug: string; name: string; href: string }>;
     toddlerGames: GameCard[];
     moreGames: GameCard[];
     locale: 'sq' | 'en';
@@ -66,6 +68,8 @@ function GameCardLink({ game }: { game: GameCard }) {
 
 export default function Welcome({
     featuredEpisodes = [],
+    continueWatching = [],
+    topics = [],
     toddlerGames = [],
     moreGames = [],
     features,
@@ -154,6 +158,53 @@ export default function Welcome({
                             {t('home.coplay_note')}
                         </p>
                     </section>
+
+                    {showVideos && continueWatching.length > 0 ? (
+                        <section className="mb-10" aria-label="Continue watching">
+                            <h2 className="mb-4 text-2xl font-black text-slate-900">
+                                ▶️ Continue watching
+                            </h2>
+                            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                                {continueWatching.map((episode) => (
+                                    <Link
+                                        key={`cw-${episode.slug}`}
+                                        href={episode.href}
+                                        className="overflow-hidden rounded-3xl bg-white p-1 shadow-lg transition hover:-translate-y-1 hover:shadow-2xl"
+                                    >
+                                        <div className="flex h-28 items-center justify-center rounded-[1.25rem] bg-gradient-to-br from-sky-400 to-violet-500">
+                                            <span className="text-5xl">
+                                                {episode.emoji}
+                                            </span>
+                                        </div>
+                                        <div className="p-3">
+                                            <h3 className="line-clamp-2 text-sm font-black text-slate-900">
+                                                {episode.title}
+                                            </h3>
+                                            <p className="mt-1 text-xs font-bold text-fuchsia-600">
+                                                Resume
+                                            </p>
+                                        </div>
+                                    </Link>
+                                ))}
+                            </div>
+                        </section>
+                    ) : null}
+
+                    {showVideos && topics.length > 0 ? (
+                        <section className="mb-8" aria-label="Topics">
+                            <div className="flex flex-wrap gap-2">
+                                {topics.map((topic) => (
+                                    <Link
+                                        key={topic.slug}
+                                        href={topic.href}
+                                        className="rounded-full bg-white px-4 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-fuchsia-50 hover:text-fuchsia-800"
+                                    >
+                                        {topic.name}
+                                    </Link>
+                                ))}
+                            </div>
+                        </section>
+                    ) : null}
 
                     {showVideos ? (
                         <section className="mb-12" aria-label={t('home.videos')}>

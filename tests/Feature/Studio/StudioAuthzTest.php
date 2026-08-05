@@ -27,6 +27,11 @@ test('editors can access studio', function (): void {
     $editor = User::query()->where('email', 'editor@playzone.test')->firstOrFail();
 
     $this->actingAs($editor)
+        ->get(route('studio.home'))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page->component('studio/dashboard')->has('stats'));
+
+    $this->actingAs($editor)
         ->get(route('studio.specs.index'))
         ->assertOk()
         ->assertInertia(fn ($page) => $page->component('studio/specs/index')->has('specs'));

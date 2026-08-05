@@ -19,6 +19,7 @@ use App\Http\Controllers\Studio\RegenerateStageController;
 use App\Http\Controllers\Studio\RejectProductionRunController;
 use App\Http\Controllers\Studio\RetryProductionRunController;
 use App\Http\Controllers\Studio\StartProductionRunController;
+use App\Http\Controllers\Studio\StudioDashboardController;
 use App\Http\Controllers\Studio\UpdateArtifactController;
 use App\Http\Controllers\Studio\UpdateRunAgentsController;
 use App\Http\Controllers\TopicController;
@@ -52,7 +53,8 @@ Route::middleware(['auth', 'verified'])->prefix('parent')->name('parent.')->grou
 });
 
 Route::middleware(['auth', 'verified', 'can:manage-content', EnsureStudioEnabled::class])->prefix('studio')->name('studio.')->group(function (): void {
-    Route::get('/', [ProductionSpecController::class, 'index'])->name('specs.index');
+    Route::get('/', StudioDashboardController::class)->name('home');
+    Route::get('/specs', [ProductionSpecController::class, 'index'])->name('specs.index');
     Route::get('/specs/create', [ProductionSpecController::class, 'create'])->name('specs.create');
     Route::post('/specs', [ProductionSpecController::class, 'store'])->name('specs.store');
     Route::get('/specs/{spec:slug}', [ProductionSpecController::class, 'show'])->name('specs.show');
