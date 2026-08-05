@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Actions\Production\CloneProductionRun;
 use App\Actions\Production\RegenerateStage;
 use App\Actions\Production\StartProductionRun;
 use App\Actions\Production\UpdateArtifactPayload;
@@ -83,6 +84,36 @@ test('regenerate stage dispatches single stage job', function (): void {
         ->and($run->agent_profile_map[ProductionStage::Script->value] ?? null)->toBe($profile->id);
 
     Queue::assertPushed(ScriptAgentJob::class);
+});
+
+test('clone production run copies latest artifacts', function (): void {
+    $editor = User::query()->where('email', 'editor@playzone.test')->firstOrFail();
+    $run = ProductionRun::factory()->create([
+        'status' => ProductionRunStatus::Approved,
+        'started_by' => $editor->id,
+    ]);
+    $run->artifacts()->create([
+        'kind' => ArtifactKind::Script,
+        'stage' => ProductionStage::Script,
+        'version' => 2,
+        'payload' => ['title' => 'source script'],
+        'meta' => [],
+    ]);
+    $run->artifacts()->create([
+        'kind' => ArtifactKind::Script,
+        'stage' => ProductionStage::Script,
+        'version' => 1,
+        'payload' => ['title' => 'old'],
+        'meta' => [],
+    ]);
+
+    $clone = app(CloneProductionRun::class)->handle($run, $editor);
+
+    expect($clone->id)->not->toBe($run->id)
+        ->and($clone->status)->toBe(ProductionRunStatus::AwaitingScriptReview)
+        ->and($clone->artifacts)->toHaveCount(1)
+        ->and($clone->artifacts->first()?->payload['title'] ?? null)->toBe('source script')
+        ->and($clone->meta['cloned_from_run_id'] ?? null)->toBe($run->id);
 });
 
 test('run workspace page includes steps and agent profiles', function (): void {

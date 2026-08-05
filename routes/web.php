@@ -10,6 +10,7 @@ use App\Http\Controllers\Parent\WatchProgressController;
 use App\Http\Controllers\PrivacyController;
 use App\Http\Controllers\Studio\AgentProfileController;
 use App\Http\Controllers\Studio\ApproveProductionRunController;
+use App\Http\Controllers\Studio\CloneProductionRunController;
 use App\Http\Controllers\Studio\EpisodeStudioController;
 use App\Http\Controllers\Studio\MediaUploadController;
 use App\Http\Controllers\Studio\ProductionRunController;
@@ -73,6 +74,7 @@ Route::middleware(['auth', 'verified', 'can:manage-content', EnsureStudioEnabled
     Route::post('/runs/{run}/approve', [ApproveProductionRunController::class, 'store'])->name('runs.approve');
     Route::post('/runs/{run}/reject', [RejectProductionRunController::class, 'store'])->name('runs.reject');
     Route::post('/runs/{run}/retry', [RetryProductionRunController::class, 'store'])->name('runs.retry');
+    Route::post('/runs/{run}/clone', [CloneProductionRunController::class, 'store'])->name('runs.clone');
     Route::post('/runs/{run}/publish', [PublishProductionRunController::class, 'store'])->name('runs.publish');
     Route::post('/runs/{run}/artifacts', [UpdateArtifactController::class, 'store'])->name('runs.artifacts.update');
     Route::post('/runs/{run}/regenerate', [RegenerateStageController::class, 'store'])->name('runs.regenerate');

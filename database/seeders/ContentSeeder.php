@@ -529,6 +529,69 @@ final class ContentSeeder extends Seeder
             ]
         );
 
+        ProductionSpec::query()->updateOrCreate(
+            ['slug' => 'trupi-pilot-v1'],
+            [
+                'title' => 'Trupi — body parts pilot',
+                'episode_slug' => 'trupi-koka-duart-kembe',
+                'topic_id' => Topic::query()->where('slug', 'pjeset-e-trupit')->value('id'),
+                'episode_id' => Episode::query()->where('slug', 'trupi-koka-duart-kembe')->value('id'),
+                'spec' => [
+                    'version' => '1',
+                    'language' => 'sq',
+                    'age_band' => '1-3',
+                    'episode_slug' => 'trupi-koka-duart-kembe',
+                    'learning_goals' => ['Name head, hands, feet', 'Move with the song'],
+                    'vocabulary' => [
+                        ['word' => 'koka', 'en' => 'head'],
+                        ['word' => 'duart', 'en' => 'hands'],
+                        ['word' => 'këmbët', 'en' => 'feet'],
+                    ],
+                    'structure' => [
+                        ['block' => 'hello_song', 'duration_seconds' => 30],
+                        ['block' => 'body_parts', 'duration_seconds' => 50],
+                        ['block' => 'goodbye_song', 'duration_seconds' => 20],
+                    ],
+                    'principles' => ['short_phrases' => true, 'pause_seconds' => 4],
+                    'outputs_required' => ['script', 'storyboard'],
+                ],
+                'version' => '1',
+                'created_by' => $editor?->id,
+            ]
+        );
+
+        ProductionSpec::query()->updateOrCreate(
+            ['slug' => 'fjalet-e-para-pilot-v1'],
+            [
+                'title' => 'Fjalët e para pilot',
+                'episode_slug' => 'fjalet-mama-baba-po-jo',
+                'topic_id' => Topic::query()->where('slug', 'fjalet-e-para')->value('id'),
+                'episode_id' => Episode::query()->where('slug', 'fjalet-mama-baba-po-jo')->value('id'),
+                'spec' => [
+                    'version' => '1',
+                    'language' => 'sq',
+                    'age_band' => '1-2',
+                    'episode_slug' => 'fjalet-mama-baba-po-jo',
+                    'learning_goals' => ['Say mama and baba', 'Respond po/jo with co-play'],
+                    'vocabulary' => [
+                        ['word' => 'mama', 'en' => 'mama'],
+                        ['word' => 'baba', 'en' => 'dada'],
+                        ['word' => 'po', 'en' => 'yes'],
+                        ['word' => 'jo', 'en' => 'no'],
+                    ],
+                    'structure' => [
+                        ['block' => 'hello', 'duration_seconds' => 20],
+                        ['block' => 'first_words', 'duration_seconds' => 55],
+                        ['block' => 'goodbye', 'duration_seconds' => 20],
+                    ],
+                    'principles' => ['short_phrases' => true, 'pause_seconds' => 5],
+                    'outputs_required' => ['script'],
+                ],
+                'version' => '1',
+                'created_by' => $editor?->id,
+            ]
+        );
+
         $run = ProductionRun::query()->updateOrCreate(
             [
                 'production_spec_id' => $spec->id,
