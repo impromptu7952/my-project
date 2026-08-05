@@ -2,6 +2,7 @@ import { Link, usePage } from '@inertiajs/react';
 import {
     Bot,
     Clapperboard,
+    Film,
     Heart,
     History,
     LayoutGrid,
@@ -56,6 +57,11 @@ export function AppSidebar() {
                 title: 'Studio',
                 href: '/studio',
                 icon: Clapperboard,
+            },
+            {
+                title: 'Episodes',
+                href: '/studio/episodes',
+                icon: Film,
             },
             {
                 title: 'Agents',

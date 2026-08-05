@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Studio;
 
+use App\Actions\Production\SummarizeRunUsage;
 use App\Enums\ArtifactKind;
 use App\Enums\ProductionStage;
 use App\Http\Controllers\Controller;
 use App\Models\AgentProfile;
+use App\Models\Episode;
 use App\Models\ProductionRun;
 use App\Services\Xai\XaiClient;
 use Inertia\Inertia;
@@ -15,7 +17,7 @@ use Inertia\Response;
 
 final class ProductionRunController extends Controller
 {
-    public function show(ProductionRun $run): Response
+    public function show(ProductionRun $run, SummarizeRunUsage $summarizeUsage): Response
     {
         $run->load(['productionSpec', 'artifacts', 'starter']);
 
@@ -43,6 +45,11 @@ final class ProductionRunController extends Controller
             ])->values());
 
         $steps = $this->steps($latestByKind);
+
+        $episodeSlug = $run->productionSpec?->episode_slug;
+        $episode = $episodeSlug
+            ? Episode::query()->where('slug', $episodeSlug)->with('mediaAssets')->first()
+            : null;
 
         return Inertia::render('studio/runs/show', [
             'run' => [
@@ -85,6 +92,17 @@ final class ProductionRunController extends Controller
             'steps' => $steps,
             'agentProfilesByStage' => $profiles,
             'xaiConfigured' => app(XaiClient::class)->isConfigured(),
+            'usage' => $summarizeUsage->handle($run),
+            'episodeMedia' => $episode ? [
+                'slug' => $episode->slug,
+                'media' => $episode->mediaAssets->map(fn ($m) => [
+                    'id' => $m->id,
+                    'kind' => $m->kind->value,
+                    'mimeType' => $m->mime_type,
+                    'sizeBytes' => $m->size_bytes,
+                    'url' => $m->studioUrl(),
+                ]),
+            ] : null,
         ]);
     }
 

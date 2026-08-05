@@ -10,6 +10,7 @@ use App\Http\Controllers\Parent\WatchProgressController;
 use App\Http\Controllers\PrivacyController;
 use App\Http\Controllers\Studio\AgentProfileController;
 use App\Http\Controllers\Studio\ApproveProductionRunController;
+use App\Http\Controllers\Studio\EpisodeStudioController;
 use App\Http\Controllers\Studio\MediaUploadController;
 use App\Http\Controllers\Studio\ProductionRunController;
 use App\Http\Controllers\Studio\ProductionSpecController;
@@ -61,6 +62,9 @@ Route::middleware(['auth', 'verified', 'can:manage-content', EnsureStudioEnabled
     Route::post('/agents', [AgentProfileController::class, 'store'])->name('agents.store');
     Route::get('/agents/{agent}', [AgentProfileController::class, 'edit'])->name('agents.edit');
     Route::put('/agents/{agent}', [AgentProfileController::class, 'update'])->name('agents.update');
+
+    Route::get('/episodes', [EpisodeStudioController::class, 'index'])->name('episodes.index');
+    Route::get('/episodes/{episode:slug}', [EpisodeStudioController::class, 'show'])->name('episodes.show');
 
     Route::get('/runs/{run}', [ProductionRunController::class, 'show'])->name('runs.show');
     Route::post('/runs/{run}/approve', [ApproveProductionRunController::class, 'store'])->name('runs.approve');

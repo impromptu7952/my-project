@@ -70,7 +70,7 @@ final class MediaAsset extends Model
 
         // Public disk: same-origin relative path (best for artisan serve + Tailscale).
         if ($disk === 'public') {
-            return '/storage/'.ltrim((string) $this->path, '/');
+            return '/storage/'.mb_ltrim((string) $this->path, '/');
         }
 
         // Private disk: relative signed route (host-agnostic path signature).
@@ -80,6 +80,24 @@ final class MediaAsset extends Model
             ['mediaAsset' => $this->id],
             absolute: false,
         );
+    }
+
+    /**
+     * URL for Studio (works for drafts): public disk path or signed/auth stream route.
+     */
+    public function studioUrl(): ?string
+    {
+        if ($this->provider !== MediaProvider::Self || blank($this->path)) {
+            return null;
+        }
+
+        $disk = $this->disk ?? (string) config('media.self.disk', 'local');
+
+        if ($disk === 'public') {
+            return '/storage/'.mb_ltrim((string) $this->path, '/');
+        }
+
+        return route('media.stream', ['mediaAsset' => $this->id], absolute: false);
     }
 
     public function absolutePath(): ?string
