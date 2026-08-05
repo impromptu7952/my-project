@@ -263,6 +263,55 @@ export default function StudioRunShow({
         });
     }
 
+    // Workbench shortcuts: 1–7 steps · p/s/n center tabs · [ inspector · r regen · mod+s save
+    useEffect(() => {
+        function onKey(e: KeyboardEvent) {
+            const target = e.target as HTMLElement | null;
+            const tag = target?.tagName?.toLowerCase();
+            if (
+                tag === 'input' ||
+                tag === 'textarea' ||
+                tag === 'select' ||
+                target?.isContentEditable
+            ) {
+                return;
+            }
+
+            if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 's') {
+                e.preventDefault();
+                saveArtifact();
+                return;
+            }
+
+            if (e.key >= '1' && e.key <= '9') {
+                const idx = Number(e.key) - 1;
+                if (steps[idx]) {
+                    e.preventDefault();
+                    setActiveStepId(steps[idx].id);
+                }
+                return;
+            }
+
+            if (e.key === 'p' || e.key === 'P') {
+                setCenterTab('preview');
+            } else if (e.key === 's' || e.key === 'S') {
+                setCenterTab('source');
+            } else if (e.key === 'n' || e.key === 'N') {
+                setCenterTab('notes');
+            } else if (e.key === '[') {
+                setInspectorOpen((v) => !v);
+            } else if (e.key === 'r' || e.key === 'R') {
+                if (activeStep && !isBusy) {
+                    regenerate(activeStep.id);
+                }
+            }
+        }
+
+        window.addEventListener('keydown', onKey);
+        return () => window.removeEventListener('keydown', onKey);
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- workbench hotkeys
+    }, [steps, activeStepId, isBusy, draftJson, primaryKind, run.id]);
+
     return (
         <>
             <Head
@@ -489,7 +538,10 @@ export default function StudioRunShow({
                                 ))}
                             </div>
 
-                            <div className="ml-auto flex items-center gap-1">
+                            <span className="ml-auto hidden text-[10px] text-muted-foreground xl:inline">
+                                1–7 steps · P/S/N · [ panel · R regen · ⌘S
+                            </span>
+                            <div className="flex items-center gap-1">
                                 {activeStepId === 'voice' ? (
                                     <Button
                                         size="sm"
