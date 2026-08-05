@@ -1,12 +1,17 @@
-import { Head, Link, router, setLayoutProps } from '@inertiajs/react';
+import { Head, Link, router, setLayoutProps, useForm } from '@inertiajs/react';
 import {
     AlertTriangle,
     ArrowLeft,
+    Bot,
     CheckCircle2,
+    Loader2,
     RefreshCw,
+    Save,
+    Sparkles,
     Upload,
     XCircle,
 } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import Heading from '@/components/heading';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
@@ -18,13 +23,42 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
 import {
-    Collapsible,
-    CollapsibleContent,
-    CollapsibleTrigger,
-} from '@/components/ui/collapsible';
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
+
+type Artifact = {
+    id: number;
+    kind: string;
+    stage: string | null;
+    version: number;
+    payload: unknown;
+    meta?: Record<string, unknown> | null;
+    updatedAt?: string | null;
+};
+
+type Step = {
+    id: string;
+    label: string;
+    kinds: string[];
+    description: string;
+    ready: boolean;
+};
+
+type AgentOption = {
+    id: number;
+    name: string;
+    slug: string;
+    isDefault: boolean;
+    model: string;
+};
 
 type Props = {
     run: {
@@ -35,19 +69,20 @@ type Props = {
         startedAt: string | null;
         scriptApprovedAt: string | null;
         finalApprovedAt: string | null;
+        agentProfileMap: Record<string, number>;
+        meta: Record<string, unknown>;
         spec: {
             slug: string | null;
             title: string | null;
             episodeSlug: string | null;
+            spec?: Record<string, unknown> | null;
         };
-        artifacts: Array<{
-            id: number;
-            kind: string;
-            stage: string | null;
-            version: number;
-            payload: unknown;
-        }>;
+        artifacts: Artifact[];
+        latestByKind: Record<string, Artifact>;
     };
+    steps: Step[];
+    agentProfilesByStage: Record<string, AgentOption[]>;
+    xaiConfigured: boolean;
 };
 
 function statusVariant(
@@ -59,26 +94,161 @@ function statusVariant(
     if (status.includes('approved') || status.includes('published')) {
         return 'default';
     }
-    if (status.includes('awaiting')) {
+    if (status.includes('awaiting') || status.includes('running')) {
         return 'secondary';
     }
 
     return 'outline';
 }
 
-function qualityFailed(run: Props['run']): boolean {
-    return run.artifacts.some(
-        (a) =>
-            a.kind === 'quality_report' &&
-            typeof a.payload === 'object' &&
-            a.payload !== null &&
-            'passed' in a.payload &&
-            (a.payload as { passed?: boolean }).passed === false,
+function ScriptPreview({ payload }: { payload: unknown }) {
+    if (!payload || typeof payload !== 'object') {
+        return (
+            <p className="text-sm text-muted-foreground">No script content yet.</p>
+        );
+    }
+
+    const data = payload as {
+        title?: string;
+        character?: { name?: string };
+        sections?: Array<{
+            id?: string;
+            name?: string;
+            duration_seconds?: number;
+            dialogue?: string[];
+            pause_seconds?: number | null;
+            movement?: string | null;
+        }>;
+    };
+
+    if (!data.sections?.length) {
+        return (
+            <pre className="max-h-[28rem] overflow-auto rounded-lg border bg-muted/40 p-4 font-mono text-xs">
+                {JSON.stringify(payload, null, 2)}
+            </pre>
+        );
+    }
+
+    return (
+        <div className="space-y-4">
+            <div>
+                <p className="text-lg font-semibold">{data.title ?? 'Script'}</p>
+                {data.character?.name ? (
+                    <p className="text-sm text-muted-foreground">
+                        Character: {data.character.name}
+                    </p>
+                ) : null}
+            </div>
+            {data.sections.map((section, i) => (
+                <Card key={section.id ?? i} className="shadow-none">
+                    <CardHeader className="pb-2">
+                        <CardTitle className="text-sm">
+                            {section.name ?? section.id ?? `Section ${i + 1}`}
+                        </CardTitle>
+                        <CardDescription>
+                            {section.duration_seconds
+                                ? `${section.duration_seconds}s`
+                                : '—'}
+                            {section.pause_seconds
+                                ? ` · pause ${section.pause_seconds}s`
+                                : ''}
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-2 text-sm">
+                        {(section.dialogue ?? []).map((line, li) => (
+                            <p key={li} className="leading-relaxed">
+                                {line}
+                            </p>
+                        ))}
+                        {section.movement ? (
+                            <p className="text-xs font-medium text-primary">
+                                Movement: {section.movement}
+                            </p>
+                        ) : null}
+                    </CardContent>
+                </Card>
+            ))}
+        </div>
     );
 }
 
-export default function StudioRunShow({ run }: Props) {
-    const failedQuality = qualityFailed(run);
+function VisualPreview({ payload }: { payload: unknown }) {
+    if (!payload || typeof payload !== 'object') {
+        return (
+            <p className="text-sm text-muted-foreground">No visual prompts yet.</p>
+        );
+    }
+
+    const data = payload as {
+        image_prompts?: Array<{ shot_id?: string; prompt?: string }>;
+        video_prompts?: Array<{ shot_id?: string; prompt?: string }>;
+        thumbnail_concept?: { title?: string; prompt?: string };
+        prompts?: Array<{ prompt?: string }>;
+    };
+
+    type PromptItem = { shot_id?: string; prompt?: string };
+    const images: PromptItem[] =
+        data.image_prompts ??
+        data.prompts ??
+        (Array.isArray(payload) ? (payload as PromptItem[]) : []);
+
+    return (
+        <div className="grid gap-3 sm:grid-cols-2">
+            {images.slice(0, 8).map((item, i) => (
+                <Card key={i} className="shadow-none">
+                    <CardHeader className="pb-2">
+                        <CardTitle className="text-xs font-medium text-muted-foreground">
+                            {item.shot_id ?? `Prompt ${i + 1}`}
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="mb-3 flex aspect-video items-center justify-center rounded-lg border border-dashed bg-muted/30 text-xs text-muted-foreground">
+                            Visual preview (gen later)
+                        </div>
+                        <p className="text-xs leading-relaxed">{item.prompt}</p>
+                    </CardContent>
+                </Card>
+            ))}
+            {images.length === 0 ? (
+                <pre className="col-span-full max-h-80 overflow-auto rounded-lg border bg-muted/40 p-4 font-mono text-xs">
+                    {JSON.stringify(payload, null, 2)}
+                </pre>
+            ) : null}
+        </div>
+    );
+}
+
+export default function StudioRunShow({
+    run,
+    steps,
+    agentProfilesByStage,
+    xaiConfigured,
+}: Props) {
+    const [activeStepId, setActiveStepId] = useState(
+        steps.find((s) => s.ready)?.id ?? steps[0]?.id ?? 'script',
+    );
+    const activeStep = steps.find((s) => s.id === activeStepId) ?? steps[0];
+
+    const primaryKind = activeStep?.kinds[0] ?? 'script';
+    const primaryArtifact = run.latestByKind[primaryKind];
+
+    const [draftJson, setDraftJson] = useState(() =>
+        JSON.stringify(primaryArtifact?.payload ?? {}, null, 2),
+    );
+    const [jsonError, setJsonError] = useState<string | null>(null);
+
+    // Keep draft in sync when switching steps or new versions arrive
+    useEffect(() => {
+        setDraftJson(JSON.stringify(primaryArtifact?.payload ?? {}, null, 2));
+        setJsonError(null);
+    }, [activeStepId, primaryArtifact?.id, primaryArtifact?.version]);
+
+    const agentForm = useForm({
+        agent_profile_map: { ...run.agentProfileMap } as Record<
+            string,
+            number | null
+        >,
+    });
 
     setLayoutProps({
         breadcrumbs: [
@@ -97,6 +267,48 @@ export default function StudioRunShow({ run }: Props) {
             },
         ],
     });
+
+    const regenerating =
+        typeof run.meta?.regenerate_stage === 'string'
+            ? String(run.meta.regenerate_stage)
+            : null;
+
+    const isBusy =
+        run.status.includes('running') || regenerating !== null;
+
+    function saveArtifact() {
+        try {
+            const payload = JSON.parse(draftJson) as Record<string, string | number | boolean | null | object>;
+            setJsonError(null);
+            router.post(`/studio/runs/${run.id}/artifacts`, {
+                kind: primaryKind,
+                // Inertia accepts nested JSON objects as form data.
+                payload: payload as never,
+            });
+        } catch {
+            setJsonError('Invalid JSON — fix syntax before saving.');
+        }
+    }
+
+    function regenerate(stage: string) {
+        const profileId = agentForm.data.agent_profile_map[stage] ?? null;
+        router.post(`/studio/runs/${run.id}/regenerate`, {
+            stage,
+            agent_profile_id: profileId,
+        });
+    }
+
+    const qualityFailed = (() => {
+        const report = run.latestByKind.quality_report?.payload;
+        if (!report || typeof report !== 'object') {
+            return false;
+        }
+        const r = report as { passed?: boolean; deterministic?: { passed?: boolean } };
+        if (typeof r.passed === 'boolean') {
+            return r.passed === false;
+        }
+        return r.deterministic?.passed === false;
+    })();
 
     return (
         <>
@@ -118,14 +330,14 @@ export default function StudioRunShow({ run }: Props) {
                         </Button>
                     ) : null}
 
-                    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                    <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                         <div className="space-y-2">
                             <Heading
-                                title={`Run #${run.id}`}
+                                title={`Production workspace · Run #${run.id}`}
                                 description={
                                     run.spec.episodeSlug
                                         ? `Episode · ${run.spec.episodeSlug}`
-                                        : 'Production run'
+                                        : 'Step through script, voice, visuals, and edit packages'
                                 }
                             />
                             <div className="flex flex-wrap items-center gap-2">
@@ -137,8 +349,24 @@ export default function StudioRunShow({ run }: Props) {
                                         Stage · {run.currentStage}
                                     </Badge>
                                 ) : null}
+                                <Badge variant={xaiConfigured ? 'default' : 'secondary'}>
+                                    <Sparkles className="size-3" />
+                                    {xaiConfigured ? 'Grok / xAI live' : 'Stub agents (no API key)'}
+                                </Badge>
+                                {regenerating ? (
+                                    <Badge variant="outline">
+                                        <Loader2 className="size-3 animate-spin" />
+                                        Regenerating {regenerating}
+                                    </Badge>
+                                ) : null}
                             </div>
                         </div>
+                        <Button variant="outline" size="sm" asChild>
+                            <Link href="/studio/agents">
+                                <Bot />
+                                Manage agents
+                            </Link>
+                        </Button>
                     </div>
                 </div>
 
@@ -150,180 +378,426 @@ export default function StudioRunShow({ run }: Props) {
                     </Alert>
                 ) : null}
 
-                {failedQuality ? (
+                {qualityFailed ? (
                     <Alert variant="destructive">
                         <XCircle />
                         <AlertTitle>Quality checks failed</AlertTitle>
                         <AlertDescription>
-                            Deterministic quality checks failed — final approve
-                            is blocked until the package is fixed and re-run.
+                            Final approve is blocked until quality passes or you
+                            revise the package.
                         </AlertDescription>
                     </Alert>
                 ) : null}
 
+                {/* Step navigator */}
                 <Card>
-                    <CardHeader>
-                        <CardTitle>Review actions</CardTitle>
+                    <CardHeader className="pb-3">
+                        <CardTitle className="text-base">Workflow steps</CardTitle>
                         <CardDescription>
-                            Approve or reject at human gates. Rejected runs are
-                            terminal; start a new run to continue.
+                            Jump between stages anytime. Regenerate or manually
+                            edit without losing version history.
                         </CardDescription>
                     </CardHeader>
-                    <CardContent className="flex flex-wrap gap-2">
-                        {run.status === 'awaiting_script_review' ? (
-                            <>
+                    <CardContent>
+                        <div className="flex flex-wrap gap-2">
+                            {steps.map((step, index) => (
                                 <Button
-                                    onClick={() =>
-                                        router.post(
-                                            `/studio/runs/${run.id}/approve`,
-                                            { gate: 'script' },
-                                        )
+                                    key={step.id}
+                                    type="button"
+                                    size="sm"
+                                    variant={
+                                        activeStepId === step.id
+                                            ? 'default'
+                                            : 'outline'
                                     }
+                                    className={cn(
+                                        'h-auto flex-col items-start gap-0.5 px-3 py-2',
+                                        !step.ready && 'opacity-70',
+                                    )}
+                                    onClick={() => setActiveStepId(step.id)}
                                 >
-                                    <CheckCircle2 />
-                                    Approve script
+                                    <span className="text-[10px] font-normal opacity-70">
+                                        Step {index + 1}
+                                    </span>
+                                    <span className="flex items-center gap-1.5">
+                                        {step.ready ? (
+                                            <CheckCircle2 className="size-3.5" />
+                                        ) : null}
+                                        {step.label}
+                                    </span>
                                 </Button>
-                                <Button
-                                    variant="destructive"
-                                    onClick={() =>
-                                        router.post(
-                                            `/studio/runs/${run.id}/reject`,
-                                            { reason: 'Needs rewrite' },
-                                        )
-                                    }
-                                >
-                                    <XCircle />
-                                    Reject
-                                </Button>
-                            </>
-                        ) : null}
-
-                        {run.status === 'awaiting_final_review' ? (
-                            <>
-                                <Button
-                                    disabled={failedQuality}
-                                    onClick={() =>
-                                        router.post(
-                                            `/studio/runs/${run.id}/approve`,
-                                            { gate: 'final' },
-                                        )
-                                    }
-                                >
-                                    <CheckCircle2 />
-                                    Approve final
-                                </Button>
-                                <Button
-                                    variant="destructive"
-                                    onClick={() =>
-                                        router.post(
-                                            `/studio/runs/${run.id}/reject`,
-                                        )
-                                    }
-                                >
-                                    <XCircle />
-                                    Reject
-                                </Button>
-                            </>
-                        ) : null}
-
-                        {run.status === 'failed' ? (
-                            <Button
-                                variant="secondary"
-                                onClick={() =>
-                                    router.post(
-                                        `/studio/runs/${run.id}/retry`,
-                                        { chain: 'a' },
-                                    )
-                                }
-                            >
-                                <RefreshCw />
-                                Retry chain A
-                            </Button>
-                        ) : null}
-
-                        {run.status === 'approved' && run.spec.episodeSlug ? (
-                            <Button
-                                onClick={() =>
-                                    router.post(
-                                        `/studio/runs/${run.id}/publish`,
-                                        {
-                                            episode_slug: run.spec.episodeSlug,
-                                        },
-                                    )
-                                }
-                            >
-                                <Upload />
-                                Publish episode
-                            </Button>
-                        ) : null}
-
-                        {!['awaiting_script_review', 'awaiting_final_review', 'failed', 'approved'].includes(
-                            run.status,
-                        ) ? (
-                            <p className="text-sm text-muted-foreground">
-                                No actions available in this status. Wait for
-                                agents or refresh the page.
-                            </p>
-                        ) : null}
+                            ))}
+                        </div>
                     </CardContent>
                 </Card>
 
+                <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
+                    <div className="space-y-6">
+                        <Card>
+                            <CardHeader className="flex flex-row items-start justify-between gap-3 space-y-0">
+                                <div>
+                                    <CardTitle>{activeStep?.label}</CardTitle>
+                                    <CardDescription>
+                                        {activeStep?.description}
+                                        {primaryArtifact
+                                            ? ` · ${primaryKind} v${primaryArtifact.version}`
+                                            : ' · no artifact yet'}
+                                    </CardDescription>
+                                </div>
+                                <div className="flex flex-wrap gap-2">
+                                    <Button
+                                        size="sm"
+                                        variant="secondary"
+                                        disabled={isBusy || !activeStep}
+                                        onClick={() =>
+                                            activeStep &&
+                                            regenerate(activeStep.id)
+                                        }
+                                    >
+                                        <RefreshCw />
+                                        Regenerate with AI
+                                    </Button>
+                                    <Button
+                                        size="sm"
+                                        disabled={isBusy || !activeStep}
+                                        onClick={saveArtifact}
+                                    >
+                                        <Save />
+                                        Save edit
+                                    </Button>
+                                </div>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                {activeStepId === 'script' ? (
+                                    <ScriptPreview
+                                        payload={primaryArtifact?.payload}
+                                    />
+                                ) : activeStepId === 'visual_prompts' ? (
+                                    <VisualPreview
+                                        payload={primaryArtifact?.payload}
+                                    />
+                                ) : (
+                                    <pre className="max-h-[22rem] overflow-auto rounded-lg border bg-muted/40 p-4 font-mono text-xs">
+                                        {JSON.stringify(
+                                            primaryArtifact?.payload ?? {
+                                                note: 'Generate this stage to preview content.',
+                                            },
+                                            null,
+                                            2,
+                                        )}
+                                    </pre>
+                                )}
+
+                                <Separator />
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="artifact-json">
+                                        Edit artifact JSON (new version on save)
+                                    </Label>
+                                    <textarea
+                                        id="artifact-json"
+                                        value={draftJson}
+                                        onChange={(e) =>
+                                            setDraftJson(e.target.value)
+                                        }
+                                        className={cn(
+                                            'min-h-48 w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-xs',
+                                            'ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
+                                        )}
+                                        spellCheck={false}
+                                    />
+                                    {jsonError ? (
+                                        <p className="text-sm text-destructive">
+                                            {jsonError}
+                                        </p>
+                                    ) : null}
+                                </div>
+
+                                {activeStep && activeStep.kinds.length > 1 ? (
+                                    <div className="space-y-2">
+                                        <p className="text-sm font-medium">
+                                            Related artifacts
+                                        </p>
+                                        <div className="flex flex-wrap gap-2">
+                                            {activeStep.kinds.map((kind) => {
+                                                const art = run.latestByKind[kind];
+                                                return (
+                                                    <Badge
+                                                        key={kind}
+                                                        variant={
+                                                            art
+                                                                ? 'secondary'
+                                                                : 'outline'
+                                                        }
+                                                    >
+                                                        {kind}
+                                                        {art
+                                                            ? ` v${art.version}`
+                                                            : ' —'}
+                                                    </Badge>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                ) : null}
+                            </CardContent>
+                        </Card>
+
+                        {/* Gate actions */}
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="text-base">
+                                    Pipeline gates
+                                </CardTitle>
+                                <CardDescription>
+                                    Approve script to unlock chain B (storyboard →
+                                    quality). Approve final when package is ready
+                                    to publish.
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent className="flex flex-wrap gap-2">
+                                {run.status === 'awaiting_script_review' ? (
+                                    <>
+                                        <Button
+                                            onClick={() =>
+                                                router.post(
+                                                    `/studio/runs/${run.id}/approve`,
+                                                    { gate: 'script' },
+                                                )
+                                            }
+                                        >
+                                            <CheckCircle2 />
+                                            Approve script → continue
+                                        </Button>
+                                        <Button
+                                            variant="destructive"
+                                            onClick={() =>
+                                                router.post(
+                                                    `/studio/runs/${run.id}/reject`,
+                                                    {
+                                                        reason: 'Needs rewrite',
+                                                    },
+                                                )
+                                            }
+                                        >
+                                            <XCircle />
+                                            Reject run
+                                        </Button>
+                                    </>
+                                ) : null}
+
+                                {run.status === 'awaiting_final_review' ? (
+                                    <>
+                                        <Button
+                                            disabled={qualityFailed}
+                                            onClick={() =>
+                                                router.post(
+                                                    `/studio/runs/${run.id}/approve`,
+                                                    { gate: 'final' },
+                                                )
+                                            }
+                                        >
+                                            <CheckCircle2 />
+                                            Approve final package
+                                        </Button>
+                                        <Button
+                                            variant="destructive"
+                                            onClick={() =>
+                                                router.post(
+                                                    `/studio/runs/${run.id}/reject`,
+                                                )
+                                            }
+                                        >
+                                            <XCircle />
+                                            Reject
+                                        </Button>
+                                    </>
+                                ) : null}
+
+                                {run.status === 'failed' ? (
+                                    <Button
+                                        variant="secondary"
+                                        onClick={() =>
+                                            router.post(
+                                                `/studio/runs/${run.id}/retry`,
+                                                { chain: 'a' },
+                                            )
+                                        }
+                                    >
+                                        <RefreshCw />
+                                        Retry chain A
+                                    </Button>
+                                ) : null}
+
+                                {run.status === 'approved' &&
+                                run.spec.episodeSlug ? (
+                                    <Button
+                                        onClick={() =>
+                                            router.post(
+                                                `/studio/runs/${run.id}/publish`,
+                                                {
+                                                    episode_slug:
+                                                        run.spec.episodeSlug,
+                                                },
+                                            )
+                                        }
+                                    >
+                                        <Upload />
+                                        Publish episode
+                                    </Button>
+                                ) : null}
+
+                                {!isBusy &&
+                                ![
+                                    'awaiting_script_review',
+                                    'awaiting_final_review',
+                                    'failed',
+                                    'approved',
+                                ].includes(run.status) ? (
+                                    <p className="text-sm text-muted-foreground">
+                                        Pipeline is processing or idle. Use step
+                                        regenerate for targeted AI updates.
+                                    </p>
+                                ) : null}
+                            </CardContent>
+                        </Card>
+                    </div>
+
+                    {/* Agent assignment sidebar */}
+                    <Card className="h-fit xl:sticky xl:top-4">
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2 text-base">
+                                <Bot className="size-4" />
+                                Agents for this run
+                            </CardTitle>
+                            <CardDescription>
+                                Pick which agent profile powers each step.
+                                Defaults come from Studio → Agents.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            {steps.map((step) => {
+                                const options =
+                                    agentProfilesByStage[step.id] ?? [];
+                                const value =
+                                    agentForm.data.agent_profile_map[step.id] !=
+                                    null
+                                        ? String(
+                                              agentForm.data.agent_profile_map[
+                                                  step.id
+                                              ],
+                                          )
+                                        : options.find((o) => o.isDefault)
+                                            ? String(
+                                                  options.find((o) => o.isDefault)!
+                                                      .id,
+                                              )
+                                            : options[0]
+                                              ? String(options[0].id)
+                                              : '';
+
+                                return (
+                                    <div key={step.id} className="space-y-1.5">
+                                        <Label className="text-xs">
+                                            {step.label}
+                                        </Label>
+                                        <Select
+                                            value={value}
+                                            onValueChange={(v) =>
+                                                agentForm.setData(
+                                                    'agent_profile_map',
+                                                    {
+                                                        ...agentForm.data
+                                                            .agent_profile_map,
+                                                        [step.id]: Number(v),
+                                                    },
+                                                )
+                                            }
+                                        >
+                                            <SelectTrigger className="w-full">
+                                                <SelectValue placeholder="Default agent" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {options.map((opt) => (
+                                                    <SelectItem
+                                                        key={opt.id}
+                                                        value={String(opt.id)}
+                                                    >
+                                                        {opt.name}
+                                                        {opt.isDefault
+                                                            ? ' (default)'
+                                                            : ''}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                );
+                            })}
+
+                            <Button
+                                className="w-full"
+                                variant="secondary"
+                                disabled={agentForm.processing}
+                                onClick={() =>
+                                    agentForm.post(
+                                        `/studio/runs/${run.id}/agents`,
+                                    )
+                                }
+                            >
+                                Save agent assignments
+                            </Button>
+
+                            <p className="text-xs text-muted-foreground">
+                                {xaiConfigured
+                                    ? 'Live calls use XAI_API_KEY → api.x.ai (same Grok subscription).'
+                                    : 'Set XAI_API_KEY in .env to enable live Grok generation.'}
+                            </p>
+                        </CardContent>
+                    </Card>
+                </div>
+
                 <Card>
                     <CardHeader>
-                        <CardTitle>Artifacts</CardTitle>
+                        <CardTitle className="text-base">
+                            Version history
+                        </CardTitle>
                         <CardDescription>
-                            Script, storyboard, prompts, and quality reports
-                            produced by the pipeline.
+                            All artifacts for this run, newest versions first per
+                            kind.
                         </CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-3">
-                        {run.artifacts.length === 0 ? (
-                            <p className="text-sm text-muted-foreground">
-                                No artifacts yet.
-                            </p>
-                        ) : (
-                            run.artifacts.map((artifact, index) => (
-                                <div key={artifact.id}>
-                                    {index > 0 ? (
-                                        <Separator className="my-3" />
-                                    ) : null}
-                                    <Collapsible>
-                                        <CollapsibleTrigger className="flex w-full items-center justify-between gap-3 rounded-lg p-3 text-left transition-colors hover:bg-muted/60">
-                                            <div className="min-w-0">
-                                                <p className="font-medium">
-                                                    {artifact.kind}
-                                                </p>
-                                                <p className="text-xs text-muted-foreground">
-                                                    v{artifact.version}
-                                                    {artifact.stage
-                                                        ? ` · ${artifact.stage}`
-                                                        : ''}
-                                                </p>
-                                            </div>
-                                            <Badge variant="outline">View</Badge>
-                                        </CollapsibleTrigger>
-                                        <CollapsibleContent>
-                                            <pre
-                                                className={cn(
-                                                    'mt-2 max-h-80 overflow-auto rounded-lg border bg-muted/50 p-4 font-mono text-xs',
-                                                    'dark:bg-muted/30',
-                                                )}
-                                            >
-                                                {JSON.stringify(
-                                                    artifact.payload,
-                                                    null,
-                                                    2,
-                                                )}
-                                            </pre>
-                                        </CollapsibleContent>
-                                    </Collapsible>
+                    <CardContent>
+                        <div className="max-h-64 space-y-2 overflow-auto">
+                            {run.artifacts.map((a) => (
+                                <div
+                                    key={a.id}
+                                    className="flex items-center justify-between gap-2 rounded-md border px-3 py-2 text-sm"
+                                >
+                                    <span className="font-medium">
+                                        {a.kind}{' '}
+                                        <span className="text-muted-foreground">
+                                            v{a.version}
+                                        </span>
+                                    </span>
+                                    <span className="text-xs text-muted-foreground">
+                                        {(a.meta?.source as string) ??
+                                            (a.meta?.agent as string) ??
+                                            a.stage ??
+                                            '—'}
+                                    </span>
                                 </div>
-                            ))
-                        )}
+                            ))}
+                            {run.artifacts.length === 0 ? (
+                                <p className="text-sm text-muted-foreground">
+                                    No artifacts yet. Start a run from the spec
+                                    page.
+                                </p>
+                            ) : null}
+                        </div>
                     </CardContent>
                 </Card>
             </div>
         </>
     );
 }
-
