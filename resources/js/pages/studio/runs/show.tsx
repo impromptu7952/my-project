@@ -55,6 +55,10 @@ import {
     extractVttFromPayload,
     StudioPlayer,
 } from '@/components/studio/studio-player';
+import {
+    MasterDrivePanel,
+    type MasterDriveInfo,
+} from '@/components/studio/master-drive-panel';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -141,6 +145,7 @@ type Props = {
         }>;
     } | null;
     episodePreview?: EpisodePreview | null;
+    masterDrive?: MasterDriveInfo;
 };
 
 type InspectorTab = 'tools' | 'agents' | 'media' | 'history';
@@ -168,6 +173,12 @@ export default function StudioRunShow({
     usage,
     episodeMedia = null,
     episodePreview = null,
+    masterDrive = {
+        xaiConfigured: false,
+        imagineConfigured: false,
+        ffmpegAvailable: false,
+        last: null,
+    },
     publishChecklist = [],
 }: Props) {
     const [activeStepId, setActiveStepId] = useState(
@@ -544,6 +555,59 @@ export default function StudioRunShow({
                             qualityFailed={qualityFailed}
                             isBusy={isBusy}
                         />
+                        <Button
+                            variant="secondary"
+                            size="sm"
+                            className="h-7 px-2 text-xs"
+                            disabled={
+                                !run.spec.episodeSlug ||
+                                !masterDrive.ffmpegAvailable
+                            }
+                            title="Assemble local card-film master from package"
+                            onClick={() => {
+                                router.post(
+                                    `/studio/runs/${run.id}/assemble-preview`,
+                                    {},
+                                    {
+                                        preserveScroll: true,
+                                        onSuccess: () => {
+                                            setDockOpen(true);
+                                            setCenterTab('output');
+                                            refreshEpisodePreview();
+                                        },
+                                    },
+                                );
+                            }}
+                        >
+                            Assemble
+                        </Button>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-7 px-2 text-xs"
+                            disabled={
+                                !run.spec.episodeSlug ||
+                                !masterDrive.imagineConfigured
+                            }
+                            title="Generate short Imagine video (API usage)"
+                            onClick={() => {
+                                router.post(
+                                    `/studio/runs/${run.id}/imagine-master`,
+                                    { duration: 6 },
+                                    {
+                                        preserveScroll: true,
+                                        onSuccess: () => {
+                                            setDockOpen(true);
+                                            setCenterTab('output');
+                                            refreshEpisodePreview();
+                                        },
+                                    },
+                                );
+                            }}
+                        >
+                            <Sparkles className="size-3" />
+                            Imagine
+                        </Button>
                         {episodePreview?.playback.hasVideo ? (
                             <Button
                                 variant="secondary"
@@ -940,6 +1004,15 @@ export default function StudioRunShow({
                                         hasVideoMaster={Boolean(
                                             episodePreview?.playback.hasVideo,
                                         )}
+                                        masterDrive={masterDrive}
+                                        runId={run.id}
+                                        hasEpisode={Boolean(
+                                            run.spec.episodeSlug,
+                                        )}
+                                        onMasterDriven={() => {
+                                            setDockOpen(true);
+                                            refreshEpisodePreview();
+                                        }}
                                     />
                                 ) : null}
 
@@ -1337,6 +1410,10 @@ function ToolsPanel({
     qualityFailed,
     xaiConfigured,
     hasVideoMaster,
+    masterDrive,
+    runId,
+    hasEpisode,
+    onMasterDriven,
 }: {
     run: Props['run'];
     usage?: Props['usage'];
@@ -1344,54 +1421,44 @@ function ToolsPanel({
     qualityFailed: boolean;
     xaiConfigured: boolean;
     hasVideoMaster: boolean;
+    masterDrive: MasterDriveInfo;
+    runId: number;
+    hasEpisode: boolean;
+    onMasterDriven?: () => void;
 }) {
     return (
         <div className="space-y-3">
+            <MasterDrivePanel
+                runId={runId}
+                masterDrive={masterDrive}
+                hasEpisode={hasEpisode}
+                onDone={onMasterDriven}
+            />
+
             <div className="space-y-1.5 rounded border border-amber-500/30 bg-amber-500/5 p-2 text-[11px] leading-snug">
                 <p className="font-semibold text-amber-900 dark:text-amber-100">
-                    How Studio connects today
+                    Package vs master
                 </p>
                 <ol className="list-inside list-decimal space-y-1 text-muted-foreground">
                     <li>
-                        <span className="font-medium text-foreground">
-                            Stages (brief→quality)
-                        </span>{' '}
-                        produce versioned JSON packages (script, VO, prompts,
-                        VTT). Regen rewrites those packages
+                        Stages edit the JSON package
                         {xaiConfigured
-                            ? ' via Grok API.'
-                            : ' as stubs (no XAI_API_KEY).'}
+                            ? ' (Grok API when regenerating).'
+                            : ' (stub regen without XAI_API_KEY).'}
                     </li>
                     <li>
-                        <span className="font-medium text-foreground">
-                            Program video
-                        </span>{' '}
-                        is the episode{' '}
+                        Program dock plays{' '}
                         <span className="font-mono text-[10px]">
                             video_master
-                        </span>{' '}
-                        file
-                        {hasVideoMaster
-                            ? ' (seeded/uploaded).'
-                            : ' (none uploaded yet).'}{' '}
-                        Editing script does <em>not</em> re-render that MP4.
+                        </span>
+                        {hasVideoMaster ? ' (current file).' : ' (none yet).'}
                     </li>
                     <li>
-                        <span className="font-medium text-foreground">
-                            What does update live
-                        </span>
-                        : package captions (VTT), script read-along cues, and
-                        prompts — not pixels of the master.
+                        Use <strong>Assemble</strong> (free cards) or{' '}
+                        <strong>Imagine</strong> (API $) above to rebuild the
+                        master from this package.
                     </li>
                 </ol>
-                {!xaiConfigured ? (
-                    <p className="rounded bg-background/80 px-1.5 py-1 text-[10px] text-muted-foreground">
-                        Set <span className="font-mono">XAI_API_KEY</span> in{' '}
-                        <span className="font-mono">.env</span> for live Grok
-                        package generation. SuperGrok chat subscription is
-                        separate from API billing.
-                    </p>
-                ) : null}
             </div>
 
             <div>

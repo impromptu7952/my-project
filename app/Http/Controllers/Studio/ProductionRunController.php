@@ -14,6 +14,7 @@ use App\Http\Controllers\Controller;
 use App\Models\AgentProfile;
 use App\Models\Episode;
 use App\Models\ProductionRun;
+use App\Contracts\VideoGenProvider;
 use App\Services\Xai\XaiClient;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -25,6 +26,7 @@ final class ProductionRunController extends Controller
         SummarizeRunUsage $summarizeUsage,
         BuildPublishChecklist $buildChecklist,
         ResolveStudioPlayback $resolveStudioPlayback,
+        VideoGenProvider $videoGen,
     ): Response {
 
         $run->load(['productionSpec', 'artifacts', 'starter']);
@@ -150,7 +152,22 @@ final class ProductionRunController extends Controller
             'publishChecklist' => $buildChecklist->handle($run),
             'episodeMedia' => $episodeMedia,
             'episodePreview' => $episodePreview,
+            'masterDrive' => [
+                'xaiConfigured' => app(XaiClient::class)->isConfigured(),
+                'imagineConfigured' => $videoGen->isConfigured(),
+                'ffmpegAvailable' => $this->ffmpegAvailable(),
+                'last' => is_array($run->meta['last_master_drive'] ?? null)
+                    ? $run->meta['last_master_drive']
+                    : null,
+            ],
         ]);
+    }
+
+    private function ffmpegAvailable(): bool
+    {
+        $path = trim((string) shell_exec('command -v ffmpeg 2>/dev/null'));
+
+        return $path !== '';
     }
 
     /**

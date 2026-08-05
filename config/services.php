@@ -41,6 +41,7 @@ return [
         'api_key' => env('XAI_API_KEY'),
         'base_url' => env('XAI_BASE_URL', 'https://api.x.ai/v1'),
         'model' => env('XAI_MODEL', 'grok-4.5'),
+        'video_model' => env('XAI_VIDEO_MODEL', 'grok-imagine-video'),
         'max_tokens' => [
             'curriculum' => 2000,
             'script' => 4000,
