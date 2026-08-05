@@ -99,3 +99,4 @@ Parents/caregivers get a calm, Albanian-first watch + play experience linked by 
 | 2026-08-05 | Structured script/voice/storyboard previews; episode studio hub; media upload panel; video library topic filters; run usage tokens; watch co-play + parent progress ping |
 | 2026-08-05 | Studio overview dashboard; publish checklist; curriculum/caption previews; 5 pilot episodes; clone runs; extra specs |
 | 2026-08-05 | Quality override + stage notes; voice preview package; Lumi brand bible; timeline preview; topic page polish; TTS config |
+| 2026-08-05 | Brand bible injected into Grok stage agents; visual preview stubs; series pages; progress bars; run package export |

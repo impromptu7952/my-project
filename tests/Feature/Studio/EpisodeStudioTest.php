@@ -11,6 +11,19 @@ beforeEach(function (): void {
     $this->seed(ContentSeeder::class);
 });
 
+test('studio dashboard includes character bible link', function (): void {
+    $editor = User::query()->where('email', 'editor@playzone.test')->firstOrFail();
+
+    $this->actingAs($editor)
+        ->get(route('studio.home'))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->component('studio/dashboard')
+            ->has('stats')
+            ->where('character.name', 'Lumi')
+            ->has('character.href'));
+});
+
 test('editor can open studio episodes index', function (): void {
     $editor = User::query()->where('email', 'editor@playzone.test')->firstOrFail();
 

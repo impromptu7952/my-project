@@ -36,6 +36,10 @@ final class EpisodeController extends Controller
             'ageBand' => $episode->age_band?->value ?? '1-3',
             'topicName' => $episode->series?->topic?->localizedName($locale),
             'topicSlug' => $episode->series?->topic?->slug,
+            'seriesSlug' => $episode->series?->slug,
+            'seriesHref' => $episode->series
+                ? route('series.show', $episode->series)
+                : null,
             'href' => route('videos.show', $episode),
             'emoji' => match ($episode->series?->topic?->slug) {
                 'ngjyrat' => '🌈',
@@ -54,6 +58,7 @@ final class EpisodeController extends Controller
                 'slug' => $topic->slug,
                 'name' => $topic->localizedName($locale),
                 'href' => route('videos.index', ['topic' => $topic->slug]),
+                'topicPageHref' => route('topics.show', $topic),
             ]);
 
         return Inertia::render('videos/index', [
