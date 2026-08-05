@@ -61,6 +61,11 @@ final readonly class PublishEpisode
                 throw new HttpException(422, 'video_master file is missing from storage.');
             }
 
+            // Optionally attach VTT from approved package if episode has no subtitles yet.
+            if ($run !== null) {
+                $this->attachSubtitlesFromRun($episode, $run);
+            }
+
             $episode->update([
                 'status' => EpisodeStatus::Published,
                 'published_at' => $episode->published_at ?? now(),
@@ -80,5 +85,63 @@ final readonly class PublishEpisode
 
             return $episode->fresh() ?? $episode;
         });
+    }
+
+    private function attachSubtitlesFromRun(Episode $episode, ProductionRun $run): void
+    {
+        $hasSubtitle = $episode->mediaAssets->contains(
+            fn (MediaAsset $asset): bool => $asset->kind === MediaKind::Subtitle
+        );
+
+        if ($hasSubtitle) {
+            return;
+        }
+
+        $run->loadMissing('artifacts');
+        $artifact = $run->artifacts
+            ->where('kind', \App\Enums\ArtifactKind::SubtitlesVtt)
+            ->sortByDesc('version')
+            ->first();
+
+        if ($artifact === null) {
+            return;
+        }
+
+        $payload = $artifact->payload;
+        $vtt = null;
+
+        if (is_array($payload)) {
+            $vtt = $payload['subtitles_vtt'] ?? $payload['vtt'] ?? null;
+            if (is_array($vtt)) {
+                $vtt = null;
+            }
+        }
+
+        if (! is_string($vtt) || ! str_contains($vtt, 'WEBVTT')) {
+            return;
+        }
+
+        $disk = (string) config('media.self.disk', 'public');
+        $path = 'episodes/'.\Illuminate\Support\Str::uuid()->toString().'/subtitle.vtt';
+        Storage::disk($disk)->put($path, $vtt);
+
+        MediaAsset::query()->updateOrCreate(
+            [
+                'episode_id' => $episode->id,
+                'kind' => MediaKind::Subtitle->value,
+                'provider' => MediaProvider::Self->value,
+            ],
+            [
+                'disk' => $disk,
+                'path' => $path,
+                'mime_type' => 'text/vtt',
+                'size_bytes' => mb_strlen($vtt),
+                'meta' => [
+                    'source' => 'production_run',
+                    'production_run_id' => $run->id,
+                    'artifact_version' => $artifact->version,
+                ],
+            ]
+        );
     }
 }
