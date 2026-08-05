@@ -37,4 +37,20 @@ return [
         ],
     ],
 
+    'xai' => [
+        'api_key' => env('XAI_API_KEY'),
+        'base_url' => env('XAI_BASE_URL', 'https://api.x.ai/v1'),
+        'model' => env('XAI_MODEL', 'grok-4.5'),
+        'max_tokens' => [
+            'curriculum' => 2000,
+            'script' => 4000,
+            'storyboard' => 2000,
+            'visual_prompts' => 2000,
+            'voice' => 2000,
+            'editor' => 2000,
+            'quality' => 2000,
+        ],
+        'max_usd_per_run' => (float) env('XAI_MAX_USD_PER_RUN', 5),
+    ],
+
 ];

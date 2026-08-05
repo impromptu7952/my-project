@@ -4,15 +4,16 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Carbon\CarbonImmutable;
 use Database\Factories\UserFactory;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Notifications\DatabaseNotificationCollection;
@@ -27,6 +28,7 @@ use Override;
  * @property int $id
  * @property string $name
  * @property string $email
+ * @property bool $is_editor
  * @property CarbonImmutable|null $email_verified_at
  * @property string $password
  * @property string|null $remember_token
@@ -44,32 +46,40 @@ use Override;
  * @method static Builder<static>|User newModelQuery()
  * @method static Builder<static>|User newQuery()
  * @method static Builder<static>|User query()
- * @method static Builder<static>|User whereCreatedAt($value)
- * @method static Builder<static>|User whereEmail($value)
- * @method static Builder<static>|User whereEmailVerifiedAt($value)
- * @method static Builder<static>|User whereId($value)
- * @method static Builder<static>|User whereName($value)
- * @method static Builder<static>|User wherePassword($value)
- * @method static Builder<static>|User whereRememberToken($value)
- * @method static Builder<static>|User whereTwoFactorConfirmedAt($value)
- * @method static Builder<static>|User whereTwoFactorRecoveryCodes($value)
- * @method static Builder<static>|User whereTwoFactorSecret($value)
- * @method static Builder<static>|User whereUpdatedAt($value)
  *
  * @mixin Model
  */
 #[Fillable(['name', 'email', 'password'])]
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
-final class User extends Authenticatable implements PasskeyUser
+final class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
 {
     use HasFactory;
     use Notifiable;
     use PasskeyAuthenticatable;
     use TwoFactorAuthenticatable;
 
+    /** @var array<string, mixed> */
+    protected $attributes = [
+        'is_editor' => false,
+    ];
+
     /**
-     * Get the attributes that should be cast.
-     *
+     * @return HasMany<ParentFavorite, $this>
+     */
+    public function favorites(): HasMany
+    {
+        return $this->hasMany(ParentFavorite::class);
+    }
+
+    /**
+     * @return HasMany<WatchProgress, $this>
+     */
+    public function watchProgress(): HasMany
+    {
+        return $this->hasMany(WatchProgress::class);
+    }
+
+    /**
      * @return array<string, string>
      */
     #[Override]
@@ -79,6 +89,7 @@ final class User extends Authenticatable implements PasskeyUser
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'two_factor_confirmed_at' => 'datetime',
+            'is_editor' => 'boolean',
         ];
     }
 }

@@ -2,10 +2,22 @@
 
 declare(strict_types=1);
 
-test('home page is available', function (): void {
+use Database\Seeders\ContentSeeder;
+
+beforeEach(function (): void {
+    $this->seed(ContentSeeder::class);
+});
+
+test('home page is available with toddler sections', function (): void {
     $this->get(route('home'))
         ->assertOk()
-        ->assertInertia(fn ($page) => $page->component('welcome'));
+        ->assertInertia(fn ($page) => $page
+            ->component('welcome')
+            ->has('toddlerGames')
+            ->has('moreGames')
+            ->has('featuredEpisodes')
+            ->has('features')
+        );
 });
 
 test('game pages are available', function (string $route, string $component): void {
@@ -19,4 +31,5 @@ test('game pages are available', function (string $route, string $component): vo
     ['games.color-pop', 'games/color-pop'],
     ['games.rock-paper-scissors', 'games/rock-paper-scissors'],
     ['games.number-quest', 'games/number-quest'],
+    ['games.touch-and-tap', 'games/touch-and-tap'],
 ]);
