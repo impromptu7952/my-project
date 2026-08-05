@@ -13,6 +13,14 @@ declare module '@inertiajs/core' {
             name: string;
             auth: Auth;
             sidebarOpen: boolean;
+            locale: 'sq' | 'en';
+            availableLocales: Array<'sq' | 'en'>;
+            translations: Record<string, string>;
+            features: {
+                videos: boolean;
+                studio: boolean;
+                toddlerHome: boolean;
+            };
             [key: string]: unknown;
         };
     }

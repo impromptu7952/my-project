@@ -1,6 +1,7 @@
 import { Head, Link } from '@inertiajs/react';
 import { ArrowLeft, Home } from 'lucide-react';
 import type { ReactNode } from 'react';
+import { useLocale } from '@/hooks/use-locale';
 import { home } from '@/routes';
 
 type GameShellProps = {
@@ -8,15 +9,24 @@ type GameShellProps = {
     emoji: string;
     accent: string;
     children: ReactNode;
+    watchHref?: string | null;
+    watchLabel?: string | null;
 };
 
-export function GameShell({ title, emoji, accent, children }: GameShellProps) {
+export function GameShell({
+    title,
+    emoji,
+    accent,
+    children,
+    watchHref,
+    watchLabel,
+}: GameShellProps) {
+    const { t } = useLocale();
+
     return (
         <>
             <Head title={title} />
-            <div
-                className={`min-h-screen ${accent} relative overflow-hidden`}
-            >
+            <div className={`min-h-screen ${accent} relative overflow-hidden`}>
                 <div className="pointer-events-none absolute inset-0 opacity-30">
                     <div className="absolute top-10 left-10 size-24 rounded-full bg-white/40 blur-2xl" />
                     <div className="absolute right-16 bottom-20 size-40 rounded-full bg-white/30 blur-3xl" />
@@ -30,15 +40,25 @@ export function GameShell({ title, emoji, accent, children }: GameShellProps) {
                             className="inline-flex items-center gap-2 rounded-full bg-white/90 px-4 py-2 text-sm font-bold text-slate-700 shadow-md transition hover:scale-105 hover:bg-white focus-visible:ring-4 focus-visible:ring-white/60 focus-visible:outline-none"
                         >
                             <ArrowLeft className="size-4" aria-hidden />
-                            All Games
+                            {t('games.back', 'All games')}
                         </Link>
-                        <Link
-                            href={home()}
-                            className="inline-flex size-10 items-center justify-center rounded-full bg-white/90 text-slate-700 shadow-md transition hover:scale-105 hover:bg-white focus-visible:ring-4 focus-visible:ring-white/60 focus-visible:outline-none"
-                            aria-label="Home"
-                        >
-                            <Home className="size-4" />
-                        </Link>
+                        <div className="flex items-center gap-2">
+                            {watchHref ? (
+                                <Link
+                                    href={watchHref}
+                                    className="inline-flex items-center rounded-full bg-white/90 px-3 py-2 text-xs font-bold text-fuchsia-700 shadow-md transition hover:scale-105 hover:bg-white sm:text-sm"
+                                >
+                                    {watchLabel ?? t('videos.watch', 'Watch video')}
+                                </Link>
+                            ) : null}
+                            <Link
+                                href={home()}
+                                className="inline-flex size-10 items-center justify-center rounded-full bg-white/90 text-slate-700 shadow-md transition hover:scale-105 hover:bg-white focus-visible:ring-4 focus-visible:ring-white/60 focus-visible:outline-none"
+                                aria-label={t('games.home', 'Home')}
+                            >
+                                <Home className="size-4" />
+                            </Link>
+                        </div>
                     </header>
 
                     <div className="mb-6 text-center">
@@ -58,13 +78,13 @@ export function GameShell({ title, emoji, accent, children }: GameShellProps) {
 
                     <footer className="mt-auto pb-4 text-center sm:pb-6">
                         <p className="text-sm font-medium text-white/85 drop-shadow-sm">
-                            Made for kids · Play together · Have fun 🎉
+                            {t('footer.made_for', 'Made for kids · Play together · Have fun')} 🎉
                         </p>
                         <Link
                             href={home()}
                             className="mt-2 inline-block text-sm font-bold text-white/90 underline decoration-white/40 underline-offset-4 transition hover:text-white hover:decoration-white"
                         >
-                            Back to all games
+                            {t('games.back_to_all', 'Back to all games')}
                         </Link>
                     </footer>
                 </div>

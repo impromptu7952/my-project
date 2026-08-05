@@ -26,6 +26,7 @@ pest()->extend(TestCase::class)
         Http::preventStrayRequests();
         Sleep::fake();
 
+        $this->withoutVite();
         $this->freezeTime();
     })
     ->in('Browser', 'Feature', 'Unit');
