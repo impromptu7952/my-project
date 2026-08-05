@@ -38,6 +38,7 @@ final class ContentSeeder extends Seeder
      */
     private const VIDEO_FIXTURES = [
         'ngjyrat-kuq-kalter-verdh-gjelber' => 'assembled/ep-ngjyrat-kuq-kalter-verdh-gjelber.mp4',
+        'ngjyrat-kuq-kalter-verdh-gjelber-realiste' => 'assembled/ep-ngjyrat-kuq-kalter-verdh-gjelber-realiste.mp4',
         'kafshet-qeni-dhe-macja' => 'assembled/ep-kafshet-qeni-dhe-macja.mp4',
         'pershendetjet-miremengjesi' => 'assembled/ep-pershendetjet-miremengjesi.mp4',
         'trupi-koka-duart-kembe' => 'assembled/ep-trupi-koka-duart-kembe.mp4',
@@ -316,6 +317,7 @@ final class ContentSeeder extends Seeder
         // Prefer stable featured sort for published pilots.
         $featuredSort = [
             'ngjyrat-kuq-kalter-verdh-gjelber' => 1,
+            'ngjyrat-kuq-kalter-verdh-gjelber-realiste' => 1,
             'pershendetjet-miremengjesi' => 2,
             'kafshet-qeni-dhe-macja' => 3,
             'trupi-koka-duart-kembe' => 4,
