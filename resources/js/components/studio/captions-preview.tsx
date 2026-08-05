@@ -35,11 +35,12 @@ export function CaptionsPreview({ payload }: Props) {
         .filter((block) => block && !block.startsWith('WEBVTT'));
 
     return (
-        <div className="space-y-3">
-            <p className="text-xs text-muted-foreground">
-                VTT caption preview (Albanian tracks for the watch page)
+        <div className="space-y-1.5">
+            <p className="text-[10px] text-muted-foreground">
+                VTT cues · shown on Program output when package captions are
+                preferred
             </p>
-            <div className="max-h-96 space-y-2 overflow-auto">
+            <div className="max-h-80 space-y-1 overflow-auto">
                 {cues.map((cue, i) => {
                     const lines = cue.split('\n');
                     const timing = lines.find((l) => l.includes('-->')) ?? '';
@@ -50,14 +51,16 @@ export function CaptionsPreview({ payload }: Props) {
                     return (
                         <div
                             key={i}
-                            className="rounded-lg border bg-muted/30 px-3 py-2 text-sm"
+                            className="rounded border bg-muted/30 px-2 py-1 text-xs"
                         >
                             {timing ? (
-                                <p className="font-mono text-[10px] text-muted-foreground">
+                                <p className="font-mono text-[9px] text-muted-foreground">
                                     {timing}
                                 </p>
                             ) : null}
-                            <p className="font-medium">{text || cue}</p>
+                            <p className="font-medium leading-snug">
+                                {text || cue}
+                            </p>
                         </div>
                     );
                 })}

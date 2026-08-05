@@ -22,9 +22,14 @@ type MediaItem = {
 type Props = {
     episodeSlug: string;
     media: MediaItem[];
+    onUploaded?: () => void;
 };
 
-export function EpisodeMediaPanel({ episodeSlug, media }: Props) {
+export function EpisodeMediaPanel({
+    episodeSlug,
+    media,
+    onUploaded,
+}: Props) {
     const form = useForm<{
         video: File | null;
         kind: string;
@@ -85,7 +90,11 @@ export function EpisodeMediaPanel({ episodeSlug, media }: Props) {
                     e.preventDefault();
                     form.post(`/studio/episodes/${episodeSlug}/media`, {
                         forceFormData: true,
-                        onSuccess: () => form.reset('video'),
+                        preserveScroll: true,
+                        onSuccess: () => {
+                            form.reset('video');
+                            onUploaded?.();
+                        },
                     });
                 }}
             >
