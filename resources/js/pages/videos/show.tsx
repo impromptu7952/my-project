@@ -14,7 +14,9 @@ type Props = {
         ageBand: string;
         topicName?: string | null;
         topicSlug?: string | null;
+        topicHref?: string | null;
         seriesTitle?: string | null;
+        seriesHref?: string | null;
     };
     playback: {
         provider: string;
@@ -31,6 +33,7 @@ type Props = {
         href: string;
         ageBand?: string | null;
     }>;
+    coPlayTips?: string[];
     nextEpisode: { slug: string; title: string; href: string } | null;
 };
 
@@ -38,6 +41,7 @@ export default function VideoShow({
     episode,
     playback,
     linkedGames,
+    coPlayTips = [],
     nextEpisode,
 }: Props) {
     const { t } = useLocale();
@@ -105,9 +109,32 @@ export default function VideoShow({
                     )}
 
                     <div className="mt-6 rounded-3xl bg-white/10 p-5 backdrop-blur sm:p-6">
-                        <p className="text-sm font-bold uppercase tracking-wide text-fuchsia-200">
-                            {episode.topicName} · {episode.ageBand}
-                        </p>
+                        <div className="flex flex-wrap gap-2 text-sm font-bold uppercase tracking-wide text-fuchsia-200">
+                            {episode.topicHref ? (
+                                <Link
+                                    href={episode.topicHref}
+                                    className="hover:underline"
+                                >
+                                    {episode.topicName}
+                                </Link>
+                            ) : (
+                                <span>{episode.topicName}</span>
+                            )}
+                            <span>·</span>
+                            {episode.seriesHref ? (
+                                <Link
+                                    href={episode.seriesHref}
+                                    className="normal-case hover:underline"
+                                >
+                                    {episode.seriesTitle}
+                                </Link>
+                            ) : episode.seriesTitle ? (
+                                <span className="normal-case">
+                                    {episode.seriesTitle}
+                                </span>
+                            ) : null}
+                            <span>· {episode.ageBand}</span>
+                        </div>
                         <h1 className="mt-2 text-3xl font-black sm:text-4xl">
                             {episode.title}
                         </h1>
@@ -122,6 +149,19 @@ export default function VideoShow({
                                 'Grown-ups: sit together, pause for answers, clap and point along.',
                             )}
                         </p>
+                        {coPlayTips.length > 0 ? (
+                            <ul className="mt-4 space-y-2 text-sm font-medium text-white/80">
+                                {coPlayTips.map((tip) => (
+                                    <li
+                                        key={tip}
+                                        className="flex gap-2 rounded-xl bg-black/15 px-3 py-2"
+                                    >
+                                        <span aria-hidden>✨</span>
+                                        <span>{tip}</span>
+                                    </li>
+                                ))}
+                            </ul>
+                        ) : null}
                     </div>
 
                     {linkedGames.length > 0 ? (

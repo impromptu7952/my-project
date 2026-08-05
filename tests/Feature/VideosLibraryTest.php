@@ -43,7 +43,10 @@ test('published video show includes episode id for progress', function (): void 
         ->assertInertia(fn ($page) => $page
             ->component('videos/show')
             ->has('episode.id')
-            ->has('playback.src'));
+            ->has('playback.src')
+            ->has('coPlayTips')
+            ->has('episode.seriesHref')
+            ->has('episode.topicHref'));
 });
 
 test('topic page lists published episodes with age band', function (): void {
