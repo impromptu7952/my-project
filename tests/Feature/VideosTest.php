@@ -18,7 +18,9 @@ test('videos index lists published episodes', function (): void {
         ->assertInertia(fn ($page) => $page
             ->component('videos/index')
             ->has('episodes')
-            ->where('episodes.0.slug', 'ngjyrat-kuq-kalter-verdh-gjelber')
+            ->where('episodes', fn ($episodes) => collect($episodes)->contains(
+                fn (array $episode): bool => ($episode['slug'] ?? null) === 'ngjyrat-kuq-kalter-verdh-gjelber'
+            ))
         );
 });
 

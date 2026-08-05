@@ -43,3 +43,8 @@ boost.json
 .github/skills/
 /tmp
 public/deal-review/
+
+# PlayZone production intermediates (rebuild with content/production/build_episodes.py)
+/content/production/audio/
+/content/production/work/
+/content/production/beds/
