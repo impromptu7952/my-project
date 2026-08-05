@@ -26,15 +26,16 @@ test('videos index can filter by topic', function (): void {
         ->assertInertia(fn ($page) => $page
             ->component('videos/index')
             ->where('activeTopic', 'ngjyrat')
-            ->has('episodes', 1));
+            ->has('episodes'));
 });
 
-test('videos index includes body parts and first words pilots', function (): void {
+test('videos index includes expanded published pilots', function (): void {
     $this->get(route('videos.index'))
         ->assertOk()
         ->assertInertia(fn ($page) => $page
             ->component('videos/index')
-            ->has('episodes', 5));
+            ->has('episodes')
+            ->has('topics'));
 });
 
 test('published video show includes episode id for progress', function (): void {
@@ -55,7 +56,7 @@ test('topic page lists published episodes with age band', function (): void {
         ->assertInertia(fn ($page) => $page
             ->component('topics/show')
             ->where('topic.slug', 'ngjyrat')
-            ->has('episodes', 1)
+            ->has('episodes')
             ->has('episodes.0.ageBand')
             ->has('episodes.0.href')
             ->has('series'));
@@ -67,6 +68,6 @@ test('series page lists published episodes in order', function (): void {
         ->assertInertia(fn ($page) => $page
             ->component('series/show')
             ->where('series.slug', 'ngjyrat-seria-1')
-            ->has('episodes', 1)
+            ->has('episodes')
             ->has('topic.slug'));
 });

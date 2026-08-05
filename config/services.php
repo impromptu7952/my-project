@@ -55,13 +55,17 @@ return [
     ],
 
     /*
-    | TTS providers for Studio voice previews. Default is "null" (text cue
-    | stubs only). Swap when an Albanian-capable provider is configured.
+    | TTS providers for Studio voice previews / episode production.
+    | Default "null" keeps tests offline. Set TTS_DRIVER=edge for Albanian
+    | neural voices via the edge-tts CLI (sq-AL-AnilaNeural / IlirNeural).
     */
     'tts' => [
         'driver' => env('TTS_DRIVER', 'null'),
+        'edge_binary' => env('EDGE_TTS_BINARY'),
         'default_voice' => env('TTS_DEFAULT_VOICE', 'warm_female_sq'),
-        'default_rate' => (float) env('TTS_DEFAULT_RATE', 0.85),
+        'default_voice_sq' => env('TTS_VOICE_SQ', 'sq-AL-AnilaNeural'),
+        'default_rate' => env('TTS_RATE', '-22%'),
+        'default_pitch' => env('TTS_PITCH', '+8Hz'),
         'disk' => env('TTS_DISK', env('MEDIA_DISK', 'public')),
         'path_prefix' => 'tts-previews',
     ],

@@ -9,6 +9,7 @@ use App\Contracts\TtsProvider;
 use App\Contracts\VideoGenProvider;
 use App\Models\User;
 use App\Services\ImageGen\NullImageGenProvider;
+use App\Services\Tts\EdgeTtsProvider;
 use App\Services\Tts\NullTtsProvider;
 use App\Services\VideoGen\NullVideoGenProvider;
 use App\Services\VideoGen\XaiImagineVideoProvider;
@@ -29,8 +30,9 @@ final class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(TtsProvider::class, function (): TtsProvider {
-            // Real Albanian TTS drivers plug in here when TTS_DRIVER is set.
+            // edge = Albanian neural voices via edge-tts CLI; null = stubs for tests/offline.
             return match ((string) config('services.tts.driver', 'null')) {
+                'edge' => new EdgeTtsProvider,
                 default => new NullTtsProvider,
             };
         });
