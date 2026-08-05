@@ -40,27 +40,27 @@ Parents/caregivers get a calm, Albanian-first watch + play experience linked by 
 
 ### Phase A — Studio core (now → near-term)
 - [x] Dashboard-aligned Studio UI (shadcn + light/dark)
-- [ ] Agent profiles (CRUD + seed defaults per stage)
-- [ ] Step workspace on production runs (nav, status, preview)
-- [ ] Manual artifact edit + regenerate single stage
-- [ ] Real stage agents calling Grok with profile prompts
-- [ ] Script-focused preview (sections, pauses, Albanian)
+- [x] Agent profiles (CRUD + seed defaults per stage)
+- [x] Step workspace on production runs (nav, status, preview)
+- [x] Manual artifact edit + regenerate single stage
+- [x] Real stage agents calling Grok with profile prompts
+- [x] Script-focused preview (sections, pauses, Albanian)
 
 ### Phase B — Media pipeline
 - [ ] Pluggable TTS (Albanian-capable provider or human upload)
 - [ ] Image/video gen provider interfaces + visual approval
 - [ ] Timeline/edit instructions UI
-- [ ] Master video attach + caption attach from package
+- [x] Master video attach + caption attach from package
 
 ### Phase C — Consumer elevation
-- [ ] Rich video library (topics, series, continue watching)
-- [ ] Watch page: captions default SQ, co-play tips, linked games
+- [x] Rich video library (topics + continue watching)
+- [x] Watch page: captions, co-play tips, linked games
 - [ ] Parent dashboard: playlists, favorites, progress polish
 - [ ] Offline-friendly progressive media where possible
 
 ### Phase D — Scale & quality
 - [ ] Multi-role (writer vs approver)
-- [ ] Cost/usage dashboards per run
+- [x] Cost/usage summary per run
 - [ ] Character bible / brand kit for animated Lumi
 - [ ] Analytics for parents only (no child tracking)
 - [ ] Optional third-party distribution
@@ -95,3 +95,4 @@ Parents/caregivers get a calm, Albanian-first watch + play experience linked by 
 | 2026-08-05 | Platform MVP + pilot videos; Studio UI shell; this roadmap |
 | 2026-08-05 | Agent profiles + step workspace + edit/regenerate + Grok stage agents |
 | 2026-08-05 | Structured script/voice/storyboard previews; episode studio hub; media upload panel; video library topic filters; run usage tokens; watch co-play + parent progress ping |
+| 2026-08-05 | Studio overview dashboard; publish checklist; curriculum/caption previews; 5 pilot episodes; clone runs; extra specs |
