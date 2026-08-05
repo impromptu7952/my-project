@@ -55,3 +55,25 @@ test('editor can upload video via studio route', function (): void {
         'provider' => 'self',
     ]);
 });
+
+test('editor can stream video master via media stream route', function (): void {
+    $editor = \App\Models\User::query()->where('email', 'editor@playzone.test')->first();
+    if ($editor === null) {
+        $this->seed(\Database\Seeders\ContentSeeder::class);
+        $editor = \App\Models\User::query()->where('email', 'editor@playzone.test')->firstOrFail();
+    }
+
+    $asset = \App\Models\MediaAsset::query()
+        ->where('kind', \App\Enums\MediaKind::VideoMaster)
+        ->latest('id')
+        ->first();
+
+    if ($asset === null) {
+        $this->markTestSkipped('No video master in seeded database.');
+    }
+
+    $this->actingAs($editor)
+        ->get(route('media.stream', $asset))
+        ->assertOk()
+        ->assertHeader('content-type', $asset->mime_type ?? 'video/mp4');
+});

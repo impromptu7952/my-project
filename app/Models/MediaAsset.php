@@ -83,7 +83,11 @@ final class MediaAsset extends Model
     }
 
     /**
-     * URL for Studio (works for drafts): public disk path or signed/auth stream route.
+     * URL for Studio (works for drafts and public disk).
+     *
+     * Prefer the authenticated media stream route so Studio always reads from the
+     * configured Storage disk (with HTTP Range). Static /storage links break when
+     * public/storage is a materialized copy instead of a symlink to storage/app/public.
      */
     public function studioUrl(): ?string
     {
@@ -91,10 +95,8 @@ final class MediaAsset extends Model
             return null;
         }
 
-        $disk = $this->disk ?? (string) config('media.self.disk', 'local');
-
-        if ($disk === 'public') {
-            return '/storage/'.mb_ltrim((string) $this->path, '/');
+        if (! $this->existsOnDisk()) {
+            return null;
         }
 
         return route('media.stream', ['mediaAsset' => $this->id], absolute: false);

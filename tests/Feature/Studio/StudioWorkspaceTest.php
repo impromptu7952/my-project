@@ -160,7 +160,8 @@ test('studio playback resolves masters for draft and published episodes', functi
 
     expect($playback['hasVideo'])->toBeTrue()
         ->and($playback['src'])->toBeString()
-        ->and($playback['src'])->toContain('/storage/');
+        // Studio prefers authenticated /media/{id} stream (Range + correct disk).
+        ->and($playback['src'])->toContain('/media/');
 });
 
 test('editor can save stage notes on a run', function (): void {

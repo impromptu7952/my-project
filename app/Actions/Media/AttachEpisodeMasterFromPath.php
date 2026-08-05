@@ -45,6 +45,8 @@ final readonly class AttachEpisodeMasterFromPath
             fclose($stream);
         }
 
+        $this->ensureWebVisible($disk, $rel);
+
         $size = Storage::disk($disk)->size($rel);
 
         $asset = MediaAsset::query()->updateOrCreate(
@@ -67,6 +69,7 @@ final readonly class AttachEpisodeMasterFromPath
         if (is_string($vttContent) && str_contains($vttContent, 'WEBVTT')) {
             $vttRel = $prefix.'/'.Str::uuid()->toString().'/subtitle.vtt';
             Storage::disk($disk)->put($vttRel, $vttContent);
+            $this->ensureWebVisible($disk, $vttRel);
             MediaAsset::query()->updateOrCreate(
                 [
                     'episode_id' => $episode->id,
@@ -87,5 +90,35 @@ final readonly class AttachEpisodeMasterFromPath
         }
 
         return $asset;
+    }
+
+    /**
+     * When public/storage is a real directory (not a symlink), mirror new files into it
+     * so /storage/... URLs work with artisan serve / static hosting.
+     */
+    private function ensureWebVisible(string $disk, string $relativePath): void
+    {
+        if ($disk !== 'public') {
+            return;
+        }
+
+        $publicStorage = public_path('storage');
+        if (is_link($publicStorage)) {
+            return;
+        }
+
+        $source = Storage::disk($disk)->path($relativePath);
+        if (! is_file($source)) {
+            return;
+        }
+
+        $target = $publicStorage.DIRECTORY_SEPARATOR.str_replace('/', DIRECTORY_SEPARATOR, $relativePath);
+        $dir = dirname($target);
+        if (! is_dir($dir)) {
+            mkdir($dir, 0755, true);
+        }
+        if (! @copy($source, $target)) {
+            // Non-fatal: Studio stream route still serves from the disk path.
+        }
     }
 }
