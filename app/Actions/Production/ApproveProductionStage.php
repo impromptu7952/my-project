@@ -22,9 +22,14 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 
 final readonly class ApproveProductionStage
 {
-    public function handle(ProductionRun $run, ProductionGate $gate, User $editor): ProductionRun
-    {
-        return DB::transaction(function () use ($run, $gate, $editor): ProductionRun {
+    public function handle(
+        ProductionRun $run,
+        ProductionGate $gate,
+        User $editor,
+        bool $forceQualityOverride = false,
+        ?string $overrideReason = null,
+    ): ProductionRun {
+        return DB::transaction(function () use ($run, $gate, $editor, $forceQualityOverride, $overrideReason): ProductionRun {
             /** @var ProductionRun $run */
             $run = ProductionRun::query()->lockForUpdate()->findOrFail($run->id);
 
@@ -65,8 +70,23 @@ final readonly class ApproveProductionStage
                     ->sortByDesc('version')
                     ->first();
 
-                if (is_array($report?->payload) && ($report->payload['passed'] ?? true) === false) {
-                    throw new HttpException(422, 'Cannot approve final: deterministic quality checks failed.');
+                $failed = is_array($report?->payload) && ($report->payload['passed'] ?? true) === false;
+
+                if ($failed && ! $forceQualityOverride) {
+                    throw new HttpException(422, 'Cannot approve final: quality checks failed. Pass force_quality_override with a reason to override.');
+                }
+
+                if ($failed && $forceQualityOverride && blank($overrideReason)) {
+                    throw new HttpException(422, 'Quality override requires a reason.');
+                }
+
+                $meta = $run->meta ?? [];
+                if ($forceQualityOverride && $failed) {
+                    $meta['quality_override'] = [
+                        'by' => $editor->id,
+                        'reason' => $overrideReason,
+                        'at' => now()->toIso8601String(),
+                    ];
                 }
 
                 $run->update([
@@ -74,6 +94,7 @@ final readonly class ApproveProductionStage
                     'final_approved_by' => $editor->id,
                     'final_approved_at' => now(),
                     'completed_at' => now(),
+                    'meta' => $meta,
                 ]);
             }
 

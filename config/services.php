@@ -53,4 +53,16 @@ return [
         'max_usd_per_run' => (float) env('XAI_MAX_USD_PER_RUN', 5),
     ],
 
+    /*
+    | TTS providers for Studio voice previews. Default is "null" (text cue
+    | stubs only). Swap when an Albanian-capable provider is configured.
+    */
+    'tts' => [
+        'driver' => env('TTS_DRIVER', 'null'),
+        'default_voice' => env('TTS_DEFAULT_VOICE', 'warm_female_sq'),
+        'default_rate' => (float) env('TTS_DEFAULT_RATE', 0.85),
+        'disk' => env('TTS_DISK', env('MEDIA_DISK', 'public')),
+        'path_prefix' => 'tts-previews',
+    ],
+
 ];

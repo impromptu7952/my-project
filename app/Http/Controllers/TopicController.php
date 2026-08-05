@@ -17,11 +17,14 @@ final class TopicController extends Controller
 
         $episodes = $topic->series
             ->flatMap(fn ($series) => $series->episodes)
+            ->unique('id')
             ->map(fn ($episode) => [
                 'slug' => $episode->slug,
                 'title' => $episode->localizedTitle($locale),
                 'summary' => $episode->localizedSummary($locale),
                 'href' => route('videos.show', $episode),
+                'durationSeconds' => $episode->duration_seconds,
+                'ageBand' => $episode->age_band?->value ?? $episode->age_band,
             ])
             ->values();
 

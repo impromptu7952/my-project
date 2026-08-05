@@ -1,5 +1,6 @@
 import { Link, usePage } from '@inertiajs/react';
 import {
+    BookOpen,
     Bot,
     Clapperboard,
     Film,
@@ -67,6 +68,11 @@ export function AppSidebar() {
                 title: 'Agents',
                 href: '/studio/agents',
                 icon: Bot,
+            },
+            {
+                title: 'Brand bible',
+                href: '/studio/brand',
+                icon: BookOpen,
             },
         );
     }

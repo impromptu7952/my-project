@@ -17,9 +17,17 @@ final class ApproveProductionRunController extends Controller
     {
         $data = $request->validate([
             'gate' => ['required', 'in:script,final'],
+            'force_quality_override' => ['sometimes', 'boolean'],
+            'override_reason' => ['nullable', 'string', 'max:500'],
         ]);
 
-        $approve->handle($run, ProductionGate::from($data['gate']), $request->user());
+        $approve->handle(
+            $run,
+            ProductionGate::from($data['gate']),
+            $request->user(),
+            (bool) ($data['force_quality_override'] ?? false),
+            $data['override_reason'] ?? null,
+        );
 
         return back();
     }
