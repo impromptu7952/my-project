@@ -265,13 +265,17 @@ export function EpisodeOutputPreview({
                 )}
             >
                 {header}
+                <p className="shrink-0 truncate text-[9px] text-muted-foreground">
+                    Master file is fixed until re-upload · package cues/VTT
+                    update with stages · not a re-render of the MP4
+                </p>
                 <div className="grid min-h-0 flex-1 grid-cols-1 gap-2 overflow-hidden sm:grid-cols-[minmax(0,1fr)_11rem]">
                     <div className="min-h-0 min-w-0 overflow-hidden">
                         {player}
                     </div>
                     <div className="hidden min-h-0 flex-col overflow-hidden rounded-md border bg-muted/20 sm:flex">
                         <div className="shrink-0 border-b px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-muted-foreground">
-                            Cues
+                            Package cues
                         </div>
                         <div className="min-h-0 flex-1 space-y-0.5 overflow-hidden p-1">
                             {onScreenLabels.slice(0, 3).map((row, i) => (
