@@ -33,6 +33,7 @@ import {
     type EpisodePreview,
 } from '@/components/studio/episode-output-preview';
 import { EpisodeMediaPanel } from '@/components/studio/episode-media-panel';
+import { ProgramDock } from '@/components/studio/program-dock';
 import {
     PublishChecklist,
     type ChecklistItem,
@@ -46,7 +47,10 @@ import { StoryboardPreview } from '@/components/studio/storyboard-preview';
 import { TimelinePreview } from '@/components/studio/timeline-preview';
 import { VisualPromptsPreview } from '@/components/studio/visual-prompts-preview';
 import { VoicePreview } from '@/components/studio/voice-preview';
-import { StudioPlayer } from '@/components/studio/studio-player';
+import {
+    extractVttFromPayload,
+    StudioPlayer,
+} from '@/components/studio/studio-player';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -289,14 +293,42 @@ export default function StudioRunShow({
         );
     }
 
-    const scriptLines = useMemo(
-        () =>
-            linesFromScriptPayload(run.latestByKind.script?.payload),
-        [run.latestByKind.script?.payload],
-    );
+    /** Live script lines prefer in-editor draft when editing script. */
+    const scriptLines = useMemo(() => {
+        if (activeStepId === 'script' && centerTab === 'source') {
+            try {
+                return linesFromScriptPayload(JSON.parse(draftJson));
+            } catch {
+                /* fall through */
+            }
+        }
+        if (activeStepId === 'script' && centerTab === 'preview') {
+            try {
+                return linesFromScriptPayload(JSON.parse(draftJson));
+            } catch {
+                /* fall through */
+            }
+        }
+        return linesFromScriptPayload(run.latestByKind.script?.payload);
+    }, [
+        activeStepId,
+        centerTab,
+        draftJson,
+        run.latestByKind.script?.payload,
+    ]);
 
     const onScreenLabels = useMemo(() => {
-        const payload = run.latestByKind.on_screen_text?.payload;
+        let payload: unknown = run.latestByKind.on_screen_text?.payload;
+        if (
+            activeStepId === 'editor' &&
+            primaryKind === 'on_screen_text'
+        ) {
+            try {
+                payload = JSON.parse(draftJson);
+            } catch {
+                /* keep artifact */
+            }
+        }
         if (!payload || typeof payload !== 'object') {
             return [] as Array<{ text?: string; timecode?: string }>;
         }
@@ -314,7 +346,43 @@ export default function StudioRunShow({
             }));
         }
         return [];
-    }, [run.latestByKind.on_screen_text?.payload]);
+    }, [
+        activeStepId,
+        primaryKind,
+        draftJson,
+        run.latestByKind.on_screen_text?.payload,
+    ]);
+
+    /** Live package VTT from draft JSON while editing captions. */
+    const livePackageVtt = useMemo(() => {
+        if (primaryKind === 'subtitles_vtt') {
+            try {
+                const fromDraft = extractVttFromPayload(JSON.parse(draftJson));
+                if (fromDraft) {
+                    return fromDraft;
+                }
+            } catch {
+                /* ignore invalid draft */
+            }
+        }
+        return (
+            extractVttFromPayload(
+                run.latestByKind.subtitles_vtt?.payload,
+            ) ??
+            episodePreview?.packageVtt ??
+            null
+        );
+    }, [
+        primaryKind,
+        draftJson,
+        run.latestByKind.subtitles_vtt?.payload,
+        episodePreview?.packageVtt,
+    ]);
+
+    const preferPackageCaptions =
+        primaryKind === 'subtitles_vtt' ||
+        activeStepId === 'editor' ||
+        Boolean(livePackageVtt && !episodePreview?.playback.hasCaptions);
 
     function saveNotes(notes: string) {
         if (!activeStep || !notes.trim()) {
@@ -631,7 +699,8 @@ export default function StudioRunShow({
                             </div>
 
                             <span className="ml-auto hidden text-[10px] text-muted-foreground xl:inline">
-                                1–7 · P/S/N/O · [ ] docks · R · ⌘S
+                                1–7 · P/S/N/O · [ ] docks · drag program edge · R
+                                · ⌘S
                             </span>
                             <div className="flex items-center gap-1">
                                 {activeStepId === 'voice' ? (
@@ -689,7 +758,14 @@ export default function StudioRunShow({
                             </div>
                         </div>
 
-                        <div className="min-h-0 flex-1 overflow-auto p-2">
+                        <div
+                            className={cn(
+                                'min-h-0 flex-1 p-2',
+                                centerTab === 'output'
+                                    ? 'overflow-hidden'
+                                    : 'overflow-auto',
+                            )}
+                        >
                             {centerTab === 'preview' ? (
                                 <div className="studio-dense mx-auto max-w-5xl">
                                     <StagePreview
@@ -754,52 +830,41 @@ export default function StudioRunShow({
                             ) : null}
 
                             {centerTab === 'output' ? (
-                                <EpisodeOutputPreview
-                                    episode={episodePreview}
-                                    scriptLines={scriptLines}
-                                    onScreenLabels={onScreenLabels}
-                                    mode="full"
-                                />
-                            ) : null}
-                        </div>
-
-                        {outputDockOpen && centerTab !== 'output' ? (
-                            <div className="shrink-0 border-t bg-background">
-                                <div className="flex h-7 items-center gap-2 border-b px-2">
-                                    <Film className="size-3 text-muted-foreground" />
-                                    <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-                                        Program output
-                                    </span>
-                                    {episodePreview?.playback.hasVideo ? (
-                                        <span className="text-[10px] text-emerald-600 dark:text-emerald-400">
-                                            master loaded
-                                        </span>
-                                    ) : (
-                                        <span className="text-[10px] text-muted-foreground">
-                                            no master
-                                        </span>
-                                    )}
-                                    <Button
-                                        type="button"
-                                        size="sm"
-                                        variant="ghost"
-                                        className="ml-auto h-6 px-1.5 text-[10px]"
-                                        onClick={() =>
-                                            setOutputDockOpen(false)
-                                        }
-                                    >
-                                        Hide
-                                    </Button>
-                                </div>
-                                <div className="max-h-52 overflow-auto p-2 sm:max-h-56">
+                                <div className="h-full min-h-0">
                                     <EpisodeOutputPreview
                                         episode={episodePreview}
                                         scriptLines={scriptLines}
                                         onScreenLabels={onScreenLabels}
-                                        mode="dock"
+                                        livePackageVtt={livePackageVtt}
+                                        preferPackageCaptions={
+                                            preferPackageCaptions
+                                        }
+                                        mode="full"
                                     />
                                 </div>
-                            </div>
+                            ) : null}
+                        </div>
+
+                        {centerTab !== 'output' ? (
+                            <ProgramDock
+                                open={outputDockOpen}
+                                onOpenChange={setOutputDockOpen}
+                                hasVideo={Boolean(
+                                    episodePreview?.playback.hasVideo,
+                                )}
+                            >
+                                <EpisodeOutputPreview
+                                    episode={episodePreview}
+                                    scriptLines={scriptLines}
+                                    onScreenLabels={onScreenLabels}
+                                    livePackageVtt={livePackageVtt}
+                                    preferPackageCaptions={
+                                        preferPackageCaptions
+                                    }
+                                    mode="dock"
+                                    className="h-full"
+                                />
+                            </ProgramDock>
                         ) : null}
                     </section>
 
@@ -882,14 +947,15 @@ export default function StudioRunShow({
                                                             .poster
                                                     }
                                                     captionsSrc={
-                                                        episodePreview.playback
-                                                            .captionsSrc
-                                                    }
-                                                    packageVtt={
-                                                        episodePreview.playback
-                                                            .hasCaptions
+                                                        preferPackageCaptions
                                                             ? null
-                                                            : episodePreview.packageVtt
+                                                            : episodePreview
+                                                                  .playback
+                                                                  .captionsSrc
+                                                    }
+                                                    packageVtt={livePackageVtt}
+                                                    preferPackageVtt={
+                                                        preferPackageCaptions
                                                     }
                                                     title={
                                                         episodePreview.title
