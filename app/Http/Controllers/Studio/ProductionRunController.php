@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Studio;
 use App\Actions\Media\ResolveStudioPlayback;
 use App\Actions\Production\BuildPublishChecklist;
 use App\Actions\Production\SummarizeRunUsage;
+use App\Contracts\VideoGenProvider;
 use App\Enums\ArtifactKind;
 use App\Enums\EpisodeStatus;
 use App\Enums\ProductionStage;
@@ -14,8 +15,8 @@ use App\Http\Controllers\Controller;
 use App\Models\AgentProfile;
 use App\Models\Episode;
 use App\Models\ProductionRun;
-use App\Contracts\VideoGenProvider;
 use App\Services\Xai\XaiClient;
+use App\Support\XaiModelCatalog;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -161,13 +162,18 @@ final class ProductionRunController extends Controller
      */
     private function masterDriveProps(ProductionRun $run, VideoGenProvider $videoGen): array
     {
-        $model = (string) config('services.xai.video_model', 'grok-imagine-video');
+        $textModel = is_string($run->meta['text_model'] ?? null) && $run->meta['text_model'] !== ''
+            ? $run->meta['text_model']
+            : XaiModelCatalog::defaultTextModel();
+        $videoModel = is_string($run->meta['video_model'] ?? null) && $run->meta['video_model'] !== ''
+            ? $run->meta['video_model']
+            : XaiModelCatalog::defaultVideoModel();
+
         $defaultDuration = (int) config('services.xai.video_duration', 3);
         $minDuration = (int) config('services.xai.video_duration_min', 3);
         $maxDuration = (int) config('services.xai.video_duration_max', 6);
         $resolution = (string) config('services.xai.video_resolution', '480p');
-        $rates = (array) config('services.xai.video_usd_per_sec', []);
-        $usdPerSec = (float) ($rates[$model] ?? 0.05);
+        $usdPerSec = XaiModelCatalog::usdPerSecFor($videoModel);
 
         $durationOptions = [];
         for ($d = $minDuration; $d <= $maxDuration; $d++) {
@@ -177,12 +183,34 @@ final class ProductionRunController extends Controller
             ];
         }
 
+        // Precompute duration × model estimates so the UI can switch models without a round-trip.
+        $videoModels = array_map(function (array $m) use ($minDuration, $maxDuration): array {
+            $rate = (float) $m['usd_per_sec'];
+            $opts = [];
+            for ($d = $minDuration; $d <= $maxDuration; $d++) {
+                $opts[] = [
+                    'seconds' => $d,
+                    'estimatedUsd' => round($d * $rate, 3),
+                ];
+            }
+
+            return [
+                'id' => $m['id'],
+                'label' => $m['label'],
+                'hint' => $m['hint'],
+                'usdPerSec' => $rate,
+                'durationOptions' => $opts,
+            ];
+        }, XaiModelCatalog::videoModels());
+
         return [
             'xaiConfigured' => app(XaiClient::class)->isConfigured(),
             'imagineConfigured' => $videoGen->isConfigured(),
             'ffmpegAvailable' => $this->ffmpegAvailable(),
-            'textModel' => (string) config('services.xai.model'),
-            'videoModel' => $model,
+            'textModel' => $textModel,
+            'videoModel' => $videoModel,
+            'textModels' => XaiModelCatalog::textModels(),
+            'videoModels' => $videoModels,
             'resolution' => $resolution,
             'usdPerSec' => $usdPerSec,
             'defaultDuration' => $defaultDuration,
@@ -197,7 +225,7 @@ final class ProductionRunController extends Controller
 
     private function ffmpegAvailable(): bool
     {
-        $path = trim((string) shell_exec('command -v ffmpeg 2>/dev/null'));
+        $path = mb_trim((string) shell_exec('command -v ffmpeg 2>/dev/null'));
 
         return $path !== '';
     }

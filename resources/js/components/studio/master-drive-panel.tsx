@@ -1,9 +1,23 @@
 import { router } from '@inertiajs/react';
 import { Clapperboard, Sparkles, Wrench } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+
+export type TextModelOption = {
+    id: string;
+    label: string;
+    hint?: string;
+};
+
+export type VideoModelOption = {
+    id: string;
+    label: string;
+    hint?: string;
+    usdPerSec: number;
+    durationOptions?: Array<{ seconds: number; estimatedUsd: number }>;
+};
 
 export type MasterDriveInfo = {
     xaiConfigured: boolean;
@@ -11,6 +25,8 @@ export type MasterDriveInfo = {
     ffmpegAvailable: boolean;
     textModel?: string;
     videoModel?: string;
+    textModels?: TextModelOption[];
+    videoModels?: VideoModelOption[];
     resolution?: string;
     usdPerSec?: number;
     defaultDuration?: number;
@@ -37,6 +53,28 @@ type Props = {
     className?: string;
 };
 
+/** Fallback catalogs so the UI is usable even if props lag behind a deploy. */
+const FALLBACK_TEXT_MODELS: TextModelOption[] = [
+    { id: 'grok-4.3', label: 'Grok 4.3', hint: 'Cheaper · iteration' },
+    { id: 'grok-4.5', label: 'Grok 4.5', hint: 'Flagship' },
+    { id: 'grok-4-1-fast-reasoning', label: 'Grok 4.1 Fast', hint: 'Volume' },
+];
+
+const FALLBACK_VIDEO_MODELS: VideoModelOption[] = [
+    {
+        id: 'grok-imagine-video',
+        label: 'Imagine',
+        hint: '$0.05/s',
+        usdPerSec: 0.05,
+    },
+    {
+        id: 'grok-imagine-video-1.5',
+        label: 'Imagine 1.5',
+        hint: '$0.08/s',
+        usdPerSec: 0.08,
+    },
+];
+
 function formatUsd(n: number): string {
     return `$${n.toFixed(2)}`;
 }
@@ -49,26 +87,90 @@ export function MasterDrivePanel({
     className,
 }: Props) {
     const [busy, setBusy] = useState<'assemble' | 'imagine' | null>(null);
+    const [savingModels, setSavingModels] = useState(false);
     const defaultDuration = masterDrive.defaultDuration ?? 3;
     const [duration, setDuration] = useState(defaultDuration);
+    const [textModel, setTextModel] = useState(
+        masterDrive.textModel ?? 'grok-4.3',
+    );
+    const [videoModel, setVideoModel] = useState(
+        masterDrive.videoModel ?? 'grok-imagine-video',
+    );
+
+    // Keep local selection in sync when the server props change (e.g. after reload).
+    useEffect(() => {
+        if (masterDrive.textModel) {
+            setTextModel(masterDrive.textModel);
+        }
+    }, [masterDrive.textModel]);
+
+    useEffect(() => {
+        if (masterDrive.videoModel) {
+            setVideoModel(masterDrive.videoModel);
+        }
+    }, [masterDrive.videoModel]);
+
+    const textModels =
+        masterDrive.textModels && masterDrive.textModels.length > 0
+            ? masterDrive.textModels
+            : FALLBACK_TEXT_MODELS;
+
+    const videoModels =
+        masterDrive.videoModels && masterDrive.videoModels.length > 0
+            ? masterDrive.videoModels
+            : FALLBACK_VIDEO_MODELS;
+
+    const activeVideo = useMemo(
+        () => videoModels.find((m) => m.id === videoModel),
+        [videoModels, videoModel],
+    );
+
+    const usdPerSec = activeVideo?.usdPerSec ?? masterDrive.usdPerSec ?? 0.05;
 
     const options = useMemo(() => {
-        if (masterDrive.durationOptions?.length) {
-            return masterDrive.durationOptions;
+        if (activeVideo?.durationOptions?.length) {
+            return activeVideo.durationOptions;
         }
-        const rate = masterDrive.usdPerSec ?? 0.05;
         const min = masterDrive.minDuration ?? 3;
         const max = masterDrive.maxDuration ?? 6;
         const list = [];
         for (let s = min; s <= max; s++) {
-            list.push({ seconds: s, estimatedUsd: round3(s * rate) });
+            list.push({ seconds: s, estimatedUsd: round3(s * usdPerSec) });
         }
         return list;
-    }, [masterDrive]);
+    }, [activeVideo, masterDrive.minDuration, masterDrive.maxDuration, usdPerSec]);
 
     const estimate =
         options.find((o) => o.seconds === duration)?.estimatedUsd ??
-        round3(duration * (masterDrive.usdPerSec ?? 0.05));
+        round3(duration * usdPerSec);
+
+    function persistModels(next: { text_model: string; video_model: string }) {
+        setSavingModels(true);
+        // POST matches the rest of the Studio routes.
+        router.post(`/studio/runs/${runId}/models`, next, {
+            preserveScroll: true,
+            preserveState: true,
+            only: ['masterDrive'],
+            onFinish: () => setSavingModels(false),
+            onError: () => setSavingModels(false),
+        });
+    }
+
+    function onTextModelChange(id: string) {
+        if (id === textModel) {
+            return;
+        }
+        setTextModel(id);
+        persistModels({ text_model: id, video_model: videoModel });
+    }
+
+    function onVideoModelChange(id: string) {
+        if (id === videoModel) {
+            return;
+        }
+        setVideoModel(id);
+        persistModels({ text_model: textModel, video_model: id });
+    }
 
     function assemble() {
         setBusy('assemble');
@@ -84,12 +186,11 @@ export function MasterDrivePanel({
     }
 
     function imagine() {
-        const model = masterDrive.videoModel ?? 'grok-imagine-video';
         const ok = window.confirm(
             [
                 `Generate Imagine video?`,
                 ``,
-                `Model: ${model}`,
+                `Model: ${videoModel}`,
                 `Duration: ${duration}s · ${masterDrive.resolution ?? '480p'}`,
                 `Est. cost: ~${formatUsd(estimate)} (billed per second on XAI_API_KEY)`,
                 ``,
@@ -102,7 +203,7 @@ export function MasterDrivePanel({
         setBusy('imagine');
         router.post(
             `/studio/runs/${runId}/imagine-master`,
-            { duration },
+            { duration, model: videoModel },
             {
                 preserveScroll: true,
                 onFinish: () => setBusy(null),
@@ -127,6 +228,72 @@ export function MasterDrivePanel({
                 building (free). Imagine is metered API usage — shorter clips =
                 lower cost.
             </p>
+
+            <div className="grid gap-2 rounded-md border bg-muted/20 p-2">
+                <div className="space-y-1">
+                    <div className="flex items-center justify-between gap-1">
+                        <span className="text-[10px] font-medium text-muted-foreground">
+                            Package text model
+                        </span>
+                        {savingModels ? (
+                            <span className="text-[9px] text-muted-foreground">
+                                saving…
+                            </span>
+                        ) : null}
+                    </div>
+                    <div className="flex flex-wrap gap-1">
+                        {textModels.map((m) => (
+                            <button
+                                key={m.id}
+                                type="button"
+                                onClick={() => onTextModelChange(m.id)}
+                                className={cn(
+                                    'rounded border px-1.5 py-0.5 text-left text-[10px] transition-colors',
+                                    textModel === m.id
+                                        ? 'border-primary bg-primary/10 font-semibold text-foreground'
+                                        : 'text-muted-foreground hover:bg-muted/50',
+                                )}
+                                title={m.hint}
+                            >
+                                <span className="font-mono">{m.label}</span>
+                            </button>
+                        ))}
+                    </div>
+                    <p className="font-mono text-[9px] text-muted-foreground">
+                        {textModel}
+                    </p>
+                </div>
+
+                <div className="space-y-1">
+                    <span className="text-[10px] font-medium text-muted-foreground">
+                        Imagine video model
+                    </span>
+                    <div className="flex flex-wrap gap-1">
+                        {videoModels.map((m) => (
+                            <button
+                                key={m.id}
+                                type="button"
+                                onClick={() => onVideoModelChange(m.id)}
+                                className={cn(
+                                    'rounded border px-1.5 py-0.5 text-left text-[10px] transition-colors',
+                                    videoModel === m.id
+                                        ? 'border-primary bg-primary/10 font-semibold text-foreground'
+                                        : 'text-muted-foreground hover:bg-muted/50',
+                                )}
+                                title={m.hint}
+                            >
+                                <span className="font-mono">{m.label}</span>
+                                <span className="ml-1 text-muted-foreground">
+                                    ${m.usdPerSec}/s
+                                </span>
+                            </button>
+                        ))}
+                    </div>
+                    <p className="font-mono text-[9px] text-muted-foreground">
+                        {videoModel}
+                    </p>
+                </div>
+            </div>
 
             {!hasEpisode ? (
                 <p className="rounded border border-dashed px-2 py-1.5 text-[11px] text-muted-foreground">
@@ -185,12 +352,10 @@ export function MasterDrivePanel({
                             </Badge>
                         </div>
                         <p className="mt-0.5 text-[10px] text-muted-foreground">
-                            Model{' '}
-                            <span className="font-mono">
-                                {masterDrive.videoModel ?? 'grok-imagine-video'}
-                            </span>{' '}
-                            · {masterDrive.resolution ?? '480p'} · ~
-                            {masterDrive.usdPerSec ?? 0.05}/s
+                            <span className="font-mono">{videoModel}</span>
+                            {' · '}
+                            {masterDrive.resolution ?? '480p'} · ~
+                            {usdPerSec}/s
                             {!masterDrive.imagineConfigured
                                 ? ' · key not set'
                                 : ''}
@@ -216,7 +381,8 @@ export function MasterDrivePanel({
                                             : 'text-muted-foreground hover:bg-muted/50',
                                     )}
                                 >
-                                    {opt.seconds}s · {formatUsd(opt.estimatedUsd)}
+                                    {opt.seconds}s ·{' '}
+                                    {formatUsd(opt.estimatedUsd)}
                                 </button>
                             ))}
                         </div>
@@ -256,14 +422,6 @@ export function MasterDrivePanel({
                     {last.at
                         ? ` · ${new Date(last.at).toLocaleString()}`
                         : ''}
-                </p>
-            ) : null}
-
-            {masterDrive.textModel ? (
-                <p className="text-[10px] text-muted-foreground">
-                    Package regen model:{' '}
-                    <span className="font-mono">{masterDrive.textModel}</span>
-                    {' '}(cheaper than 4.5 while building)
                 </p>
             ) : null}
 
