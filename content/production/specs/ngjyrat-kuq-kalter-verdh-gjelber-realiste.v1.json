@@ -1,0 +1,297 @@
+{
+  "version": "1",
+  "language": "sq",
+  "age_band": "1-3",
+  "episode_slug": "ngjyrat-kuq-kalter-verdh-gjelber-realiste",
+  "title_sq": "Ngjyrat (realiste): E kuqe, e kaltër, e verdhë, e gjelbër",
+  "title_en": "Colors (realistic): Red, blue, yellow, green",
+  "style": "realistic",
+  "variant_of": "ngjyrat-kuq-kalter-verdh-gjelber",
+  "learning_goals": [
+    "Identify four basic colors in Albanian (e kuqe, e kaltër, e verdhë, e gjelbër)",
+    "Respond to «Ku është…?» by pointing with co-play",
+    "Join a short color chorus on the last word",
+    "Experience the same pedagogy with a photorealistic presenter (Lumi)"
+  ],
+  "vocabulary": [
+    {
+      "word": "e kuqe",
+      "en": "red",
+      "props": [
+        "top i kuq",
+        "mollë e kuqe",
+        "zemër e kuqe"
+      ]
+    },
+    {
+      "word": "e kaltër",
+      "en": "blue",
+      "props": [
+        "top i kaltër",
+        "qielli"
+      ]
+    },
+    {
+      "word": "e verdhë",
+      "en": "yellow",
+      "props": [
+        "top i verdhë",
+        "dielli"
+      ]
+    },
+    {
+      "word": "e gjelbër",
+      "en": "green",
+      "props": [
+        "top i gjelbër",
+        "gjethe"
+      ]
+    },
+    {
+      "word": "topi",
+      "en": "ball",
+      "props": [
+        "katër topa me ngjyra"
+      ]
+    },
+    {
+      "word": "ngjyrat",
+      "en": "colors",
+      "props": []
+    }
+  ],
+  "structure": [
+    {
+      "block": "cold_open",
+      "duration_seconds": 15,
+      "visual": "hello",
+      "notes": "Hold red ball near chest, soft smile"
+    },
+    {
+      "block": "hello_ritual",
+      "duration_seconds": 35,
+      "visual": "hello",
+      "notes": "Wave + Pip peep optional; 4–5s pause after «A thua bashkë?»"
+    },
+    {
+      "block": "teach_red",
+      "duration_seconds": 45,
+      "visual": "colors",
+      "notes": "Show red ball; stress «e kuqe»; pause 5.5s"
+    },
+    {
+      "block": "teach_blue",
+      "duration_seconds": 40,
+      "visual": "colors",
+      "notes": "Blue ball; «e kaltër si qielli»"
+    },
+    {
+      "block": "mini_song_two_colors",
+      "duration_seconds": 25,
+      "visual": "celebrate",
+      "notes": "Clap clap chorus for red/blue"
+    },
+    {
+      "block": "teach_yellow",
+      "duration_seconds": 35,
+      "visual": "colors",
+      "notes": "Yellow; «si dielli i vogël»"
+    },
+    {
+      "block": "teach_green",
+      "duration_seconds": 35,
+      "visual": "colors",
+      "notes": "Green; «si gjetheja»"
+    },
+    {
+      "block": "interactive_where_is",
+      "duration_seconds": 50,
+      "visual": "ask",
+      "notes": "«Ku është topi i kuq/kaltër?» hold 6s each"
+    },
+    {
+      "block": "full_chorus_recap",
+      "duration_seconds": 30,
+      "visual": "celebrate",
+      "notes": "All four colors + chorus"
+    },
+    {
+      "block": "goodbye_ritual",
+      "duration_seconds": 25,
+      "visual": "hello",
+      "notes": "Two-hand wave; «Mirupafshim»"
+    }
+  ],
+  "target_duration_seconds": 181,
+  "principles": {
+    "short_phrases": true,
+    "pause_seconds": 5,
+    "parentese": true,
+    "gesture_with_words": true,
+    "max_new_words": 6,
+    "direct_to_camera": true,
+    "celebrate_attempts": true,
+    "low_stimulation": true,
+    "co_viewing_default": true
+  },
+  "presenters": [
+    "lumi",
+    "pip"
+  ],
+  "presenter_notes": {
+    "lumi": {
+      "style": "photorealistic young adult teacher",
+      "wardrobe": "butter-yellow cardigan, teal shirt, star pin, chestnut hair",
+      "voice_profile": "lumi / sq-AL-AnilaNeural parentese −22% / +8Hz",
+      "canonical_art": "content/assets/characters/lumi-realistic-canonical.jpg"
+    },
+    "pip": {
+      "style": "optional bird peeps on audio (may be voice-only in realistic cut)",
+      "voice_profile": "pip / Anila +12% / +25Hz"
+    }
+  },
+  "visual": {
+    "mode": "realistic",
+    "production_path": "photoreal stills + Ken Burns / gentle motion; full lip-sync optional later",
+    "sets": [
+      "playroom cream walls soft rug"
+    ],
+    "key_frames": [
+      "content/assets/video-frames/lumi-real-hello.jpg",
+      "content/assets/video-frames/lumi-real-colors.jpg",
+      "content/assets/video-frames/lumi-real-ask.jpg",
+      "content/assets/video-frames/lumi-real-celebrate.jpg"
+    ],
+    "motion_clips": [
+      "content/assets/videos/lumi-real-hello.mp4",
+      "content/assets/videos/lumi-real-colors.mp4",
+      "content/assets/videos/lumi-real-ask.mp4",
+      "content/assets/videos/lumi-real-celebrate.mp4"
+    ],
+    "camera": "eye-level toddler, large face readable on phone, slow pans only",
+    "do_not": [
+      "rapid cuts",
+      "flashing",
+      "dense text overlays",
+      "scary props"
+    ]
+  },
+  "audio": {
+    "language": "sq",
+    "dialect": "standard_literary_albanian",
+    "tts_provider": "edge-tts",
+    "voices": {
+      "lumi": "sq-AL-AnilaNeural",
+      "lumi_celebrate": "sq-AL-AnilaNeural",
+      "pip": "sq-AL-AnilaNeural"
+    },
+    "music": "playful_soft low-level bed under VO",
+    "loudness_target_lufs": -16,
+    "master_fixture": "database/seeders/fixtures/assembled/ep-ngjyrat-kuq-kalter-verdh-gjelber-realiste.mp4",
+    "master_production": "content/production/masters/ep-ngjyrat-kuq-kalter-verdh-gjelber-realiste.mp4",
+    "shared_dialogue_with": "ngjyrat-kuq-kalter-verdh-gjelber"
+  },
+  "dialogue_outline": [
+    {
+      "speaker": "lumi",
+      "line": "Përshëndetje, miq të vegjël!",
+      "pause_after": 1.2
+    },
+    {
+      "speaker": "lumi",
+      "line": "Unë jam Lumi.",
+      "pause_after": 1.0
+    },
+    {
+      "speaker": "pip",
+      "line": "Pip-pip!",
+      "pause_after": 0.8
+    },
+    {
+      "speaker": "lumi",
+      "line": "A thua bashkë sot?",
+      "pause_after": 4.5,
+      "interactive": true
+    },
+    {
+      "speaker": "lumi",
+      "line": "Sot… mësojmë ngjyrat!",
+      "pause_after": 1.2
+    },
+    {
+      "speaker": "lumi",
+      "line": "E kuqe. A thua: e kuqe?",
+      "pause_after": 5.5,
+      "interactive": true
+    },
+    {
+      "speaker": "lumi",
+      "line": "E kaltër. A thua: e kaltër?",
+      "pause_after": 5.5,
+      "interactive": true
+    },
+    {
+      "speaker": "lumi",
+      "line": "E verdhë. A thua: e verdhë?",
+      "pause_after": 5.5,
+      "interactive": true
+    },
+    {
+      "speaker": "lumi",
+      "line": "E gjelbër. A thua: e gjelbër?",
+      "pause_after": 5.5,
+      "interactive": true
+    },
+    {
+      "speaker": "lumi",
+      "line": "Ku është topi i kuq?",
+      "pause_after": 6.0,
+      "interactive": true
+    },
+    {
+      "speaker": "lumi",
+      "line": "Ku është topi i kaltër?",
+      "pause_after": 6.0,
+      "interactive": true
+    },
+    {
+      "speaker": "lumi",
+      "line": "E kuqe, e kaltër, e verdhë, e gjelbër. Shumë mirë!",
+      "pause_after": 1.5
+    },
+    {
+      "speaker": "lumi",
+      "line": "Mirupafshim, deri herën tjetër!",
+      "pause_after": 1.5
+    }
+  ],
+  "content_type": "concept_song",
+  "co_play_tip_sq": "Pauzoni videon pas çdo pyetjeje. Përsëriteni fjalët me objekte reale (top, mollë, gjethe). Ideal me prindin pranë.",
+  "co_play_tip_en": "Pause after every question. Repeat words with real objects (ball, apple, leaf). Best with a grown-up nearby.",
+  "linked_games": [
+    "color-pop",
+    "touch-and-tap"
+  ],
+  "quality_gates": [
+    "≤ 6 new vocabulary items",
+    "Interactive pause ≥ 4s after each prompt",
+    "No startling audio peaks (true peak ≤ −1.5 dBTP)",
+    "Face readable at phone scale",
+    "Captions SQ present for parents",
+    "Realistic wardrobe matches character bible Season 1",
+    "Same learning goals as animated sibling episode"
+  ],
+  "outputs_required": [
+    "script",
+    "storyboard",
+    "subtitles_vtt",
+    "vo_script",
+    "visual_prompts",
+    "video_master"
+  ],
+  "published_episode": {
+    "slug": "ngjyrat-kuq-kalter-verdh-gjelber-realiste",
+    "watch_path": "/videos/ngjyrat-kuq-kalter-verdh-gjelber-realiste",
+    "animated_sibling_watch_path": "/videos/ngjyrat-kuq-kalter-verdh-gjelber"
+  }
+}
