@@ -1,6 +1,6 @@
 import { router } from '@inertiajs/react';
 import { Clapperboard, Sparkles, Wrench } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -53,6 +53,28 @@ type Props = {
     className?: string;
 };
 
+/** Fallback catalogs so the UI is usable even if props lag behind a deploy. */
+const FALLBACK_TEXT_MODELS: TextModelOption[] = [
+    { id: 'grok-4.3', label: 'Grok 4.3', hint: 'Cheaper · iteration' },
+    { id: 'grok-4.5', label: 'Grok 4.5', hint: 'Flagship' },
+    { id: 'grok-4-1-fast-reasoning', label: 'Grok 4.1 Fast', hint: 'Volume' },
+];
+
+const FALLBACK_VIDEO_MODELS: VideoModelOption[] = [
+    {
+        id: 'grok-imagine-video',
+        label: 'Imagine',
+        hint: '$0.05/s',
+        usdPerSec: 0.05,
+    },
+    {
+        id: 'grok-imagine-video-1.5',
+        label: 'Imagine 1.5',
+        hint: '$0.08/s',
+        usdPerSec: 0.08,
+    },
+];
+
 function formatUsd(n: number): string {
     return `$${n.toFixed(2)}`;
 }
@@ -64,9 +86,8 @@ export function MasterDrivePanel({
     onDone,
     className,
 }: Props) {
-    const [busy, setBusy] = useState<'assemble' | 'imagine' | 'models' | null>(
-        null,
-    );
+    const [busy, setBusy] = useState<'assemble' | 'imagine' | null>(null);
+    const [savingModels, setSavingModels] = useState(false);
     const defaultDuration = masterDrive.defaultDuration ?? 3;
     const [duration, setDuration] = useState(defaultDuration);
     const [textModel, setTextModel] = useState(
@@ -76,23 +97,39 @@ export function MasterDrivePanel({
         masterDrive.videoModel ?? 'grok-imagine-video',
     );
 
-    const textModels = masterDrive.textModels ?? [];
-    const videoModels = masterDrive.videoModels ?? [];
+    // Keep local selection in sync when the server props change (e.g. after reload).
+    useEffect(() => {
+        if (masterDrive.textModel) {
+            setTextModel(masterDrive.textModel);
+        }
+    }, [masterDrive.textModel]);
+
+    useEffect(() => {
+        if (masterDrive.videoModel) {
+            setVideoModel(masterDrive.videoModel);
+        }
+    }, [masterDrive.videoModel]);
+
+    const textModels =
+        masterDrive.textModels && masterDrive.textModels.length > 0
+            ? masterDrive.textModels
+            : FALLBACK_TEXT_MODELS;
+
+    const videoModels =
+        masterDrive.videoModels && masterDrive.videoModels.length > 0
+            ? masterDrive.videoModels
+            : FALLBACK_VIDEO_MODELS;
 
     const activeVideo = useMemo(
         () => videoModels.find((m) => m.id === videoModel),
         [videoModels, videoModel],
     );
 
-    const usdPerSec =
-        activeVideo?.usdPerSec ?? masterDrive.usdPerSec ?? 0.05;
+    const usdPerSec = activeVideo?.usdPerSec ?? masterDrive.usdPerSec ?? 0.05;
 
     const options = useMemo(() => {
         if (activeVideo?.durationOptions?.length) {
             return activeVideo.durationOptions;
-        }
-        if (masterDrive.durationOptions?.length && !activeVideo) {
-            return masterDrive.durationOptions;
         }
         const min = masterDrive.minDuration ?? 3;
         const max = masterDrive.maxDuration ?? 6;
@@ -101,33 +138,36 @@ export function MasterDrivePanel({
             list.push({ seconds: s, estimatedUsd: round3(s * usdPerSec) });
         }
         return list;
-    }, [activeVideo, masterDrive, usdPerSec]);
+    }, [activeVideo, masterDrive.minDuration, masterDrive.maxDuration, usdPerSec]);
 
     const estimate =
         options.find((o) => o.seconds === duration)?.estimatedUsd ??
         round3(duration * usdPerSec);
 
-    function persistModels(next: {
-        text_model?: string;
-        video_model?: string;
-    }) {
-        setBusy('models');
-        router.put(
-            `/studio/runs/${runId}/models`,
-            next,
-            {
-                preserveScroll: true,
-                onFinish: () => setBusy(null),
-            },
-        );
+    function persistModels(next: { text_model: string; video_model: string }) {
+        setSavingModels(true);
+        // POST matches the rest of the Studio routes.
+        router.post(`/studio/runs/${runId}/models`, next, {
+            preserveScroll: true,
+            preserveState: true,
+            only: ['masterDrive'],
+            onFinish: () => setSavingModels(false),
+            onError: () => setSavingModels(false),
+        });
     }
 
     function onTextModelChange(id: string) {
+        if (id === textModel) {
+            return;
+        }
         setTextModel(id);
         persistModels({ text_model: id, video_model: videoModel });
     }
 
     function onVideoModelChange(id: string) {
+        if (id === videoModel) {
+            return;
+        }
         setVideoModel(id);
         persistModels({ text_model: textModel, video_model: id });
     }
@@ -189,59 +229,69 @@ export function MasterDrivePanel({
                 lower cost.
             </p>
 
-            {/* Model pickers */}
-            <div className="grid gap-1.5 rounded-md border bg-muted/20 p-2">
-                <div className="space-y-0.5">
-                    <label
-                        htmlFor={`text-model-${runId}`}
-                        className="text-[10px] font-medium text-muted-foreground"
-                    >
-                        Package text model (Laravel AI · xAI)
-                    </label>
-                    <select
-                        id={`text-model-${runId}`}
-                        value={textModel}
-                        disabled={busy !== null || textModels.length === 0}
-                        onChange={(e) => onTextModelChange(e.target.value)}
-                        className="h-7 w-full rounded border bg-background px-1.5 font-mono text-[11px]"
-                    >
-                        {textModels.length === 0 ? (
-                            <option value={textModel}>{textModel}</option>
-                        ) : (
-                            textModels.map((m) => (
-                                <option key={m.id} value={m.id}>
-                                    {m.label}
-                                    {m.hint ? ` — ${m.hint}` : ''}
-                                </option>
-                            ))
-                        )}
-                    </select>
+            <div className="grid gap-2 rounded-md border bg-muted/20 p-2">
+                <div className="space-y-1">
+                    <div className="flex items-center justify-between gap-1">
+                        <span className="text-[10px] font-medium text-muted-foreground">
+                            Package text model
+                        </span>
+                        {savingModels ? (
+                            <span className="text-[9px] text-muted-foreground">
+                                saving…
+                            </span>
+                        ) : null}
+                    </div>
+                    <div className="flex flex-wrap gap-1">
+                        {textModels.map((m) => (
+                            <button
+                                key={m.id}
+                                type="button"
+                                onClick={() => onTextModelChange(m.id)}
+                                className={cn(
+                                    'rounded border px-1.5 py-0.5 text-left text-[10px] transition-colors',
+                                    textModel === m.id
+                                        ? 'border-primary bg-primary/10 font-semibold text-foreground'
+                                        : 'text-muted-foreground hover:bg-muted/50',
+                                )}
+                                title={m.hint}
+                            >
+                                <span className="font-mono">{m.label}</span>
+                            </button>
+                        ))}
+                    </div>
+                    <p className="font-mono text-[9px] text-muted-foreground">
+                        {textModel}
+                    </p>
                 </div>
-                <div className="space-y-0.5">
-                    <label
-                        htmlFor={`video-model-${runId}`}
-                        className="text-[10px] font-medium text-muted-foreground"
-                    >
+
+                <div className="space-y-1">
+                    <span className="text-[10px] font-medium text-muted-foreground">
                         Imagine video model
-                    </label>
-                    <select
-                        id={`video-model-${runId}`}
-                        value={videoModel}
-                        disabled={busy !== null || videoModels.length === 0}
-                        onChange={(e) => onVideoModelChange(e.target.value)}
-                        className="h-7 w-full rounded border bg-background px-1.5 font-mono text-[11px]"
-                    >
-                        {videoModels.length === 0 ? (
-                            <option value={videoModel}>{videoModel}</option>
-                        ) : (
-                            videoModels.map((m) => (
-                                <option key={m.id} value={m.id}>
-                                    {m.label}
-                                    {m.hint ? ` — ${m.hint}` : ''}
-                                </option>
-                            ))
-                        )}
-                    </select>
+                    </span>
+                    <div className="flex flex-wrap gap-1">
+                        {videoModels.map((m) => (
+                            <button
+                                key={m.id}
+                                type="button"
+                                onClick={() => onVideoModelChange(m.id)}
+                                className={cn(
+                                    'rounded border px-1.5 py-0.5 text-left text-[10px] transition-colors',
+                                    videoModel === m.id
+                                        ? 'border-primary bg-primary/10 font-semibold text-foreground'
+                                        : 'text-muted-foreground hover:bg-muted/50',
+                                )}
+                                title={m.hint}
+                            >
+                                <span className="font-mono">{m.label}</span>
+                                <span className="ml-1 text-muted-foreground">
+                                    ${m.usdPerSec}/s
+                                </span>
+                            </button>
+                        ))}
+                    </div>
+                    <p className="font-mono text-[9px] text-muted-foreground">
+                        {videoModel}
+                    </p>
                 </div>
             </div>
 
@@ -331,7 +381,8 @@ export function MasterDrivePanel({
                                             : 'text-muted-foreground hover:bg-muted/50',
                                     )}
                                 >
-                                    {opt.seconds}s · {formatUsd(opt.estimatedUsd)}
+                                    {opt.seconds}s ·{' '}
+                                    {formatUsd(opt.estimatedUsd)}
                                 </button>
                             ))}
                         </div>

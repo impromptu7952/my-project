@@ -96,7 +96,7 @@ Route::middleware(['auth', 'verified', 'can:manage-content', EnsureStudioEnabled
     Route::post('/runs/{run}/assemble-preview', [AssemblePreviewMasterController::class, 'store'])->name('runs.assemble-preview');
     Route::post('/runs/{run}/imagine-master', [GenerateImagineMasterController::class, 'store'])->name('runs.imagine-master');
     Route::post('/runs/{run}/agents', [UpdateRunAgentsController::class, 'store'])->name('runs.agents.update');
-    Route::put('/runs/{run}/models', [UpdateRunModelsController::class, 'update'])->name('runs.models.update');
+    Route::post('/runs/{run}/models', [UpdateRunModelsController::class, 'update'])->name('runs.models.update');
 
     Route::post('/episodes/{episode:slug}/media', [MediaUploadController::class, 'store'])->name('episodes.media');
 });

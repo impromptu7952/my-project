@@ -26,7 +26,7 @@ test('editor can update run text and video model preferences', function (): void
     ]);
 
     $this->actingAs($editor)
-        ->put(route('studio.runs.models.update', $run), [
+        ->post(route('studio.runs.models.update', $run), [
             'text_model' => 'grok-4.3',
             'video_model' => 'grok-imagine-video-1.5',
         ])
@@ -45,7 +45,7 @@ test('run model update rejects unknown models', function (): void {
 
     $this->actingAs($editor)
         ->from(route('studio.runs.show', $run))
-        ->put(route('studio.runs.models.update', $run), [
+        ->post(route('studio.runs.models.update', $run), [
             'text_model' => 'not-a-real-model',
         ])
         ->assertSessionHasErrors('text_model');
